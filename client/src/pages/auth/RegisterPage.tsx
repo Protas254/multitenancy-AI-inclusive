@@ -32,19 +32,19 @@ export default function RegisterPage() {
   // Form State across all steps
   const [formData, setFormData] = useState({
     // Step 1: Account
-    fullName: "John Kamau",
-    email: "john.kamau@business.co.ke",
-    phone: "+254 722 000 999",
-    password: "password123",
-    confirmPassword: "password123",
+    fullName: "",
+    email: "",
+    phone: "",
+    password: "",
+    confirmPassword: "",
 
     // Step 2: Business
-    businessName: "Kileleshwa Fresh Grocery",
+    businessName: "",
     businessCategory: "Retail Supermarket & Grocery",
-    businessPhone: "+254 722 000 999",
-    businessEmail: "info@kileleshwafresh.co.ke",
+    businessPhone: "",
+    businessEmail: "",
     location: "Nairobi, Kenya",
-    address: "Kileleshwa Plaza, Kandara Rd",
+    address: "",
 
     // Step 3: Setup
     currency: "KES",
@@ -56,17 +56,16 @@ export default function RegisterPage() {
 
     // Step 4: Products
     products: [
-      { name: "Fresh Farm Milk 500ml", buyingPrice: 45, sellingPrice: 65, stock: 40 },
-      { name: "Organic Brown Eggs Tray (30)", buyingPrice: 380, sellingPrice: 520, stock: 25 },
+      { name: "", buyingPrice: 0, sellingPrice: 0, stock: 10 },
     ],
 
     // Step 5: Staff
     staff: [
-      { name: "Alice Mwangi", role: "Cashier", phone: "+254 711 222 333" },
+      { name: "", role: "Cashier", phone: "" },
     ],
 
     // Step 6: Target
-    monthlyTarget: 500000,
+    monthlyTarget: 100000,
   });
 
   const nextStep = () => setStep((s) => Math.min(7, s + 1));
@@ -105,9 +104,10 @@ export default function RegisterPage() {
         password: formData.password,
         businessName: formData.businessName,
         businessCategory: formData.businessCategory,
+        products: formData.products.filter((p) => p.name.trim().length > 0),
       });
 
-      router.push("/onboarding");
+      router.push("/dashboard");
     } catch (err: any) {
       alert(err.message || "Registration failed. Please try again.");
     } finally {
@@ -376,46 +376,58 @@ export default function RegisterPage() {
                     </button>
                   )}
                 </div>
-                <Input
-                  placeholder="Product Name"
-                  value={prod.name}
-                  onChange={(e) => {
-                    const list = [...formData.products];
-                    list[idx].name = e.target.value;
-                    setFormData({ ...formData, products: list });
-                  }}
-                />
-                <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <label className="text-[11px] font-semibold text-slate-700 block mb-1">Product Name</label>
                   <Input
-                    type="number"
-                    placeholder="Cost Price"
-                    value={prod.buyingPrice || ""}
+                    placeholder="e.g. Fresh Farm Milk 500ml"
+                    value={prod.name}
                     onChange={(e) => {
                       const list = [...formData.products];
-                      list[idx].buyingPrice = Number(e.target.value);
+                      list[idx].name = e.target.value;
                       setFormData({ ...formData, products: list });
                     }}
                   />
-                  <Input
-                    type="number"
-                    placeholder="Selling Price"
-                    value={prod.sellingPrice || ""}
-                    onChange={(e) => {
-                      const list = [...formData.products];
-                      list[idx].sellingPrice = Number(e.target.value);
-                      setFormData({ ...formData, products: list });
-                    }}
-                  />
-                  <Input
-                    type="number"
-                    placeholder="Stock Qty"
-                    value={prod.stock || ""}
-                    onChange={(e) => {
-                      const list = [...formData.products];
-                      list[idx].stock = Number(e.target.value);
-                      setFormData({ ...formData, products: list });
-                    }}
-                  />
+                </div>
+                <div className="grid grid-cols-3 gap-2 pt-1">
+                  <div>
+                    <label className="text-[10px] font-semibold text-slate-600 block mb-1">Buying Price (KES)</label>
+                    <Input
+                      type="number"
+                      placeholder="0"
+                      value={prod.buyingPrice || ""}
+                      onChange={(e) => {
+                        const list = [...formData.products];
+                        list[idx].buyingPrice = Number(e.target.value);
+                        setFormData({ ...formData, products: list });
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-semibold text-slate-600 block mb-1">Quantity</label>
+                    <Input
+                      type="number"
+                      placeholder="10"
+                      value={prod.stock || ""}
+                      onChange={(e) => {
+                        const list = [...formData.products];
+                        list[idx].stock = Number(e.target.value);
+                        setFormData({ ...formData, products: list });
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-semibold text-slate-600 block mb-1">Selling Price (KES)</label>
+                    <Input
+                      type="number"
+                      placeholder="0"
+                      value={prod.sellingPrice || ""}
+                      onChange={(e) => {
+                        const list = [...formData.products];
+                        list[idx].sellingPrice = Number(e.target.value);
+                        setFormData({ ...formData, products: list });
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
             ))}

@@ -33,15 +33,9 @@ export default function ProductsPage() {
   const [editingCatName, setEditingCatName] = useState("");
   const [newProduct, setNewProduct] = useState({
     name: "",
-    sku: "",
-    barcode: "",
-    categoryId: "",
     buyingPrice: 0,
+    currentStock: 1,
     sellingPrice: 0,
-    currentStock: 10,
-    minStockLevel: 5,
-    supplierId: "",
-    description: "",
   });
 
   const loadData = async () => {
@@ -55,9 +49,6 @@ export default function ProductsPage() {
       setProducts(prodData);
       setCategories(catData);
       setSuppliers(supData);
-      if (catData.length > 0) {
-        setNewProduct((prev) => ({ ...prev, categoryId: catData[0].id }));
-      }
     } finally {
       setIsLoading(false);
     }
@@ -100,43 +91,26 @@ export default function ProductsPage() {
 
   const handleCreateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newProduct.name || !newProduct.sku) return;
+    if (!newProduct.name.trim()) return;
     setIsSubmitting(true);
 
     try {
-      const selectedCat = categories.find((c) => c.id === newProduct.categoryId);
-      const selectedSup = suppliers.find((s) => s.id === newProduct.supplierId);
-
       const created = await productsApi.createProduct({
         tenantId: currentTenant.id,
-        name: newProduct.name,
-        sku: newProduct.sku,
-        barcode: newProduct.barcode || undefined,
-        categoryId: newProduct.categoryId || (categories[0]?.id ?? "cat-1"),
-        categoryName: selectedCat?.name ?? "General",
-        description: newProduct.description,
-        buyingPrice: Number(newProduct.buyingPrice),
-        sellingPrice: Number(newProduct.sellingPrice),
-        currentStock: Number(newProduct.currentStock),
-        minStockLevel: Number(newProduct.minStockLevel),
-        supplierId: newProduct.supplierId || undefined,
-        supplierName: selectedSup?.name || undefined,
+        name: newProduct.name.trim(),
+        buyingPrice: Number(newProduct.buyingPrice) || 0,
+        currentStock: Number(newProduct.currentStock) || 0,
+        sellingPrice: Number(newProduct.sellingPrice) || 0,
         isActive: true,
-      });
+      } as any);
 
       setProducts((prev) => [created, ...prev]);
       setIsAddModalOpen(false);
       setNewProduct({
         name: "",
-        sku: "",
-        barcode: "",
-        categoryId: categories[0]?.id || "",
         buyingPrice: 0,
+        currentStock: 1,
         sellingPrice: 0,
-        currentStock: 10,
-        minStockLevel: 5,
-        supplierId: "",
-        description: "",
       });
     } finally {
       setIsSubmitting(false);
@@ -375,126 +349,67 @@ export default function ProductsPage() {
 
       {/* Add Product Modal */}
       <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-        <DialogContent className="sm:max-w-[520px]">
+        <DialogContent className="sm:max-w-[440px]">
           <DialogHeader>
-            <DialogTitle>Add New Product</DialogTitle>
+            <DialogTitle>Add Product</DialogTitle>
           </DialogHeader>
 
           <form onSubmit={handleCreateProduct} className="space-y-4 py-2">
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-slate-700">Product Name</label>
               <Input
-                placeholder="e.g. Slim Fit Cotton Chino Trousers"
+                placeholder="e.g. Fresh Farm Milk 500ml"
                 value={newProduct.name}
                 onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
                 required
+                autoFocus
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700">SKU Code</label>
-                <Input
-                  placeholder="e.g. TR-SLIM-009"
-                  value={newProduct.sku}
-                  onChange={(e) => setNewProduct({ ...newProduct, sku: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700">Barcode (Optional)</label>
-                <Input
-                  placeholder="e.g. 61640001099"
-                  value={newProduct.barcode}
-                  onChange={(e) => setNewProduct({ ...newProduct, barcode: e.target.value })}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700">Category</label>
-                <select
-                  value={newProduct.categoryId}
-                  onChange={(e) => setNewProduct({ ...newProduct, categoryId: e.target.value })}
-                  className="flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs"
-                >
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700">Primary Supplier</label>
-                <select
-                  value={newProduct.supplierId}
-                  onChange={(e) => setNewProduct({ ...newProduct, supplierId: e.target.value })}
-                  className="flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs"
-                >
-                  <option value="">Select Supplier (Optional)</option>
-                  {suppliers.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700">Buying / Cost Price (KES)</label>
+                <label className="text-xs font-semibold text-slate-700">Buying Price (KES)</label>
                 <Input
                   type="number"
                   min="0"
+                  step="any"
+                  placeholder="0"
                   value={newProduct.buyingPrice || ""}
                   onChange={(e) => setNewProduct({ ...newProduct, buyingPrice: Number(e.target.value) })}
                   required
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700">Selling Price (KES)</label>
+                <label className="text-xs font-semibold text-slate-700">Quantity</label>
                 <Input
                   type="number"
                   min="0"
-                  value={newProduct.sellingPrice || ""}
-                  onChange={(e) => setNewProduct({ ...newProduct, sellingPrice: Number(e.target.value) })}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700">Initial Stock</label>
-                <Input
-                  type="number"
-                  min="0"
+                  placeholder="1"
                   value={newProduct.currentStock || ""}
                   onChange={(e) => setNewProduct({ ...newProduct, currentStock: Number(e.target.value) })}
                   required
                 />
               </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700">Low Stock Threshold</label>
-                <Input
-                  type="number"
-                  min="1"
-                  value={newProduct.minStockLevel || ""}
-                  onChange={(e) => setNewProduct({ ...newProduct, minStockLevel: Number(e.target.value) })}
-                  required
-                />
-              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-700">Selling Price (KES)</label>
+              <Input
+                type="number"
+                min="0"
+                step="any"
+                placeholder="0"
+                value={newProduct.sellingPrice || ""}
+                onChange={(e) => setNewProduct({ ...newProduct, sellingPrice: Number(e.target.value) })}
+                required
+              />
             </div>
 
             <DialogFooter className="pt-2">
               <Button type="button" variant="outline" onClick={() => setIsAddModalOpen(false)}>
                 Cancel
               </Button>
-              <Button type="submit" isLoading={isSubmitting}>
+              <Button type="submit" isLoading={isSubmitting} className="font-bold">
                 Save Product
               </Button>
             </DialogFooter>

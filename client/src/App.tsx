@@ -8,6 +8,7 @@ import AdminLayout from "./pages/admin/AdminLayout";
 
 // Landing & General
 import LandingPage from "./pages/LandingPage";
+import AboutPage from "./pages/AboutPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 // Auth Pages
@@ -55,16 +56,17 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public Landing */}
+        {/* Public Landing & About */}
         <Route path="/" element={<LandingPage />} />
+        <Route path="/about" element={<AboutPage />} />
 
         {/* Superadmin Platform */}
         <Route element={<AdminLayout />}>
           <Route path="/admin" element={<AdminPage />} />
         </Route>
 
-        {/* Onboarding Flow */}
-        <Route path="/onboarding" element={<OnboardingPage />} />
+        {/* Onboarding Flow - Redirect to Dashboard */}
+        <Route path="/onboarding" element={<Navigate to="/dashboard" replace />} />
 
         {/* Authentication Routes */}
         <Route element={<AuthLayout />}>

@@ -1,14 +1,14 @@
 import { Supplier } from "../types";
-import { INITIAL_SUPPLIERS } from "../mock/initialData";
 import { apiClient } from "./client";
 
 export const suppliersApi = {
-  async getSuppliers(tenantId: string = "tenant-fashion"): Promise<Supplier[]> {
+  async getSuppliers(_tenantId?: string): Promise<Supplier[]> {
     try {
-      return await apiClient.get<Supplier[]>("/suppliers/");
-    } catch {
-      const stored = apiClient.getStorage<Supplier[]>("suppliers", INITIAL_SUPPLIERS);
-      return stored.filter((s) => s.tenantId === tenantId);
+      const data = await apiClient.get<Supplier[]>("/suppliers/");
+      return Array.isArray(data) ? data : [];
+    } catch (err) {
+      console.warn("Error fetching suppliers:", err);
+      return [];
     }
   },
 
@@ -16,23 +16,24 @@ export const suppliersApi = {
     try {
       return await apiClient.get<Supplier>(`/suppliers/${id}/`);
     } catch {
-      const suppliers = await this.getSuppliers();
-      return suppliers.find((s) => s.id === id) || null;
+      return null;
     }
   },
 
   async createSupplier(data: any): Promise<Supplier> {
+    return await apiClient.post<Supplier>("/suppliers/", data);
+  },
+
+  async updateSupplier(id: string, data: any): Promise<Supplier> {
+    return await apiClient.patch<Supplier>(`/suppliers/${id}/`, data);
+  },
+
+  async deleteSupplier(id: string): Promise<boolean> {
     try {
-      return await apiClient.post<Supplier>("/suppliers/", data);
+      await apiClient.delete(`/suppliers/${id}/`);
+      return true;
     } catch {
-      const current = apiClient.getStorage<Supplier[]>("suppliers", INITIAL_SUPPLIERS);
-      const newSup: Supplier = {
-        ...data,
-        id: "sup-" + Date.now(),
-      };
-      const updated = [newSup, ...current];
-      apiClient.setStorage("suppliers", updated);
-      return newSup;
+      return false;
     }
   },
 };

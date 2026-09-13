@@ -4,7 +4,8 @@ from .views import (
     TenantViewSet, CategoryViewSet, SupplierViewSet, ProductViewSet,
     CustomerViewSet, SaleViewSet, ExpenseViewSet, StaffMemberViewSet,
     PayrollRecordViewSet, TargetViewSet, NotificationViewSet,
-    login_view, register_view, current_user_view
+    DailyReconciliationViewSet,
+    login_view, register_view, current_user_view, monthly_reconciliation_report
 )
 
 router = DefaultRouter()
@@ -20,10 +21,12 @@ router.register(r"staff", StaffMemberViewSet, basename="staff")
 router.register(r"payroll", PayrollRecordViewSet, basename="payroll")
 router.register(r"targets", TargetViewSet, basename="target")
 router.register(r"notifications", NotificationViewSet, basename="notification")
+router.register(r"reconciliations", DailyReconciliationViewSet, basename="reconciliation")
 
 urlpatterns = [
     path("auth/login/", login_view, name="auth_login"),
     path("auth/register/", register_view, name="auth_register"),
     path("auth/me/", current_user_view, name="auth_me"),
+    path("reports/monthly-reconciliation/", monthly_reconciliation_report, name="monthly_reconciliation_report"),
     path("", include(router.urls)),
 ]

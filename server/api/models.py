@@ -41,10 +41,13 @@ def gen_tgt_id():
 def gen_notif_id():
     return f"notif-{uuid.uuid4().hex[:10]}"
 
+def gen_tenant_id():
+    return f"tenant-{uuid.uuid4().hex[:8]}"
+
 class Tenant(models.Model):
-    id = models.CharField(max_length=64, primary_key=True)
+    id = models.CharField(max_length=64, primary_key=True, default=gen_tenant_id)
     name = models.CharField(max_length=255)
-    slug = models.SlugField(max_length=255, unique=True)
+    slug = models.SlugField(max_length=255, unique=True, blank=True)
     domain = models.CharField(max_length=255, blank=True, null=True)
     business_type = models.CharField(max_length=100, default="Retail Supermarket")
     phone = models.CharField(max_length=50, blank=True)
@@ -55,6 +58,15 @@ class Tenant(models.Model):
     currency = models.CharField(max_length=10, default="KES")
     status = models.CharField(max_length=20, default="active")
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.id:
+            self.id = gen_tenant_id()
+        if not self.slug:
+            from django.utils.text import slugify
+            base_slug = slugify(self.name) or "business"
+            self.slug = f"{base_slug}-{uuid.uuid4().hex[:6]}"
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.name} ({self.id})"
@@ -136,7 +148,7 @@ class Product(models.Model):
     id = models.CharField(max_length=64, primary_key=True, default=gen_prod_id)
     tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name="products")
     name = models.CharField(max_length=255)
-    sku = models.CharField(max_length=100)
+    sku = models.CharField(max_length=100, blank=True)
     barcode = models.CharField(max_length=100, blank=True, null=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
     supplier = models.ForeignKey(Supplier, on_delete=models.SET_NULL, null=True, blank=True)
@@ -148,6 +160,12 @@ class Product(models.Model):
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if not self.sku:
+            import uuid
+            self.sku = f"SKU-{uuid.uuid4().hex[:8].upper()}"
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.name} [{self.sku}]"
@@ -263,3 +281,40 @@ class Notification(models.Model):
     type = models.CharField(max_length=50, default="info")
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+def gen_rec_id():
+    return f"rec-{uuid.uuid4().hex[:10]}"
+
+
+class DailyReconciliation(models.Model):
+    STATUS_CHOICES = [
+        ("reconciled", "Reconciled"),
+        ("discrepancy", "Discrepancy"),
+        ("pending", "Pending"),
+    ]
+    id = models.CharField(max_length=64, primary_key=True, default=gen_rec_id)
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name="reconciliations")
+    date = models.DateField()
+    opening_float = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    cash_sales = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    cash_expenses = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    expected_cash = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    actual_cash = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    cash_discrepancy = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    mpesa_expected = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    mpesa_actual = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    mpesa_discrepancy = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    card_expected = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    card_actual = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    card_discrepancy = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    total_collected = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    reconciled_by = models.CharField(max_length=255, blank=True)
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-date"]
+        unique_together = [("tenant", "date")]

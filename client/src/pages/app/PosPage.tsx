@@ -4,7 +4,7 @@ import { useTenant } from "@/contexts/TenantContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { salesApi } from "@/lib/api/sales";
 import { productsApi } from "@/lib/api/products";
-import { INITIAL_PRODUCTS, INITIAL_CUSTOMERS } from "@/lib/mock/initialData";
+import { customersApi } from "@/lib/api/customers";
 import { Product, Category, Customer, PaymentMethod, Sale } from "@/lib/types";
 import { formatKES } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -53,12 +53,16 @@ export default function PosPage() {
     toSaleItems,
   } = useCart();
 
-  const [products] = useState<Product[]>(INITIAL_PRODUCTS);
+  const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [customers] = useState<Customer[]>(INITIAL_CUSTOMERS);
+  const [customers, setCustomers] = useState<Customer[]>([]);
 
   useEffect(() => {
-    productsApi.getCategories(currentTenant.id).then(setCategories).catch(() => {});
+    if (currentTenant.id) {
+      productsApi.getProducts(currentTenant.id).then(setProducts).catch(() => {});
+      productsApi.getCategories(currentTenant.id).then(setCategories).catch(() => {});
+      customersApi.getCustomers(currentTenant.id).then(setCustomers).catch(() => {});
+    }
   }, [currentTenant.id]);
 
   const [searchQuery, setSearchQuery] = useState("");

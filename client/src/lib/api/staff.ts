@@ -1,14 +1,14 @@
 import { StaffMember } from "../types";
-import { INITIAL_STAFF } from "../mock/initialData";
 import { apiClient } from "./client";
 
 export const staffApi = {
-  async getStaff(tenantId: string = "tenant-fashion"): Promise<StaffMember[]> {
+  async getStaff(_tenantId?: string): Promise<StaffMember[]> {
     try {
-      return await apiClient.get<StaffMember[]>("/staff/");
-    } catch {
-      const stored = apiClient.getStorage<StaffMember[]>("staff", INITIAL_STAFF);
-      return stored.filter((s) => s.tenantId === tenantId);
+      const data = await apiClient.get<StaffMember[]>("/staff/");
+      return Array.isArray(data) ? data : [];
+    } catch (err) {
+      console.warn("Error fetching staff:", err);
+      return [];
     }
   },
 
@@ -16,23 +16,24 @@ export const staffApi = {
     try {
       return await apiClient.get<StaffMember>(`/staff/${id}/`);
     } catch {
-      const staff = await this.getStaff();
-      return staff.find((s) => s.id === id) || null;
+      return null;
     }
   },
 
   async createStaff(data: any): Promise<StaffMember> {
+    return await apiClient.post<StaffMember>("/staff/", data);
+  },
+
+  async updateStaff(id: string, data: any): Promise<StaffMember> {
+    return await apiClient.patch<StaffMember>(`/staff/${id}/`, data);
+  },
+
+  async deleteStaff(id: string): Promise<boolean> {
     try {
-      return await apiClient.post<StaffMember>("/staff/", data);
+      await apiClient.delete(`/staff/${id}/`);
+      return true;
     } catch {
-      const current = apiClient.getStorage<StaffMember[]>("staff", INITIAL_STAFF);
-      const newStaff: StaffMember = {
-        ...data,
-        id: "stf-" + Date.now(),
-      };
-      const updated = [newStaff, ...current];
-      apiClient.setStorage("staff", updated);
-      return newStaff;
+      return false;
     }
   },
 };

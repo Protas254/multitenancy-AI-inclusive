@@ -1,12 +1,11 @@
 import { Purchase, PurchaseItem } from "../types";
-import { INITIAL_PURCHASES, INITIAL_PRODUCTS, INITIAL_STOCK_MOVEMENTS } from "../mock/initialData";
 import { apiClient } from "./client";
 import { generateId } from "../utils";
 
 export const purchasesApi = {
-  async getPurchases(tenantId: string = "tenant-fashion"): Promise<Purchase[]> {
-    const stored = apiClient.getStorage<Purchase[]>("purchases", INITIAL_PURCHASES);
-    return stored.filter((p) => p.tenantId === tenantId);
+  async getPurchases(tenantId?: string): Promise<Purchase[]> {
+    const stored = apiClient.getStorage<Purchase[]>("purchases", []);
+    return tenantId ? stored.filter((p) => p.tenantId === tenantId) : stored;
   },
 
   async getPurchaseById(id: string): Promise<Purchase | null> {
@@ -27,7 +26,7 @@ export const purchasesApi = {
     expectedDeliveryDate?: string;
     notes?: string;
   }): Promise<Purchase> {
-    const current = apiClient.getStorage<Purchase[]>("purchases", INITIAL_PURCHASES);
+    const current = apiClient.getStorage<Purchase[]>("purchases", []);
     const poNumber = `PO-2026-${String(current.length + 91).padStart(3, "0")}`;
     const balance = Math.max(0, data.totalAmount - data.amountPaid);
     const paymentStatus = balance === 0 ? "paid" : data.amountPaid > 0 ? "partially_paid" : "unpaid";
@@ -58,7 +57,7 @@ export const purchasesApi = {
   },
 
   async receiveStock(purchaseId: string, staffName: string = "Store Manager"): Promise<Purchase> {
-    const current = apiClient.getStorage<Purchase[]>("purchases", INITIAL_PURCHASES);
+    const current = apiClient.getStorage<Purchase[]>("purchases", []);
     const index = current.findIndex((p) => p.id === purchaseId);
     if (index === -1) throw new Error("Purchase order not found");
 
@@ -67,8 +66,8 @@ export const purchasesApi = {
     po.receivedDate = new Date().toISOString();
 
     // Increment inventory products stock
-    const products = apiClient.getStorage("products", INITIAL_PRODUCTS);
-    const movements = apiClient.getStorage("stock_movements", INITIAL_STOCK_MOVEMENTS);
+    const products = apiClient.getStorage<any[]>("products", []);
+    const movements = apiClient.getStorage<any[]>("stock_movements", []);
 
     po.items.forEach((item) => {
       item.quantityReceived = item.quantityOrdered;

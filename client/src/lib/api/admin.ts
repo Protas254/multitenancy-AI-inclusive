@@ -1,5 +1,5 @@
 import { PlatformTenantOverview, SaaSPlan } from "../types";
-import { PLATFORM_TENANTS_OVERVIEW, SAAS_PLANS } from "../mock/initialData";
+import { SAAS_PLANS } from "../mock/initialData";
 import { apiClient } from "./client";
 
 export const adminApi = {
@@ -22,9 +22,9 @@ export const adminApi = {
           createdAt: t.createdAt || new Date().toISOString(),
         }));
       }
-      return apiClient.getStorage<PlatformTenantOverview[]>("platform_tenants", PLATFORM_TENANTS_OVERVIEW);
+      return apiClient.getStorage<PlatformTenantOverview[]>("platform_tenants", []);
     } catch {
-      return apiClient.getStorage<PlatformTenantOverview[]>("platform_tenants", PLATFORM_TENANTS_OVERVIEW);
+      return apiClient.getStorage<PlatformTenantOverview[]>("platform_tenants", []);
     }
   },
 
@@ -54,7 +54,7 @@ export const adminApi = {
       await apiClient.patch(`/tenants/${id}/`, { status });
       return true;
     } catch {
-      const tenants = apiClient.getStorage<PlatformTenantOverview[]>("platform_tenants", PLATFORM_TENANTS_OVERVIEW);
+      const tenants = apiClient.getStorage<PlatformTenantOverview[]>("platform_tenants", []);
       const index = tenants.findIndex((t) => t.id === id);
       if (index !== -1) {
         tenants[index].status = status;

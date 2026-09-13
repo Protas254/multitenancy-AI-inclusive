@@ -1,20 +1,18 @@
 import { StockMovement, StockAdjustmentRequest, Product } from "../types";
-import { INITIAL_STOCK_MOVEMENTS, INITIAL_PRODUCTS } from "../mock/initialData";
 import { apiClient } from "./client";
+import { productsApi } from "./products";
 import { generateId } from "../utils";
 
 export const inventoryApi = {
-  async getMovements(tenantId: string = "tenant-fashion"): Promise<StockMovement[]> {
-    const stored = apiClient.getStorage<StockMovement[]>("stock_movements", INITIAL_STOCK_MOVEMENTS);
-    return stored.filter((m) => m.tenantId === tenantId);
+  async getMovements(tenantId?: string): Promise<StockMovement[]> {
+    const stored = apiClient.getStorage<StockMovement[]>("stock_movements", []);
+    return tenantId ? stored.filter((m) => m.tenantId === tenantId) : stored;
   },
 
-  async adjustStock(req: StockAdjustmentRequest, staffName: string = "John Kamau", tenantId: string = "tenant-fashion"): Promise<Product> {
-    const products = apiClient.getStorage<Product[]>("products", INITIAL_PRODUCTS);
-    const index = products.findIndex((p) => p.id === req.productId);
-    if (index === -1) throw new Error("Product not found");
+  async adjustStock(req: StockAdjustmentRequest, staffName: string = "Staff", tenantId: string = ""): Promise<Product> {
+    const prod = await productsApi.getProductById(req.productId);
+    if (!prod) throw new Error("Product not found");
 
-    const prod = products[index];
     const prevStock = prod.currentStock;
     let newStock = prevStock;
 
@@ -27,13 +25,12 @@ export const inventoryApi = {
     }
 
     const diff = newStock - prevStock;
-    prod.currentStock = newStock;
-    prod.updatedAt = new Date().toISOString();
+    const updated = await productsApi.updateProduct(prod.id, { currentStock: newStock });
 
-    const movements = apiClient.getStorage<StockMovement[]>("stock_movements", INITIAL_STOCK_MOVEMENTS);
+    const movements = apiClient.getStorage<StockMovement[]>("stock_movements", []);
     const newMovement: StockMovement = {
       id: generateId("mov"),
-      tenantId,
+      tenantId: tenantId || prod.tenantId,
       productId: prod.id,
       productName: prod.name,
       type: diff >= 0 ? "adjustment_increase" : "adjustment_decrease",
@@ -46,8 +43,7 @@ export const inventoryApi = {
       date: new Date().toISOString(),
     };
 
-    apiClient.setStorage("products", products);
     apiClient.setStorage("stock_movements", [newMovement, ...movements]);
-    return prod;
+    return updated;
   },
 };

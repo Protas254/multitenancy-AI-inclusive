@@ -1,30 +1,27 @@
 import { SalesTarget } from "../types";
-import { INITIAL_TARGETS } from "../mock/initialData";
 import { apiClient } from "./client";
-import { generateId } from "../utils";
 
 export const targetsApi = {
-  async getTargets(tenantId: string = "tenant-fashion"): Promise<SalesTarget[]> {
-    const stored = apiClient.getStorage<SalesTarget[]>("targets", INITIAL_TARGETS);
-    return stored.filter((t) => t.tenantId === tenantId);
+  async getTargets(_tenantId?: string): Promise<SalesTarget[]> {
+    try {
+      const data = await apiClient.get<SalesTarget[]>("/targets/");
+      return Array.isArray(data) ? data : [];
+    } catch (err) {
+      console.warn("Error fetching targets:", err);
+      return [];
+    }
   },
 
   async createTarget(data: Omit<SalesTarget, "id" | "achievedAmount" | "status">): Promise<SalesTarget> {
-    const current = apiClient.getStorage<SalesTarget[]>("targets", INITIAL_TARGETS);
-    const newTarget: SalesTarget = {
-      ...data,
-      id: generateId("tgt"),
-      achievedAmount: 0,
-      status: "active",
-    };
-    const updated = [newTarget, ...current];
-    apiClient.setStorage("targets", updated);
-    return newTarget;
+    return await apiClient.post<SalesTarget>("/targets/", data);
   },
 
   async deleteTarget(id: string): Promise<boolean> {
-    const current = apiClient.getStorage<SalesTarget[]>("targets", INITIAL_TARGETS);
-    apiClient.setStorage("targets", current.filter((t) => t.id !== id));
-    return true;
+    try {
+      await apiClient.delete(`/targets/${id}/`);
+      return true;
+    } catch {
+      return false;
+    }
   },
 };

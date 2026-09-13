@@ -1,12 +1,11 @@
 import { Invoice, InvoiceItem } from "../types";
-import { INITIAL_INVOICES } from "../mock/initialData";
 import { apiClient } from "./client";
 import { generateId } from "../utils";
 
 export const invoicesApi = {
-  async getInvoices(tenantId: string = "tenant-fashion"): Promise<Invoice[]> {
-    const stored = apiClient.getStorage<Invoice[]>("invoices", INITIAL_INVOICES);
-    return stored.filter((i) => i.tenantId === tenantId);
+  async getInvoices(tenantId?: string): Promise<Invoice[]> {
+    const stored = apiClient.getStorage<Invoice[]>("invoices", []);
+    return tenantId ? stored.filter((i) => i.tenantId === tenantId) : stored;
   },
 
   async getInvoiceById(id: string): Promise<Invoice | null> {
@@ -31,7 +30,7 @@ export const invoicesApi = {
     notes?: string;
     terms?: string;
   }): Promise<Invoice> {
-    const current = apiClient.getStorage<Invoice[]>("invoices", INITIAL_INVOICES);
+    const current = apiClient.getStorage<Invoice[]>("invoices", []);
     const invoiceNumber = `INV-2026-${String(current.length + 46).padStart(4, "0")}`;
 
     const newInvoice: Invoice = {
@@ -64,7 +63,7 @@ export const invoicesApi = {
   },
 
   async updateInvoiceStatus(id: string, status: any): Promise<Invoice> {
-    const current = apiClient.getStorage<Invoice[]>("invoices", INITIAL_INVOICES);
+    const current = apiClient.getStorage<Invoice[]>("invoices", []);
     const index = current.findIndex((i) => i.id === id);
     if (index === -1) throw new Error("Invoice not found");
 
@@ -74,7 +73,7 @@ export const invoicesApi = {
   },
 
   async recordInvoicePayment(id: string, amount: number): Promise<Invoice> {
-    const current = apiClient.getStorage<Invoice[]>("invoices", INITIAL_INVOICES);
+    const current = apiClient.getStorage<Invoice[]>("invoices", []);
     const index = current.findIndex((i) => i.id === id);
     if (index === -1) throw new Error("Invoice not found");
 
@@ -92,7 +91,7 @@ export const invoicesApi = {
   },
 
   async updateInvoice(id: string, payload: Partial<Invoice>): Promise<Invoice> {
-    const current = apiClient.getStorage<Invoice[]>("invoices", INITIAL_INVOICES);
+    const current = apiClient.getStorage<Invoice[]>("invoices", []);
     const index = current.findIndex((i) => i.id === id);
     if (index === -1) throw new Error("Invoice not found");
 
@@ -116,7 +115,7 @@ export const invoicesApi = {
   },
 
   async deleteInvoice(id: string): Promise<boolean> {
-    const current = apiClient.getStorage<Invoice[]>("invoices", INITIAL_INVOICES);
+    const current = apiClient.getStorage<Invoice[]>("invoices", []);
     const filtered = current.filter((i) => i.id !== id && i.invoiceNumber !== id);
     apiClient.setStorage("invoices", filtered);
     return true;

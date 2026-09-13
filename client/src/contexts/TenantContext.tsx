@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { Tenant, Branch, TenantSettings } from "../lib/types";
-import { INITIAL_TENANTS } from "../lib/mock/initialData";
 import { tenantsApi } from "../lib/api/tenants";
 
 interface TenantContextType {
@@ -17,10 +16,64 @@ interface TenantContextType {
 
 const TenantContext = createContext<TenantContextType | undefined>(undefined);
 
+const DEFAULT_EMPTY_TENANT: Tenant = {
+  id: "",
+  name: "Loading Business...",
+  slug: "",
+  businessType: "Retail",
+  phone: "",
+  email: "",
+  address: "",
+  location: "",
+  website: "",
+  plan: "professional",
+  planStatus: "active",
+  nextBillingDate: "",
+  createdAt: new Date().toISOString(),
+  settings: {
+    currency: "KES",
+    taxRate: 16,
+    taxEnabled: true,
+    financialYearStart: "01-01",
+    receiptHeader: "",
+    receiptFooter: "",
+    loyaltyPointsPer100Kes: 1,
+    lowStockThresholdDefault: 5,
+  },
+  branches: [],
+};
+
 export const TenantProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [tenants, setTenants] = useState<Tenant[]>(INITIAL_TENANTS);
-  const [currentTenantId, setCurrentTenantId] = useState<string>("tenant-fashion");
-  const [currentBranchId, setCurrentBranchId] = useState<string>("br-cbd");
+  const [tenants, setTenants] = useState<Tenant[]>([]);
+  const [currentTenantId, setCurrentTenantId] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("active_tenant_id") || "";
+    }
+    return "";
+  });
+  const [currentBranchId, setCurrentBranchId] = useState<string>("br-main");
+
+  const refreshTenants = async () => {
+    try {
+      const t = await tenantsApi.getTenants();
+      if (t && t.length > 0) {
+        setTenants(t);
+        const savedTenantId = typeof window !== "undefined" ? localStorage.getItem("active_tenant_id") : null;
+        if (savedTenantId && t.some((item) => item.id === savedTenantId)) {
+          setCurrentTenantId(savedTenantId);
+        } else {
+          setCurrentTenantId(t[0].id);
+          if (typeof window !== "undefined") {
+            localStorage.setItem("active_tenant_id", t[0].id);
+          }
+        }
+      } else {
+        setTenants([]);
+      }
+    } catch (err) {
+      console.warn("Failed to fetch tenants:", err);
+    }
+  };
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -29,13 +82,11 @@ export const TenantProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       const savedBranchId = localStorage.getItem("active_branch_id");
       if (savedBranchId) setCurrentBranchId(savedBranchId);
 
-      tenantsApi.getTenants().then((t) => {
-        if (t && t.length > 0) setTenants(t);
-      });
+      refreshTenants();
     }
   }, []);
 
-  const currentTenant = tenants.find((t) => t.id === currentTenantId) || tenants[0] || INITIAL_TENANTS[0];
+  const currentTenant = tenants.find((t) => t.id === currentTenantId) || tenants[0] || DEFAULT_EMPTY_TENANT;
   const allBranches = currentTenant.branches || [];
   const currentBranch = allBranches.find((b) => b.id === currentBranchId) || allBranches[0] || {
     id: "br-main",

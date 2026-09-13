@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { User, Membership, UserRole, PermissionModule, PermissionAction } from "../lib/types";
 import { authApi } from "../lib/api/auth";
-import { INITIAL_USER, INITIAL_MEMBERSHIPS } from "../lib/mock/initialData";
 
 interface AuthContextType {
   user: User | null;
@@ -10,7 +9,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (data: { email: string; password: string; fullName: string; phone?: string; businessName?: string; businessCategory?: string }) => Promise<void>;
+  register: (data: { email: string; password: string; fullName: string; phone?: string; businessName?: string; businessCategory?: string; [key: string]: any }) => Promise<void>;
   logout: () => Promise<void>;
   switchSimulatedRole: (role: UserRole) => void;
   hasPermission: (module: PermissionModule, action?: PermissionAction) => boolean;
@@ -122,27 +121,45 @@ const ROLE_PERMISSIONS: Record<UserRole, Partial<Record<PermissionModule, Permis
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(INITIAL_USER);
-  const [memberships, setMemberships] = useState<Membership[]>(INITIAL_MEMBERSHIPS);
+  const [user, setUser] = useState<User | null>(null);
+  const [memberships, setMemberships] = useState<Membership[]>([]);
   const [currentRole, setCurrentRole] = useState<UserRole>("owner");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    // Check localStorage
-    if (typeof window !== "undefined") {
-      const savedUser = localStorage.getItem("sme_user");
-      if (savedUser) {
-        try {
-          setUser(JSON.parse(savedUser));
-        } catch {
-          setUser(INITIAL_USER);
+    const initAuth = async () => {
+      setIsLoading(true);
+      const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+      if (!token) {
+        setUser(null);
+        setMemberships([]);
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const currentUser = await authApi.getCurrentUser();
+        setUser(currentUser);
+        const userMemberships = currentUser.memberships || [];
+        setMemberships(userMemberships);
+        if (userMemberships.length > 0) {
+          const savedRole = localStorage.getItem("sme_simulated_role") as UserRole;
+          setCurrentRole(savedRole || userMemberships[0].role);
         }
+      } catch (err) {
+        console.warn("Session expired or invalid token:", err);
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("auth_token");
+          localStorage.removeItem("sme_user");
+        }
+        setUser(null);
+        setMemberships([]);
+      } finally {
+        setIsLoading(false);
       }
-      const savedRole = localStorage.getItem("sme_simulated_role") as UserRole;
-      if (savedRole) {
-        setCurrentRole(savedRole);
-      }
-    }
+    };
+
+    initAuth();
   }, []);
 
   const login = async (email: string, password: string) => {
@@ -150,23 +167,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const res = await authApi.login(email, password);
       setUser(res.user);
-      setMemberships(res.memberships);
-      if (res.memberships.length > 0) {
-        setCurrentRole(res.memberships[0].role);
+      const userMemberships = res.memberships || [];
+      setMemberships(userMemberships);
+      if (userMemberships.length > 0) {
+        setCurrentRole(userMemberships[0].role);
+      }
+      if (res.activeTenantId && typeof window !== "undefined") {
+        localStorage.setItem("active_tenant_id", res.activeTenantId);
       }
     } finally {
       setIsLoading(false);
     }
   };
 
-  const register = async (data: { email: string; password: string; fullName: string; phone?: string; businessName?: string; businessCategory?: string }) => {
+  const register = async (data: { email: string; password: string; fullName: string; phone?: string; businessName?: string; businessCategory?: string; [key: string]: any }) => {
     setIsLoading(true);
     try {
       const res = await authApi.register(data);
       setUser(res.user);
-      if (res.memberships && res.memberships.length > 0) {
-        setMemberships(res.memberships);
-        setCurrentRole(res.memberships[0].role);
+      const userMemberships = res.memberships || [];
+      if (userMemberships.length > 0) {
+        setMemberships(userMemberships);
+        setCurrentRole(userMemberships[0].role);
       }
       if (typeof window !== "undefined" && res.activeTenantId) {
         localStorage.setItem("active_tenant_id", res.activeTenantId);
@@ -179,6 +201,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     await authApi.logout();
     setUser(null);
+    setMemberships([]);
   };
 
   const switchSimulatedRole = (role: UserRole) => {

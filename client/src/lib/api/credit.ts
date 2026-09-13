@@ -1,16 +1,15 @@
 import { CreditAccount, CreditPayment } from "../types";
-import { INITIAL_CREDIT_ACCOUNTS, INITIAL_CREDIT_PAYMENTS, INITIAL_CUSTOMERS } from "../mock/initialData";
 import { apiClient } from "./client";
 import { generateId } from "../utils";
 
 export const creditApi = {
   async getAccounts(tenantId: string = "tenant-fashion"): Promise<CreditAccount[]> {
-    const stored = apiClient.getStorage<CreditAccount[]>("credit_accounts", INITIAL_CREDIT_ACCOUNTS);
+    const stored = apiClient.getStorage<CreditAccount[]>("credit_accounts", []);
     return stored.filter((c) => c.tenantId === tenantId);
   },
 
   async getPayments(tenantId: string = "tenant-fashion"): Promise<CreditPayment[]> {
-    const stored = apiClient.getStorage<CreditPayment[]>("credit_payments", INITIAL_CREDIT_PAYMENTS);
+    const stored = apiClient.getStorage<CreditPayment[]>("credit_payments", []);
     return stored.filter((p) => p.tenantId === tenantId);
   },
 
@@ -22,8 +21,8 @@ export const creditApi = {
     recordedBy: string;
     notes?: string;
   }): Promise<CreditPayment> {
-    const accounts = apiClient.getStorage<CreditAccount[]>("credit_accounts", INITIAL_CREDIT_ACCOUNTS);
-    const payments = apiClient.getStorage<CreditPayment[]>("credit_payments", INITIAL_CREDIT_PAYMENTS);
+    const accounts = apiClient.getStorage<CreditAccount[]>("credit_accounts", []);
+    const payments = apiClient.getStorage<CreditPayment[]>("credit_payments", []);
 
     const accIndex = accounts.findIndex((a) => a.id === payload.creditAccountId);
     if (accIndex === -1) throw new Error("Credit account not found");
@@ -51,7 +50,7 @@ export const creditApi = {
 
     // If customer, decrease their outstanding credit in CRM
     if (acc.entityType === "customer") {
-      const customers = apiClient.getStorage("customers", INITIAL_CUSTOMERS);
+      const customers = apiClient.getStorage<any[]>("customers", []);
       const cIndex = customers.findIndex((c: any) => c.id === acc.entityId || c.name === acc.entityName);
       if (cIndex !== -1) {
         customers[cIndex].outstandingCredit = Math.max(0, customers[cIndex].outstandingCredit - payload.amount);
@@ -77,7 +76,7 @@ export const creditApi = {
     dueDate: string;
     notes?: string;
   }): Promise<CreditAccount> {
-    const accounts = apiClient.getStorage<CreditAccount[]>("credit_accounts", INITIAL_CREDIT_ACCOUNTS);
+    const accounts = apiClient.getStorage<CreditAccount[]>("credit_accounts", []);
     const paidAmount = payload.paidAmount || 0;
     const balanceDue = Math.max(0, payload.totalAmount - paidAmount);
 
@@ -112,7 +111,7 @@ export const creditApi = {
     };
 
     if (payload.entityType === "customer") {
-      const customers = apiClient.getStorage("customers", INITIAL_CUSTOMERS);
+      const customers = apiClient.getStorage<any[]>("customers", []);
       const cIndex = customers.findIndex((c: any) => c.name.toLowerCase() === payload.entityName.toLowerCase() || (payload.entityId && c.id === payload.entityId));
       if (cIndex !== -1) {
         customers[cIndex].outstandingCredit = (customers[cIndex].outstandingCredit || 0) + balanceDue;
@@ -126,7 +125,7 @@ export const creditApi = {
   },
 
   async updateAccount(id: string, payload: Partial<CreditAccount>): Promise<CreditAccount> {
-    const accounts = apiClient.getStorage<CreditAccount[]>("credit_accounts", INITIAL_CREDIT_ACCOUNTS);
+    const accounts = apiClient.getStorage<CreditAccount[]>("credit_accounts", []);
     const index = accounts.findIndex((a) => a.id === id);
     if (index === -1) throw new Error("Credit account not found");
 
@@ -155,7 +154,7 @@ export const creditApi = {
   },
 
   async deleteAccount(id: string): Promise<boolean> {
-    const accounts = apiClient.getStorage<CreditAccount[]>("credit_accounts", INITIAL_CREDIT_ACCOUNTS);
+    const accounts = apiClient.getStorage<CreditAccount[]>("credit_accounts", []);
     const filtered = accounts.filter((a) => a.id !== id);
     apiClient.setStorage("credit_accounts", filtered);
     return true;

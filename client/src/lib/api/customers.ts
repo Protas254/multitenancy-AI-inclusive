@@ -1,14 +1,14 @@
 import { Customer } from "../types";
-import { INITIAL_CUSTOMERS } from "../mock/initialData";
 import { apiClient } from "./client";
 
 export const customersApi = {
-  async getCustomers(tenantId: string = "tenant-fashion"): Promise<Customer[]> {
+  async getCustomers(_tenantId?: string): Promise<Customer[]> {
     try {
-      return await apiClient.get<Customer[]>("/customers/");
-    } catch {
-      const stored = apiClient.getStorage<Customer[]>("customers", INITIAL_CUSTOMERS);
-      return stored.filter((c) => c.tenantId === tenantId);
+      const data = await apiClient.get<Customer[]>("/customers/");
+      return Array.isArray(data) ? data : [];
+    } catch (err) {
+      console.warn("Error fetching customers:", err);
+      return [];
     }
   },
 
@@ -16,26 +16,24 @@ export const customersApi = {
     try {
       return await apiClient.get<Customer>(`/customers/${id}/`);
     } catch {
-      const customers = await this.getCustomers();
-      return customers.find((c) => c.id === id) || null;
+      return null;
     }
   },
 
   async createCustomer(data: any): Promise<Customer> {
+    return await apiClient.post<Customer>("/customers/", data);
+  },
+
+  async updateCustomer(id: string, data: any): Promise<Customer> {
+    return await apiClient.patch<Customer>(`/customers/${id}/`, data);
+  },
+
+  async deleteCustomer(id: string): Promise<boolean> {
     try {
-      return await apiClient.post<Customer>("/customers/", data);
+      await apiClient.delete(`/customers/${id}/`);
+      return true;
     } catch {
-      const current = apiClient.getStorage<Customer[]>("customers", INITIAL_CUSTOMERS);
-      const newCust: Customer = {
-        ...data,
-        id: "cust-" + Date.now(),
-        totalPurchases: data.totalPurchases || 0,
-        loyaltyPoints: data.loyaltyPoints || 0,
-        createdAt: new Date().toISOString(),
-      };
-      const updated = [newCust, ...current];
-      apiClient.setStorage("customers", updated);
-      return newCust;
+      return false;
     }
   },
 };

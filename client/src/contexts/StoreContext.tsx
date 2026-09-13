@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
 import { Product, User, UserRole, Sale } from "../lib/types";
-import { INITIAL_PRODUCTS, INITIAL_SALES, INITIAL_USER } from "../lib/mock/initialData";
 
 export interface StoreCartItem {
   product: Product;
@@ -75,12 +74,12 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [user, setUser] = useState<User | null>(() => {
     try {
       const saved = localStorage.getItem("sme_store_user");
-      return saved ? JSON.parse(saved) : INITIAL_USER;
+      return saved ? JSON.parse(saved) : null;
     } catch {
-      return INITIAL_USER;
+      return null;
     }
   });
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem("auth_token") || "mock-jwt-token-sme");
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem("auth_token"));
   const [role, setRole] = useState<UserRole>("owner");
 
   const isAuthenticated = !!user;
@@ -107,7 +106,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   // Products State
-  const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
+  const [products, setProducts] = useState<Product[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -221,39 +220,10 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const saved = localStorage.getItem("sme_store_orders");
       if (saved) return JSON.parse(saved);
     } catch {}
-    // Seed from INITIAL_SALES
-    return INITIAL_SALES.slice(0, 5).map((sale) => ({
-      id: sale.id,
-      orderNumber: sale.saleNumber,
-      items: sale.items.map((it) => ({
-        product: {
-          id: it.productId,
-          tenantId: sale.tenantId,
-          name: it.productName,
-          sku: it.sku,
-          categoryId: "cat-1",
-          categoryName: "General",
-          buyingPrice: it.buyingPrice,
-          sellingPrice: it.unitPrice,
-          currentStock: 50,
-          minStockLevel: 5,
-          isActive: true,
-          createdAt: sale.date,
-          updatedAt: sale.date,
-        },
-        quantity: it.quantity,
-        discount: it.discount,
-      })),
-      totalAmount: sale.totalAmount,
-      status: sale.status === "completed" ? ("completed" as OrderStatus) : ("processing" as OrderStatus),
-      createdAt: sale.date,
-      customerName: sale.customerName || "Walk-in Customer",
-      shippingAddress: "Nairobi, Kenya",
-      estimatedDelivery: "Delivered",
-    }));
+    return [];
   });
 
-  const [activeOrder, setActiveOrder] = useState<TrackedOrder | null>(orders[0] || null);
+  const [activeOrder, setActiveOrder] = useState<TrackedOrder | null>(null);
 
   useEffect(() => {
     localStorage.setItem("sme_store_orders", JSON.stringify(orders));

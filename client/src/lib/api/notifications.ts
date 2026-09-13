@@ -1,29 +1,33 @@
 import { NotificationItem } from "../types";
-import { INITIAL_NOTIFICATIONS } from "../mock/initialData";
 import { apiClient } from "./client";
 
 export const notificationsApi = {
-  async getNotifications(tenantId: string = "tenant-fashion"): Promise<NotificationItem[]> {
-    const stored = apiClient.getStorage<NotificationItem[]>("notifications", INITIAL_NOTIFICATIONS);
-    return stored.filter((n) => n.tenantId === tenantId);
+  async getNotifications(_tenantId?: string): Promise<NotificationItem[]> {
+    try {
+      const data = await apiClient.get<NotificationItem[]>("/notifications/");
+      return Array.isArray(data) ? data : [];
+    } catch (err) {
+      console.warn("Error fetching notifications:", err);
+      return [];
+    }
   },
 
   async markAsRead(id: string): Promise<boolean> {
-    const current = apiClient.getStorage<NotificationItem[]>("notifications", INITIAL_NOTIFICATIONS);
-    const index = current.findIndex((n) => n.id === id);
-    if (index !== -1) {
-      current[index].isRead = true;
-      apiClient.setStorage("notifications", current);
+    try {
+      await apiClient.patch(`/notifications/${id}/`, { isRead: true });
+      return true;
+    } catch {
+      return false;
     }
-    return true;
   },
 
-  async markAllAsRead(tenantId: string = "tenant-fashion"): Promise<boolean> {
-    const current = apiClient.getStorage<NotificationItem[]>("notifications", INITIAL_NOTIFICATIONS);
-    current.forEach((n) => {
-      if (n.tenantId === tenantId) n.isRead = true;
-    });
-    apiClient.setStorage("notifications", current);
-    return true;
+  async markAllAsRead(_tenantId?: string): Promise<boolean> {
+    try {
+      const list = await this.getNotifications();
+      await Promise.all(list.map((n) => this.markAsRead(n.id)));
+      return true;
+    } catch {
+      return false;
+    }
   },
 };

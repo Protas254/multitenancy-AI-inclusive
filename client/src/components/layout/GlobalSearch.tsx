@@ -2,7 +2,11 @@ import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent } from "../ui/dialog";
 import { Search, Package, Users, ShoppingCart, FileText, Building, ArrowRight, UserCheck } from "lucide-react";
 import { useRouter } from "@/lib/navigation";
-import { INITIAL_PRODUCTS, INITIAL_CUSTOMERS, INITIAL_SALES, INITIAL_INVOICES, INITIAL_STAFF } from "@/lib/mock/initialData";
+import { useTenant } from "@/contexts/TenantContext";
+import { productsApi } from "@/lib/api/products";
+import { customersApi } from "@/lib/api/customers";
+import { staffApi } from "@/lib/api/staff";
+import { Product, Customer, StaffMember } from "@/lib/types";
 import { formatKES } from "@/lib/utils";
 
 interface SearchResult {
@@ -20,6 +24,18 @@ export const GlobalSearch: React.FC<{ isOpen: boolean; onClose: () => void }> = 
 }) => {
   const [query, setQuery] = useState("");
   const router = useRouter();
+  const { currentTenant } = useTenant();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [staff, setStaff] = useState<StaffMember[]>([]);
+
+  useEffect(() => {
+    if (isOpen && currentTenant.id) {
+      productsApi.getProducts(currentTenant.id).then(setProducts).catch(() => {});
+      customersApi.getCustomers(currentTenant.id).then(setCustomers).catch(() => {});
+      staffApi.getStaff(currentTenant.id).then(setStaff).catch(() => {});
+    }
+  }, [isOpen, currentTenant.id]);
 
   // Listen for Cmd+K keyboard shortcut
   useEffect(() => {
@@ -39,74 +55,49 @@ export const GlobalSearch: React.FC<{ isOpen: boolean; onClose: () => void }> = 
     const q = query.toLowerCase();
 
     // Search products
-    INITIAL_PRODUCTS.filter(
-      (p) => p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q)
-    ).slice(0, 3).forEach((p) => {
-      results.push({
-        category: "Products",
-        id: p.id,
-        title: p.name,
-        subtitle: `${p.sku} • ${formatKES(p.sellingPrice)} • ${p.currentStock} in stock`,
-        href: `/products/${p.id}`,
-        icon: <Package className="h-4 w-4 text-blue-600" />,
+    products
+      .filter((p) => p.name.toLowerCase().includes(q) || (p.sku && p.sku.toLowerCase().includes(q)))
+      .slice(0, 4)
+      .forEach((p) => {
+        results.push({
+          category: "Products",
+          id: p.id,
+          title: p.name,
+          subtitle: `${p.sku || "No SKU"} • ${formatKES(p.sellingPrice)} • ${p.currentStock} in stock`,
+          href: `/products/${p.id}`,
+          icon: <Package className="h-4 w-4 text-blue-600" />,
+        });
       });
-    });
 
     // Search customers
-    INITIAL_CUSTOMERS.filter(
-      (c) => c.name.toLowerCase().includes(q) || c.phone.includes(q)
-    ).slice(0, 3).forEach((c) => {
-      results.push({
-        category: "Customers",
-        id: c.id,
-        title: c.name,
-        subtitle: `${c.phone} • ${c.loyaltyTier} tier • ${formatKES(c.totalPurchases)} spent`,
-        href: `/customers/${c.id}`,
-        icon: <Users className="h-4 w-4 text-emerald-600" />,
+    customers
+      .filter((c) => c.name.toLowerCase().includes(q) || (c.phone && c.phone.includes(q)))
+      .slice(0, 3)
+      .forEach((c) => {
+        results.push({
+          category: "Customers",
+          id: c.id,
+          title: c.name,
+          subtitle: `${c.phone || "No phone"} • ${formatKES(c.totalPurchases || 0)} spent`,
+          href: `/customers/${c.id}`,
+          icon: <Users className="h-4 w-4 text-emerald-600" />,
+        });
       });
-    });
-
-    // Search sales
-    INITIAL_SALES.filter(
-      (s) => s.saleNumber.toLowerCase().includes(q) || (s.customerName || "").toLowerCase().includes(q)
-    ).slice(0, 2).forEach((s) => {
-      results.push({
-        category: "Sales",
-        id: s.id,
-        title: `${s.saleNumber} (${s.customerName || "Walk-in"})`,
-        subtitle: `${formatKES(s.totalAmount)} • ${s.paymentMethod.toUpperCase()}`,
-        href: `/sales/${s.id}`,
-        icon: <ShoppingCart className="h-4 w-4 text-amber-600" />,
-      });
-    });
-
-    // Search invoices
-    INITIAL_INVOICES.filter(
-      (i) => i.invoiceNumber.toLowerCase().includes(q) || i.customerName.toLowerCase().includes(q)
-    ).slice(0, 2).forEach((i) => {
-      results.push({
-        category: "Invoices",
-        id: i.id,
-        title: `${i.invoiceNumber} - ${i.customerName}`,
-        subtitle: `${formatKES(i.totalAmount)} • ${i.status.toUpperCase()}`,
-        href: `/invoices/${i.id}`,
-        icon: <FileText className="h-4 w-4 text-purple-600" />,
-      });
-    });
 
     // Search staff
-    INITIAL_STAFF.filter(
-      (st) => st.name.toLowerCase().includes(q) || st.role.toLowerCase().includes(q)
-    ).slice(0, 2).forEach((st) => {
-      results.push({
-        category: "Staff",
-        id: st.id,
-        title: st.name,
-        subtitle: `${st.role.toUpperCase()} • ${st.phone}`,
-        href: `/staff/${st.id}`,
-        icon: <UserCheck className="h-4 w-4 text-indigo-600" />,
+    staff
+      .filter((st) => st.name.toLowerCase().includes(q) || st.role.toLowerCase().includes(q))
+      .slice(0, 2)
+      .forEach((st) => {
+        results.push({
+          category: "Staff",
+          id: st.id,
+          title: st.name,
+          subtitle: `${st.role.toUpperCase()} • ${st.phone || "No phone"}`,
+          href: `/staff/${st.id}`,
+          icon: <UserCheck className="h-4 w-4 text-indigo-600" />,
+        });
       });
-    });
   }
 
   const handleSelect = (href: string) => {

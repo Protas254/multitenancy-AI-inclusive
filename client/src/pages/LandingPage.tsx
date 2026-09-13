@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Link from "@/components/ui/link";
 import { SEO } from "@/components/common/SEO";
 import {
@@ -15,12 +15,34 @@ import {
   Smartphone,
   Sparkles,
   Zap,
+  Mail,
+  Phone,
+  MapPin,
+  Clock,
+  Send,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { SAAS_PLANS } from "@/lib/mock/initialData";
 import { formatKES } from "@/lib/utils";
+import heroBg from "@/assets/hero-bg.jpg";
 
 export default function LandingPage() {
+  const [contactSubmitted, setContactSubmitted] = useState(false);
+  const [contactForm, setContactForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    businessName: "",
+    message: "",
+  });
+
+  const handleContactSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setContactSubmitted(true);
+  };
+
   const modules = [
     { title: "Point of Sale (POS)", icon: <Receipt className="h-5 w-5 text-blue-600" />, desc: "Touch & barcode-ready retail checkout with instant M-Pesa, Cash & thermal receipts." },
     { title: "Real-Time Inventory", icon: <Boxes className="h-5 w-5 text-emerald-600" />, desc: "Stock valuation, automated low-stock reorder triggers, movements audit trail." },
@@ -51,10 +73,11 @@ export default function LandingPage() {
           </div>
 
           <div className="hidden md:flex items-center gap-8 text-xs font-semibold text-slate-600">
+            <Link href="/" className="hover:text-blue-600 transition-colors">Home</Link>
             <a href="#features" className="hover:text-blue-600 transition-colors">Features</a>
-            <a href="#architecture" className="hover:text-blue-600 transition-colors">Ecosystem</a>
             <a href="#pricing" className="hover:text-blue-600 transition-colors">Pricing</a>
-            <Link href="/admin" className="hover:text-purple-600 transition-colors">Platform Admin</Link>
+            <Link href="/about" className="hover:text-blue-600 transition-colors">About</Link>
+            <a href="#contact" className="hover:text-blue-600 transition-colors">Contact</a>
           </div>
 
           <div className="flex items-center gap-3">
@@ -73,49 +96,62 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden pt-16 pb-20 md:pt-24 md:pb-28 bg-radial from-blue-50/70 via-white to-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center space-y-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-xs font-semibold">
-            <Sparkles className="h-3.5 w-3.5 text-blue-600" />
+      {/* Hero Section with Image Background */}
+      <section className="relative overflow-hidden pt-20 pb-24 md:pt-28 md:pb-32 text-white">
+        {/* Background Image Container */}
+        <div className="absolute inset-0 z-0">
+          <img
+            src={heroBg}
+            alt="Retail Store & POS Supermarket Background"
+            className="w-full h-full object-cover object-center scale-105"
+          />
+          {/* Subtle multi-layer overlay for crisp contrast while keeping the store visually rich */}
+          <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-[1px]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/90 via-slate-950/70 to-slate-950" />
+          <div className="absolute inset-0 bg-radial from-blue-600/15 via-transparent to-transparent" />
+        </div>
+
+        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 text-center space-y-6">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/10 border border-blue-400/30 text-blue-300 text-xs font-semibold backdrop-blur-md">
+            <Sparkles className="h-3.5 w-3.5 text-blue-400" />
             <span>Complete Business Operating System for Retail & SMEs</span>
           </div>
 
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-slate-950 tracking-tight max-w-4xl mx-auto leading-[1.12]">
-            Run your entire business from one <span className="text-blue-600">central system.</span>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-white tracking-tight max-w-4xl mx-auto leading-[1.12]">
+            Run your entire business from one <span className="text-blue-400">central system.</span>
           </h1>
 
-          <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg text-slate-200 max-w-2xl mx-auto leading-relaxed font-normal">
             Not just another basic POS. Manage sales, inventory, purchases, expenses, customers, staff payroll, debt, loyalty, and business insights with multi-tenant isolation.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
             <Link href="/dashboard" className="w-full sm:w-auto">
-              <Button size="lg" className="w-full sm:w-auto gap-2 text-sm font-bold shadow-md h-12 px-7">
+              <Button size="lg" className="w-full sm:w-auto gap-2 text-sm font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-xl shadow-blue-900/40 h-12 px-7">
                 <span>Launch Live Demo</span>
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
             <Link href="/pos" className="w-full sm:w-auto">
-              <Button variant="outline" size="lg" className="w-full sm:w-auto gap-2 text-sm font-semibold h-12 px-6">
-                <Receipt className="h-4 w-4 text-slate-500" />
+              <Button variant="outline" size="lg" className="w-full sm:w-auto gap-2 text-sm font-semibold h-12 px-6 bg-white/10 hover:bg-white/20 border-white/20 text-white backdrop-blur-md">
+                <Receipt className="h-4 w-4 text-slate-200" />
                 <span>Test POS Terminal</span>
               </Button>
             </Link>
           </div>
 
           {/* Quick proof badges */}
-          <div className="pt-6 flex flex-wrap items-center justify-center gap-6 text-xs text-slate-500">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+          <div className="pt-6 flex flex-wrap items-center justify-center gap-4 text-xs text-slate-200">
+            <div className="flex items-center gap-2 bg-slate-900/60 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15">
+              <CheckCircle2 className="h-4 w-4 text-emerald-400" />
               <span>Multi-Tenant Architecture</span>
             </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+            <div className="flex items-center gap-2 bg-slate-900/60 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15">
+              <CheckCircle2 className="h-4 w-4 text-emerald-400" />
               <span>Kenyan M-Pesa & KES Ready</span>
             </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+            <div className="flex items-center gap-2 bg-slate-900/60 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15">
+              <CheckCircle2 className="h-4 w-4 text-emerald-400" />
               <span>Role-Based Permissions (RBAC)</span>
             </div>
           </div>
@@ -256,6 +292,159 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Contact Section */}
+      <section id="contact" className="py-20 bg-white border-t border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-12">
+          <div className="text-center space-y-3 max-w-2xl mx-auto">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-blue-600">GET IN TOUCH</h2>
+            <p className="text-3xl font-black tracking-tight text-slate-950">
+              We're here to help your business thrive
+            </p>
+            <p className="text-sm text-slate-600">
+              Have questions about multi-branch deployments, hardware setups, or custom onboarding? Talk to our team.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            {/* Contact Details */}
+            <div className="lg:col-span-5 space-y-6">
+              <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200/80 space-y-6">
+                <h3 className="text-base font-bold text-slate-900">Direct Contacts</h3>
+                
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3.5">
+                    <div className="h-9 w-9 rounded-lg bg-blue-100/80 flex items-center justify-center text-blue-600 shrink-0">
+                      <Phone className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-500 font-medium">Call & WhatsApp Support</p>
+                      <p className="text-sm font-semibold text-slate-900">+254 700 123 456 / +254 711 987 654</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3.5">
+                    <div className="h-9 w-9 rounded-lg bg-blue-100/80 flex items-center justify-center text-blue-600 shrink-0">
+                      <Mail className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-500 font-medium">Email Inquiries</p>
+                      <p className="text-sm font-semibold text-slate-900">support@smeos.africa</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3.5">
+                    <div className="h-9 w-9 rounded-lg bg-blue-100/80 flex items-center justify-center text-blue-600 shrink-0">
+                      <MapPin className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-500 font-medium">Headquarters</p>
+                      <p className="text-sm font-semibold text-slate-900">Westlands Commercial Tower, Nairobi, Kenya</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3.5">
+                    <div className="h-9 w-9 rounded-lg bg-blue-100/80 flex items-center justify-center text-blue-600 shrink-0">
+                      <Clock className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-500 font-medium">Business Hours</p>
+                      <p className="text-sm font-semibold text-slate-900">Monday - Saturday: 8:00 AM - 7:00 PM EAT</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Contact Form */}
+            <div className="lg:col-span-7 bg-white p-7 rounded-2xl border border-slate-200/80 shadow-xs">
+              {contactSubmitted ? (
+                <div className="text-center py-10 space-y-3">
+                  <div className="h-12 w-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
+                    <CheckCircle2 className="h-6 w-6" />
+                  </div>
+                  <h4 className="text-lg font-bold text-slate-900">Message Received</h4>
+                  <p className="text-sm text-slate-600 max-w-md mx-auto">
+                    Thank you! An SME OS onboarding specialist will reach out to you within 2 hours.
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-2"
+                    onClick={() => {
+                      setContactSubmitted(false);
+                      setContactForm({ name: "", email: "", phone: "", businessName: "", message: "" });
+                    }}
+                  >
+                    Send Another Message
+                  </Button>
+                </div>
+              ) : (
+                <form onSubmit={handleContactSubmit} className="space-y-4">
+                  <h3 className="text-base font-bold text-slate-900 mb-2">Send us a message</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-slate-700">Full Name *</label>
+                      <Input
+                        required
+                        placeholder="e.g. Samuel Maina"
+                        value={contactForm.name}
+                        onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-slate-700">Phone Number *</label>
+                      <Input
+                        required
+                        placeholder="0712 345 678"
+                        value={contactForm.phone}
+                        onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-slate-700">Work Email *</label>
+                      <Input
+                        required
+                        type="email"
+                        placeholder="samuel@mybusiness.co.ke"
+                        value={contactForm.email}
+                        onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-slate-700">Business / Store Name</label>
+                      <Input
+                        placeholder="e.g. Quick Retailers Ltd"
+                        value={contactForm.businessName}
+                        onChange={(e) => setContactForm({ ...contactForm, businessName: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-700">Your Inquiry / Requirements *</label>
+                    <Textarea
+                      required
+                      rows={4}
+                      placeholder="Tell us about your business, number of branches, and any specific requirements..."
+                      value={contactForm.message}
+                      onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
+                    />
+                  </div>
+
+                  <Button type="submit" className="w-full sm:w-auto gap-2 font-bold text-xs shadow-sm">
+                    <Send className="h-3.5 w-3.5" />
+                    <span>Submit Inquiry</span>
+                  </Button>
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="bg-slate-950 text-slate-400 py-12 border-t border-slate-800 text-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-6">
@@ -265,9 +454,13 @@ export default function LandingPage() {
           </div>
           <p>© 2026 SME OS Platform. Multi-tenant Architecture.</p>
           <div className="flex items-center gap-6">
+            <Link href="/" className="hover:text-white">Home</Link>
+            <Link href="/about" className="hover:text-white">About</Link>
+            <a href="#features" className="hover:text-white">Features</a>
+            <a href="#pricing" className="hover:text-white">Pricing</a>
+            <a href="#contact" className="hover:text-white">Contact</a>
             <Link href="/dashboard" className="hover:text-white">Dashboard</Link>
             <Link href="/pos" className="hover:text-white">POS</Link>
-            <Link href="/admin" className="hover:text-white">Admin</Link>
           </div>
         </div>
       </footer>

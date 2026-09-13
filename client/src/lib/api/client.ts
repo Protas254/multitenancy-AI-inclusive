@@ -18,7 +18,7 @@ class ApiClient {
 
   private getTenantId(): string | null {
     if (typeof window === "undefined") return null;
-    return localStorage.getItem("active_tenant_id") || "tenant-fashion";
+    return localStorage.getItem("active_tenant_id");
   }
 
   public async request<T>(
@@ -109,6 +109,23 @@ class ApiClient {
       console.error("Storage error:", e);
     }
   }
+
+  // Purge any legacy mock storage items
+  public clearMockStorage(): void {
+    if (typeof window === "undefined") return;
+    const mockKeys = [
+      "sme_products", "sme_tenants", "sme_sales", "sme_customers",
+      "sme_suppliers", "sme_expenses", "sme_staff", "sme_payroll_runs",
+      "sme_targets", "sme_notifications", "sme_stock_movements",
+      "sme_categories", "sme_credit_accounts", "sme_credit_payments",
+      "sme_invoices", "sme_purchases", "sme_loyalty_rewards",
+      "sme_loyalty_transactions", "sme_platform_tenants", "sme_store_user"
+    ];
+    mockKeys.forEach((k) => localStorage.removeItem(k));
+  }
 }
 
 export const apiClient = new ApiClient();
+if (typeof window !== "undefined") {
+  apiClient.clearMockStorage();
+}

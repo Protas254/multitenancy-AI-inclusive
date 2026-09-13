@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,17 +8,26 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Bell, Check, AlertTriangle, ShoppingCart, Target, CreditCard } from "lucide-react";
-import { INITIAL_NOTIFICATIONS } from "@/lib/mock/initialData";
+import { notificationsApi } from "@/lib/api/notifications";
+import { useTenant } from "@/contexts/TenantContext";
 import { NotificationItem } from "@/lib/types";
 import { formatRelativeTime } from "@/lib/utils";
 import Link from "@/components/ui/link";
 
 export const NotificationDropdown: React.FC = () => {
-  const [notifications, setNotifications] = useState<NotificationItem[]>(INITIAL_NOTIFICATIONS);
+  const { currentTenant } = useTenant();
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+
+  useEffect(() => {
+    if (currentTenant.id) {
+      notificationsApi.getNotifications(currentTenant.id).then(setNotifications).catch(() => {});
+    }
+  }, [currentTenant.id]);
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
-  const markAllRead = () => {
+  const markAllRead = async () => {
+    await notificationsApi.markAllAsRead(currentTenant.id);
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
   };
 
