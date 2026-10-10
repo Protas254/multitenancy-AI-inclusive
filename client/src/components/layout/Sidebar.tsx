@@ -22,7 +22,6 @@ import {
   BarChart3,
   Bell,
   Settings,
-  ShieldCheck,
   ChevronLeft,
   ChevronRight,
   Sparkles,
@@ -60,16 +59,16 @@ export const Sidebar: React.FC = () => {
       ],
     },
     {
-      title: "FINANCE & PURCHASES",
+      title: "FINANCE and PURCHASES",
       items: [
         { label: "Purchases", href: "/purchases", icon: <Truck className="h-4 w-4" />, module: "purchases" },
         { label: "Expenses", href: "/expenses", icon: <TrendingDown className="h-4 w-4" />, module: "expenses" },
         { label: "Invoices", href: "/invoices", icon: <FileText className="h-4 w-4" />, module: "invoices" },
-        { label: "Debt & Credit", href: "/credit", icon: <CreditCard className="h-4 w-4" />, module: "credit" },
+        { label: "Debt and Credit", href: "/credit", icon: <CreditCard className="h-4 w-4" />, module: "credit" },
       ],
     },
     {
-      title: "CRM & TEAM",
+      title: "CRM and TEAM",
       items: [
         { label: "Customers", href: "/customers", icon: <Users className="h-4 w-4" />, module: "customers" },
         { label: "Suppliers", href: "/suppliers", icon: <Building className="h-4 w-4" />, module: "suppliers" },
@@ -80,7 +79,7 @@ export const Sidebar: React.FC = () => {
       ],
     },
     {
-      title: "SYSTEM & INSIGHTS",
+      title: "SYSTEM and INSIGHTS",
       items: [
         { label: "Reports", href: "/reports", icon: <BarChart3 className="h-4 w-4" />, module: "reports" },
         { label: "Notifications", href: "/notifications", icon: <Bell className="h-4 w-4" />, module: "notifications" },
@@ -152,19 +151,8 @@ export const Sidebar: React.FC = () => {
         })}
       </div>
 
-      {/* Platform Admin Link for quick superadmin navigation */}
-      <div className="p-3 border-t border-slate-800 space-y-2">
-        <Link
-          href="/admin"
-          className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium text-purple-300 hover:bg-purple-950/40 hover:text-purple-200 transition-colors ${
-            isCollapsed ? "justify-center px-0" : ""
-          }`}
-        >
-          <ShieldCheck className="h-4 w-4 text-purple-400" />
-          {!isCollapsed && <span>Platform Admin</span>}
-        </Link>
-
-        {/* Sidebar Collapse Toggle */}
+      {/* Sidebar Collapse Toggle */}
+      <div className="p-3 border-t border-slate-800">
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
           className="w-full flex items-center justify-center p-2 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all text-xs"

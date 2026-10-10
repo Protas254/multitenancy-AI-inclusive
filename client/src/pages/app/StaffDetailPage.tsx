@@ -85,7 +85,7 @@ export default function StaffDetailPage() {
         </div>
       </div>
 
-      {/* Compensation & Quotas */}
+      {/* Compensation and Quotas */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         <div className="p-5 bg-white rounded-xl border border-slate-200 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-xs text-slate-500">
@@ -98,7 +98,7 @@ export default function StaffDetailPage() {
 
         <div className="p-5 bg-white rounded-xl border border-slate-200 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-xs text-slate-500">
-            <span>Sales Quota & Achievement</span>
+            <span>Sales Quota and Achievement</span>
             <Award className="h-4 w-4 text-amber-500" />
           </div>
           <div className="text-2xl font-bold font-mono text-slate-900">{formatKES(member.salesThisMonth || 0)}</div>

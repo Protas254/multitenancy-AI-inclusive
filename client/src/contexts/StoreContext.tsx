@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
 import { Product, User, UserRole, Sale } from "../lib/types";
+import { authApi } from "../lib/api/auth";
 
 export interface StoreCartItem {
   product: Product;
@@ -84,25 +85,31 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const isAuthenticated = !!user;
 
-  const login = async (email: string, userRole: UserRole = "owner") => {
-    const newUser: User = {
-      id: `usr-${Date.now()}`,
-      name: email.split("@")[0].toUpperCase(),
-      email,
-    };
-    setUser(newUser);
-    setRole(userRole);
-    setToken("mock-jwt-token-" + Date.now());
-    localStorage.setItem("sme_store_user", JSON.stringify(newUser));
-    localStorage.setItem("auth_token", "mock-jwt-token-" + Date.now());
-    return true;
+  const login = async (email: string, userRole: UserRole = "owner", password?: string) => {
+    try {
+      const res = await authApi.login(email, password || "password123");
+      setUser(res.user);
+      setRole(userRole);
+      setToken(res.token);
+      localStorage.setItem("sme_store_user", JSON.stringify(res.user));
+      return true;
+    } catch {
+      const currentUser = await authApi.getCurrentUser().catch(() => null);
+      if (currentUser) {
+        setUser(currentUser);
+        setRole(userRole);
+        localStorage.setItem("sme_store_user", JSON.stringify(currentUser));
+        return true;
+      }
+      return false;
+    }
   };
 
   const logout = () => {
     setUser(null);
     setToken(null);
     localStorage.removeItem("sme_store_user");
-    localStorage.removeItem("auth_token");
+    authApi.logout();
   };
 
   // Products State
@@ -110,6 +117,14 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
+
+  useEffect(() => {
+    import("../lib/api/products").then(({ productsApi }) => {
+      productsApi.getProducts().then((data) => {
+        if (Array.isArray(data)) setProducts(data);
+      }).catch(console.error);
+    });
+  }, []);
 
   const filteredProducts = useMemo(() => {
     return products.filter((item) => {

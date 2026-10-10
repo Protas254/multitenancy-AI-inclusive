@@ -90,26 +90,6 @@ class ApiClient {
     return this.request<T>(endpoint, { method: "DELETE" });
   }
 
-  // Local storage fallback helpers
-  public getStorage<T>(key: string, defaultVal: T): T {
-    if (typeof window === "undefined") return defaultVal;
-    try {
-      const item = localStorage.getItem(`sme_${key}`);
-      return item ? JSON.parse(item) : defaultVal;
-    } catch {
-      return defaultVal;
-    }
-  }
-
-  public setStorage<T>(key: string, val: T): void {
-    if (typeof window === "undefined") return;
-    try {
-      localStorage.setItem(`sme_${key}`, JSON.stringify(val));
-    } catch (e) {
-      console.error("Storage error:", e);
-    }
-  }
-
   // Purge any legacy mock storage items
   public clearMockStorage(): void {
     if (typeof window === "undefined") return;

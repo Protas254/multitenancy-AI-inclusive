@@ -45,7 +45,7 @@ export const MobileNav: React.FC<MobileNavProps> = ({ isOpen, onClose }) => {
     { label: "Purchases", href: "/purchases", icon: <Truck className="h-4 w-4" />, module: "purchases" },
     { label: "Expenses", href: "/expenses", icon: <TrendingDown className="h-4 w-4" />, module: "expenses" },
     { label: "Invoices", href: "/invoices", icon: <FileText className="h-4 w-4" />, module: "invoices" },
-    { label: "Debt & Credit", href: "/credit", icon: <CreditCard className="h-4 w-4" />, module: "credit" },
+    { label: "Debt and Credit", href: "/credit", icon: <CreditCard className="h-4 w-4" />, module: "credit" },
     { label: "Customers", href: "/customers", icon: <Users className="h-4 w-4" />, module: "customers" },
     { label: "Suppliers", href: "/suppliers", icon: <Building className="h-4 w-4" />, module: "suppliers" },
     { label: "Loyalty", href: "/loyalty", icon: <Award className="h-4 w-4" />, module: "loyalty" },

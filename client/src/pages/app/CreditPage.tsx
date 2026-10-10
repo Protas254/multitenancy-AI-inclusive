@@ -311,7 +311,7 @@ export default function CreditPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-slate-900">Debt & Credit Ledger</h1>
+          <h1 className="text-2xl font-black tracking-tight text-slate-900">Debt and Credit Ledger</h1>
           <p className="text-xs text-slate-500 mt-0.5">
             Monitor receivables from customers, supplier debts, aging buckets, and installment payments.
           </p>
@@ -328,7 +328,7 @@ export default function CreditPage() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
         <StatCard
           title="Customer Receivables (Owed to You)"
           value={formatKES(customerReceivables)}

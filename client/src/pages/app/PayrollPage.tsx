@@ -79,7 +79,7 @@ export default function PayrollPage() {
       </div>
 
       {/* 4 Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
           title="Total Gross Wages"
           value={formatKES(payrollRun.totalGross)}
@@ -115,7 +115,7 @@ export default function PayrollPage() {
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-100">
               <tr>
-                <th className="p-3.5">Staff & Role</th>
+                <th className="p-3.5">Staff and Role</th>
                 <th className="p-3.5 text-right">Basic Pay</th>
                 <th className="p-3.5 text-right">Commission</th>
                 <th className="p-3.5 text-right">Allowances</th>
@@ -197,7 +197,7 @@ export default function PayrollPage() {
                   </div>
                 </div>
 
-                {/* Earnings & Deductions */}
+                {/* Earnings and Deductions */}
                 <div className="space-y-2 text-xs">
                   <p className="font-bold uppercase tracking-wider text-[10px] text-slate-400">Earnings</p>
                   <div className="flex justify-between">
@@ -225,7 +225,7 @@ export default function PayrollPage() {
                 <div className="space-y-1 text-xs border-t border-slate-100 pt-2">
                   <p className="font-bold uppercase tracking-wider text-[10px] text-slate-400">Deductions</p>
                   <div className="flex justify-between text-rose-600">
-                    <span>Statutory & PAYE:</span>
+                    <span>Statutory and PAYE:</span>
                     <span className="font-mono">-{formatKES(selectedPayslipItem.deductions)}</span>
                   </div>
                 </div>

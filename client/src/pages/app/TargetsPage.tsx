@@ -88,7 +88,7 @@ export default function TargetsPage() {
     <div className="space-y-6 max-w-5xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-slate-900">Sales Targets & Quotas</h1>
+          <h1 className="text-2xl font-black tracking-tight text-slate-900">Sales Targets and Quotas</h1>
           <p className="text-xs text-slate-500 mt-0.5">
             Set company milestones and track individual sales representative quota performance.
           </p>
@@ -135,7 +135,7 @@ export default function TargetsPage() {
             <thead className="bg-slate-50 text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-100">
               <tr>
                 <th className="p-3.5">Target Name</th>
-                <th className="p-3.5">Type & Assignee</th>
+                <th className="p-3.5">Type and Assignee</th>
                 <th className="p-3.5 text-right">Goal</th>
                 <th className="p-3.5 text-right">Achieved</th>
                 <th className="p-3.5 text-center">Progress</th>

@@ -48,11 +48,11 @@ export default function AuthLayout({ children }: { children?: React.ReactNode })
             </div>
             <div className="flex items-center gap-3">
               <CheckCircle2 className="h-4 w-4 text-blue-400 shrink-0" />
-              <span>Real-time stock valuation & automated low-stock reorder warnings</span>
+              <span>Real-time stock valuation and automated low-stock reorder warnings</span>
             </div>
             <div className="flex items-center gap-3">
               <CheckCircle2 className="h-4 w-4 text-blue-400 shrink-0" />
-              <span>Customer credit ledger, loyalty points & monthly payroll runs</span>
+              <span>Customer credit ledger, loyalty points and monthly payroll runs</span>
             </div>
           </div>
         </div>

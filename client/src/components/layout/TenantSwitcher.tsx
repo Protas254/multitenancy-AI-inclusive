@@ -17,7 +17,7 @@ export const TenantSwitcher: React.FC<{ isCollapsed?: boolean }> = ({ isCollapse
   const { tenants, currentTenant, switchTenant, createTenant } = useTenant();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newBizName, setNewBizName] = useState("");
-  const [newBizType, setNewBizType] = useState("Retail & Supermarket");
+  const [newBizType, setNewBizType] = useState("Retail and Supermarket");
   const [newBizLocation, setNewBizLocation] = useState("Nairobi, Kenya");
   const [isCreating, setIsCreating] = useState(false);
 
@@ -119,7 +119,7 @@ export const TenantSwitcher: React.FC<{ isCollapsed?: boolean }> = ({ isCollapse
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-slate-700">Business Name</label>
               <Input
-                placeholder="e.g. Protas Hardware & Electronics"
+                placeholder="e.g. Protas Hardware and Electronics"
                 value={newBizName}
                 onChange={(e) => setNewBizName(e.target.value)}
                 required
@@ -133,12 +133,12 @@ export const TenantSwitcher: React.FC<{ isCollapsed?: boolean }> = ({ isCollapse
                 onChange={(e) => setNewBizType(e.target.value)}
                 className="flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs"
               >
-                <option value="Retail & Supermarket">Retail & Supermarket</option>
-                <option value="Fashion & Apparel">Fashion & Apparel</option>
-                <option value="Beauty & Cosmetics">Beauty & Cosmetics</option>
-                <option value="Hardware & Construction">Hardware & Construction</option>
-                <option value="Pharmacy & Healthcare">Pharmacy & Healthcare</option>
-                <option value="Restaurant & Cafe">Restaurant & Cafe</option>
+                <option value="Retail and Supermarket">Retail and Supermarket</option>
+                <option value="Fashion and Apparel">Fashion and Apparel</option>
+                <option value="Beauty and Cosmetics">Beauty and Cosmetics</option>
+                <option value="Hardware and Construction">Hardware and Construction</option>
+                <option value="Pharmacy and Healthcare">Pharmacy and Healthcare</option>
+                <option value="Restaurant and Cafe">Restaurant and Cafe</option>
               </select>
             </div>
 

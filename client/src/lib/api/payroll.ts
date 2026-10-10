@@ -30,45 +30,17 @@ export const payrollApi = {
   },
 
   async approvePayroll(id: string, approverName: string = "Owner"): Promise<PayrollRun> {
-    try {
-      return await apiClient.patch<PayrollRun>(`/payroll/${id}/`, {
-        status: "approved",
-        approvedBy: approverName,
-        approvedDate: new Date().toISOString(),
-      });
-    } catch {
-      return {
-        id,
-        tenantId: "",
-        periodMonth: "Current",
-        totalEmployees: 0,
-        totalGross: 0,
-        totalDeductions: 0,
-        totalNet: 0,
-        status: "approved",
-        items: [],
-      };
-    }
+    return await apiClient.patch<PayrollRun>(`/payroll/${id}/`, {
+      status: "approved",
+      approvedBy: approverName,
+      approvedDate: new Date().toISOString(),
+    });
   },
 
   async markPaid(id: string): Promise<PayrollRun> {
-    try {
-      return await apiClient.patch<PayrollRun>(`/payroll/${id}/`, {
-        status: "paid",
-        paymentDate: new Date().toISOString(),
-      });
-    } catch {
-      return {
-        id,
-        tenantId: "",
-        periodMonth: "Current",
-        totalEmployees: 0,
-        totalGross: 0,
-        totalDeductions: 0,
-        totalNet: 0,
-        status: "paid",
-        items: [],
-      };
-    }
+    return await apiClient.patch<PayrollRun>(`/payroll/${id}/`, {
+      status: "paid",
+      paymentDate: new Date().toISOString(),
+    });
   },
 };

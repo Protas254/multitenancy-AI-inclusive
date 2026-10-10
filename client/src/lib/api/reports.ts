@@ -118,24 +118,30 @@ export const reportsApi = {
     const salesByStaff = Object.entries(staffMap).map(([staffName, data]) => ({ staffName, ...data }));
 
     // Category aggregation
+    const products = await productsApi.getProducts(tenantId).catch(() => []);
+    const prodMap = new Map(products.map((p) => [p.id, p.categoryName || "General"]));
     const catMap: Record<string, number> = {};
     validSales.forEach((s) => {
       s.items.forEach((item) => {
-        const cat = "Apparel & Accessories";
+        const cat = prodMap.get(item.productId) || "General";
         catMap[cat] = (catMap[cat] || 0) + item.total;
       });
     });
     const salesByCategory = Object.entries(catMap).map(([categoryName, total]) => ({ categoryName, total }));
 
-    const salesTimeline = [
-      { date: "26 Aug", amount: 38000, orders: 12 },
-      { date: "27 Aug", amount: 45000, orders: 15 },
-      { date: "28 Aug", amount: 52000, orders: 18 },
-      { date: "29 Aug", amount: 48000, orders: 14 },
-      { date: "30 Aug", amount: 64000, orders: 22 },
-      { date: "31 Aug", amount: 58000, orders: 19 },
-      { date: "01 Sep", amount: 45600, orders: 16 },
-    ];
+    const timelineMap: Record<string, { amount: number; orders: number }> = {};
+    validSales.forEach((s) => {
+      const saleDate = s.date || s.createdAt;
+      const d = saleDate ? new Date(saleDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short" }) : "Today";
+      if (!timelineMap[d]) timelineMap[d] = { amount: 0, orders: 0 };
+      timelineMap[d].amount += s.totalAmount;
+      timelineMap[d].orders += 1;
+    });
+    const salesTimeline = Object.entries(timelineMap).map(([date, data]) => ({
+      date,
+      amount: data.amount,
+      orders: data.orders,
+    }));
 
     return {
       totalRevenue,
@@ -153,7 +159,7 @@ export const reportsApi = {
     const expenses = await expensesApi.getExpenses(tenantId);
 
     const validSales = sales.filter((s) => s.status === "completed");
-    const grossRevenue = validSales.reduce((sum, s) => sum + s.totalAmount, 0) || 720000;
+    const grossRevenue = validSales.reduce((sum, s) => sum + s.totalAmount, 0);
     
     // Calculate COGS
     let cogs = 0;
@@ -162,12 +168,11 @@ export const reportsApi = {
         cogs += (i.buyingPrice || i.unitPrice * 0.5) * i.quantity;
       });
     });
-    if (cogs === 0) cogs = Math.round(grossRevenue * 0.48);
 
     const grossProfit = grossRevenue - cogs;
     const grossMarginPercent = grossRevenue > 0 ? (grossProfit / grossRevenue) * 100 : 0;
 
-    const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0) || 165000;
+    const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
     const netProfit = grossProfit - totalExpenses;
     const netMarginPercent = grossRevenue > 0 ? (netProfit / grossRevenue) * 100 : 0;
 
@@ -177,13 +182,24 @@ export const reportsApi = {
     });
     const expensesByCategory = Object.entries(expMap).map(([category, amount]) => ({ category, amount }));
 
-    const cashFlowTimeline = [
-      { date: "May 2026", revenue: 580000, expense: 140000, net: 440000 },
-      { date: "Jun 2026", revenue: 640000, expense: 155000, net: 485000 },
-      { date: "Jul 2026", revenue: 690000, expense: 160000, net: 530000 },
-      { date: "Aug 2026", revenue: 745000, expense: 165000, net: 580000 },
-      { date: "Sep 2026 (Est)", revenue: 720000, expense: 165000, net: 555000 },
-    ];
+    const cfMap: Record<string, { revenue: number; expense: number }> = {};
+    validSales.forEach((s) => {
+      const saleDate = s.date || s.createdAt;
+      const m = saleDate ? new Date(saleDate).toLocaleDateString("en-US", { month: "short", year: "numeric" }) : "Current";
+      if (!cfMap[m]) cfMap[m] = { revenue: 0, expense: 0 };
+      cfMap[m].revenue += s.totalAmount;
+    });
+    expenses.forEach((e) => {
+      const m = e.date ? new Date(e.date).toLocaleDateString("en-US", { month: "short", year: "numeric" }) : "Current";
+      if (!cfMap[m]) cfMap[m] = { revenue: 0, expense: 0 };
+      cfMap[m].expense += e.amount;
+    });
+    const cashFlowTimeline = Object.entries(cfMap).map(([date, val]) => ({
+      date,
+      revenue: val.revenue,
+      expense: val.expense,
+      net: val.revenue - val.expense,
+    }));
 
     return {
       grossRevenue,
@@ -284,9 +300,17 @@ export const reportsApi = {
         outstandingCredit: c.outstandingCredit || 0,
       }));
 
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    const newCustomersThisMonth = customers.filter((c) => {
+      if (!c.createdAt) return false;
+      const d = new Date(c.createdAt);
+      return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+    }).length;
+
     return {
       totalCustomers,
-      newCustomersThisMonth: Math.min(totalCustomers, 4),
+      newCustomersThisMonth,
       totalCreditOutstanding,
       totalLoyaltyPoints,
       topCustomers,
@@ -337,7 +361,7 @@ export const reportsApi = {
     const totalNetPay = runs.reduce((sum, r) => sum + (r.totalNet || 0), 0);
 
     return {
-      totalStaff: runs[0]?.totalEmployees || 4,
+      totalStaff: runs[0]?.totalEmployees || 0,
       totalMonthlyPayroll,
       totalDeductions,
       totalNetPay,
@@ -350,8 +374,8 @@ export const reportsApi = {
     const txs = await loyaltyApi.getTransactions(tenantId);
     const customers = await customersApi.getCustomers(tenantId);
 
-    const totalPointsIssued = txs.filter((t) => t.type === "earned").reduce((sum, t) => sum + t.points, 0) || 4500;
-    const totalPointsRedeemed = txs.filter((t) => t.type === "redeemed").reduce((sum, t) => sum + t.points, 0) || 1200;
+    const totalPointsIssued = txs.filter((t) => t.type === "earned").reduce((sum, t) => sum + t.points, 0);
+    const totalPointsRedeemed = txs.filter((t) => t.type === "redeemed").reduce((sum, t) => sum + t.points, 0);
 
     const topPatrons = customers
       .filter((c) => (c.loyaltyPoints || 0) > 0)

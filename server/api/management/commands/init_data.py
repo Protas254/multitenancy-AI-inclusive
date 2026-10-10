@@ -1,9 +1,12 @@
 from django.core.management.base import BaseCommand
 from api.models import (
     Tenant, User, Membership, Category, Supplier, Product, Customer,
-    Sale, SaleItem, Expense, StaffMember, PayrollRecord, Target, Notification
+    Sale, SaleItem, Expense, StaffMember, PayrollRecord, Target, Notification,
+    CreditAccount, CreditPayment, StockMovement, Invoice, InvoiceItem,
+    Purchase, PurchaseItem, LoyaltyReward, LoyaltyTransaction, SaaSPlan
 )
-from datetime import date
+from datetime import date, timedelta
+from django.utils import timezone
 
 class Command(BaseCommand):
     help = "Initialize superuser Protas and seed sample multi-tenant store data"
@@ -131,6 +134,16 @@ class Command(BaseCommand):
                 "loyalty_points": 420
             }
         )
+        c2, _ = Customer.objects.get_or_create(
+            id="cust-2", tenant=tenant_fashion,
+            defaults={
+                "name": "Sarah Mwangi",
+                "email": "sarah.mwangi@gmail.com",
+                "phone": "+254711889900",
+                "total_purchases": 28500,
+                "loyalty_points": 285
+            }
+        )
 
         # 8. Seed Sales / Invoices
         if not Sale.objects.filter(tenant=tenant_fashion).exists():
@@ -182,4 +195,230 @@ class Command(BaseCommand):
             defaults={"title": "Q3 Revenue Goal", "target_amount": 1500000, "current_amount": 980000, "period": "Quarterly", "start_date": date(2026, 7, 1), "end_date": date(2026, 9, 30)}
         )
 
-        self.stdout.write(self.style.SUCCESS("Database initialized and sample data seeded successfully!"))
+        # 12. Seed Credit Accounts & Payments
+        cacc1, _ = CreditAccount.objects.get_or_create(
+            id="cacc-1", tenant=tenant_fashion,
+            defaults={
+                "entity_type": "customer",
+                "entity_id": c1.id,
+                "entity_name": c1.name,
+                "entity_phone": c1.phone,
+                "reference_doc_id": "INV-2026-001",
+                "reference_doc_type": "invoice",
+                "total_amount": 14500,
+                "paid_amount": 7000,
+                "balance_due": 7500,
+                "due_date": date(2026, 9, 30),
+                "status": "current",
+            }
+        )
+        CreditPayment.objects.get_or_create(
+            id="cpay-1", tenant=tenant_fashion, credit_account=cacc1,
+            defaults={
+                "entity_type": "customer",
+                "entity_name": c1.name,
+                "amount": 7000,
+                "payment_method": "mpesa",
+                "reference_code": "QXR98321K",
+                "recorded_by": "Grace Wanjiku",
+                "notes": "Partial deposit"
+            }
+        )
+
+        # 13. Seed Stock Movements
+        StockMovement.objects.get_or_create(
+            id="mov-1", tenant=tenant_fashion,
+            defaults={
+                "product": p1,
+                "product_name": p1.name,
+                "type": "adjustment_increase",
+                "quantity": 10,
+                "previous_stock": 8,
+                "new_stock": 18,
+                "reference_id": "ADJ-20260901",
+                "reason": "Opening stock verification",
+                "staff_name": "Protas Junior"
+            }
+        )
+
+        # 14. Seed Invoices & Items
+        inv1, _ = Invoice.objects.get_or_create(
+            id="inv-1", tenant=tenant_fashion,
+            defaults={
+                "invoice_number": "INV-2026-0045",
+                "customer": c1,
+                "customer_name": c1.name,
+                "customer_email": c1.email,
+                "customer_phone": c1.phone,
+                "customer_address": "Nairobi, Kenya",
+                "issue_date": date(2026, 9, 1),
+                "due_date": date(2026, 9, 20),
+                "subtotal": 14500,
+                "tax_amount": 2320,
+                "discount_amount": 0,
+                "total_amount": 16820,
+                "amount_paid": 5000,
+                "balance_due": 11820,
+                "status": "partially_paid",
+                "notes": "Corporate tailored suit order",
+                "terms": "Net 30 days payment terms"
+            }
+        )
+        InvoiceItem.objects.get_or_create(
+            id="invitem-1", invoice=inv1,
+            defaults={
+                "description": "Italian Fit Slim Wool Suit - Navy",
+                "quantity": 1,
+                "unit_price": 14500,
+                "discount": 0,
+                "tax_rate": 16,
+                "amount": 14500
+            }
+        )
+
+        # 15. Seed Purchases & Items
+        po1, _ = Purchase.objects.get_or_create(
+            id="po-1", tenant=tenant_fashion,
+            defaults={
+                "purchase_number": "PO-2026-089",
+                "supplier": sup1,
+                "supplier_name": sup1.name,
+                "subtotal": 85000,
+                "tax": 13600,
+                "shipping": 2000,
+                "total_amount": 100600,
+                "amount_paid": 100600,
+                "balance": 0,
+                "status": "received",
+                "payment_status": "paid",
+                "date": date(2026, 8, 25),
+                "received_date": timezone.now(),
+                "notes": "Bulk restocking of virgin wool suits"
+            }
+        )
+        PurchaseItem.objects.get_or_create(
+            id="poitem-1", purchase=po1,
+            defaults={
+                "product": p1,
+                "product_name": p1.name,
+                "sku": p1.sku,
+                "quantity_ordered": 10,
+                "quantity_received": 10,
+                "unit_cost": 8500,
+                "total": 85000
+            }
+        )
+
+        # 16. Seed Loyalty Rewards & Transactions
+        rew1, _ = LoyaltyReward.objects.get_or_create(
+            id="rew-1", tenant=tenant_fashion,
+            defaults={
+                "title": "KES 1,000 In-Store Shopping Voucher",
+                "description": "Redeemable on any retail item with min purchase of KES 5,000",
+                "points_required": 250,
+                "discount_amount": 1000,
+                "is_active": True
+            }
+        )
+        rew2, _ = LoyaltyReward.objects.get_or_create(
+            id="rew-2", tenant=tenant_fashion,
+            defaults={
+                "title": "KES 500 VIP Customer Discount",
+                "description": "Applies KES 500 discount on total cart value for entire order",
+                "points_required": 400,
+                "discount_amount": 500,
+                "is_active": True
+            }
+        )
+        LoyaltyTransaction.objects.get_or_create(
+            id="ltx-1", tenant=tenant_fashion,
+            defaults={
+                "customer": c1,
+                "customer_name": c1.name,
+                "type": "earned",
+                "points": 420,
+                "description": "Points earned from Order #INV-2026-001"
+            }
+        )
+
+        # 17. Seed SaaS Plans
+        plans_data = [
+            {
+                "id": "starter",
+                "name": "Starter Retail",
+                "price": 2500,
+                "billing_period": "monthly",
+                "description": "Perfect for single-shop retailers and sole proprietors starting out.",
+                "features": [
+                    "1 Branch Location",
+                    "Up to 3 Staff Accounts",
+                    "Basic POS & Barcode Scanner",
+                    "Daily Cash Reconciliation",
+                    "Up to 500 Inventory SKUs",
+                    "Standard Email Support"
+                ],
+                "max_staff": 3,
+                "max_products": 500,
+                "max_invoices_per_month": 50,
+                "is_popular": False,
+            },
+            {
+                "id": "professional",
+                "name": "Growth Pro",
+                "price": 6500,
+                "billing_period": "monthly",
+                "description": "Ideal for growing multi-staff retail stores, boutiques and supermarkets.",
+                "features": [
+                    "Up to 3 Branch Locations",
+                    "Up to 10 Staff Roles (RBAC)",
+                    "Full Invoicing & Credit Accounts",
+                    "Automated Daily Reconciliations",
+                    "Supplier Purchase Orders & Restocking",
+                    "Customer Loyalty Program",
+                    "Real-Time Profit & Loss Reports"
+                ],
+                "max_staff": 10,
+                "max_products": 5000,
+                "max_invoices_per_month": 500,
+                "is_popular": True,
+            },
+            {
+                "id": "enterprise",
+                "name": "Enterprise Chain",
+                "price": 15000,
+                "billing_period": "monthly",
+                "description": "For supermarket chains, franchise retailers, and high-volume operations.",
+                "features": [
+                    "Unlimited Branches & Warehouses",
+                    "Unlimited Staff & Advanced RBAC",
+                    "Automated Multi-Branch Audits",
+                    "Custom ERP & Accounting Integrations",
+                    "Priority 24/7 Dedicated Support",
+                    "Dedicated Database & Custom Domain"
+                ],
+                "max_staff": 999,
+                "max_products": 99999,
+                "max_invoices_per_month": 99999,
+                "is_popular": False,
+            },
+        ]
+        for p in plans_data:
+            SaaSPlan.objects.update_or_create(
+                slug=p["id"],
+                defaults={
+                    "id": p["id"],
+                    "slug": p["id"],
+                    "name": p["name"],
+                    "price": p["price"],
+                    "billing_period": p["billing_period"],
+                    "description": p["description"],
+                    "features": p["features"],
+                    "max_staff": p["max_staff"],
+                    "max_products": p["max_products"],
+                    "max_invoices_per_month": p["max_invoices_per_month"],
+                    "is_popular": p["is_popular"],
+                    "is_active": True,
+                }
+            )
+
+        self.stdout.write(self.style.SUCCESS("Database initialized and full production sample data seeded successfully!"))

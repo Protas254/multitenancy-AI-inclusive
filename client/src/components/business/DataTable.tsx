@@ -151,7 +151,7 @@ export function DataTable<T extends Record<string, any>>({
 
   return (
     <div className="space-y-4">
-      {/* Header controls: Tabs, Search & Action Button */}
+      {/* Header controls: Tabs, Search and Action Button */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         {filterTabs && (
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
@@ -256,7 +256,7 @@ export function DataTable<T extends Record<string, any>>({
           </Table>
         )}
 
-        {/* Footer & Pagination */}
+        {/* Footer and Pagination */}
         {filteredData.length > 0 && (
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-100 px-4 py-3 text-xs text-slate-500 bg-slate-50/50">
             <div>

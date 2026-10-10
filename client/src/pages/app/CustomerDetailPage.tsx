@@ -167,7 +167,7 @@ export default function CustomerDetailPage() {
       <Tabs defaultValue="purchases" className="space-y-4">
         <TabsList>
           <TabsTrigger value="purchases">Purchase History ({sales.length})</TabsTrigger>
-          <TabsTrigger value="credit">Debt & Credit Ledger ({creditAccounts.length})</TabsTrigger>
+          <TabsTrigger value="credit">Debt and Credit Ledger ({creditAccounts.length})</TabsTrigger>
           <TabsTrigger value="loyalty">Loyalty Rewards ({rewards.length})</TabsTrigger>
         </TabsList>
 

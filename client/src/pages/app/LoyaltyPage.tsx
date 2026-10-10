@@ -84,7 +84,7 @@ export default function LoyaltyPage() {
     <div className="space-y-6 max-w-5xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-slate-900">Customer Loyalty & Rewards</h1>
+          <h1 className="text-2xl font-black tracking-tight text-slate-900">Customer Loyalty and Rewards</h1>
           <p className="text-xs text-slate-500 mt-0.5">
             Reward repeat shoppers, configure redemption vouchers, and manage VIP customer tiers.
           </p>
@@ -101,7 +101,7 @@ export default function LoyaltyPage() {
       </div>
 
       {/* 3 Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
         <Card className="p-4 space-y-1">
           <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Points Issued</p>
           <span className="text-2xl font-black text-purple-600 font-mono">{totalPointsInCirculation.toLocaleString()} pts</span>

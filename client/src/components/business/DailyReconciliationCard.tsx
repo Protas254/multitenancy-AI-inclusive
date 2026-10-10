@@ -101,13 +101,13 @@ export const DailyReconciliationCard: React.FC = () => {
 
   return (
     <Card className="border-slate-200/90 shadow-sm rounded-2xl overflow-hidden bg-white">
-      {/* Top Header matching Screenshots 1 & 2 */}
+      {/* Top Header matching Screenshots 1 and 2 */}
       <CardHeader className="bg-white border-b border-slate-100 p-5">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
               <CardTitle className="text-base font-bold text-slate-900">
-                Daily Verification & Cash Drawer Reconciliation
+                Daily Verification and Cash Drawer Reconciliation
               </CardTitle>
               {saveSuccess && (
                 <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
@@ -123,14 +123,14 @@ export const DailyReconciliationCard: React.FC = () => {
 
           {/* Action Buttons */}
           <div className="flex items-center gap-3">
-            {/* Confirm & Close Day / Update Record */}
+            {/* Confirm and Close Day / Update Record */}
             <Button
               size="default"
               onClick={handleSave}
               isLoading={isSubmitting}
               className="gap-2 text-xs font-semibold bg-[#1e293b] hover:bg-[#0f172a] text-white shadow-sm rounded-xl px-5 h-10 transition-colors"
             >
-              <span>{hasSavedToday ? "Update Record" : "Confirm & Close Day"}</span>
+              <span>{hasSavedToday ? "Update Record" : "Confirm and Close Day"}</span>
               <Save className="h-4 w-4" />
             </Button>
 

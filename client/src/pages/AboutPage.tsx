@@ -21,12 +21,12 @@ export default function AboutPage() {
   const values = [
     {
       icon: <Shield className="h-6 w-6 text-blue-600" />,
-      title: "Integrity & Data Isolation",
+      title: "Integrity and Data Isolation",
       desc: "Every merchant's data is strictly quarantined in their own tenant context. We treat your store records, sales figures, and margins with bank-grade confidentiality.",
     },
     {
       icon: <Zap className="h-6 w-6 text-amber-500" />,
-      title: "Radical Simplicity & Speed",
+      title: "Radical Simplicity and Speed",
       desc: "Retail moves at the speed of customers. We eliminate bloated onboarding, complex menus, and slow checkouts so staff can serve faster with zero training lag.",
     },
     {
@@ -111,7 +111,7 @@ export default function AboutPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center space-y-6">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-xs font-semibold">
             <Award className="h-3.5 w-3.5 text-blue-600" />
-            <span>Our Mission & Story</span>
+            <span>Our Mission and Story</span>
           </div>
 
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-slate-950 tracking-tight leading-[1.15]">
@@ -124,7 +124,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Story & Problem Statement */}
+      {/* Story and Problem Statement */}
       <section className="py-20 bg-white">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div className="space-y-5">
@@ -149,7 +149,7 @@ export default function AboutPage() {
               </div>
               <div className="flex items-center gap-2 text-xs font-semibold text-slate-800">
                 <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                <span>Real-time multi-branch inventory tracking & purchase orders</span>
+                <span>Real-time multi-branch inventory tracking and purchase orders</span>
               </div>
             </div>
           </div>

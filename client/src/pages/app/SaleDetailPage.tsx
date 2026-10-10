@@ -141,7 +141,7 @@ export default function SaleDetailPage() {
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-100">
               <tr>
-                <th className="p-4">Item & SKU</th>
+                <th className="p-4">Item and SKU</th>
                 <th className="p-4 text-center">Qty</th>
                 <th className="p-4 text-right">Unit Price</th>
                 <th className="p-4 text-right">Discount</th>

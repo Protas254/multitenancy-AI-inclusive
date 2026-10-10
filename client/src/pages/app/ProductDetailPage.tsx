@@ -149,7 +149,7 @@ export default function ProductDetailPage() {
         <Card className="p-5 space-y-2">
           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
             <Package className="h-4 w-4 text-purple-600" />
-            <span>Barcode & Identifiers</span>
+            <span>Barcode and Identifiers</span>
           </h3>
           <div className="pt-2 text-xs space-y-1">
             <div className="flex justify-between">
@@ -176,7 +176,7 @@ export default function ProductDetailPage() {
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-50 text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-100">
                 <tr>
-                  <th className="p-3.5">Type & Ref</th>
+                  <th className="p-3.5">Type and Ref</th>
                   <th className="p-3.5 text-center">Change</th>
                   <th className="p-3.5 text-center">Prev Stock</th>
                   <th className="p-3.5 text-center">New Stock</th>

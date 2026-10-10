@@ -52,7 +52,7 @@ export default function InventoryPage() {
 
   const productColumns: Column<Product>[] = [
     {
-      header: "Product & SKU",
+      header: "Product and SKU",
       accessorKey: "name",
       sortable: true,
       cell: (p) => (
@@ -131,7 +131,7 @@ export default function InventoryPage() {
       cell: (m) => <span className="font-semibold text-slate-900">{m.productName}</span>,
     },
     {
-      header: "Type & Ref",
+      header: "Type and Ref",
       accessorKey: "type",
       sortable: true,
       cell: (m) => (
@@ -181,14 +181,14 @@ export default function InventoryPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-black tracking-tight text-slate-900">Inventory & Stock Control</h1>
+        <h1 className="text-2xl font-black tracking-tight text-slate-900">Inventory and Stock Control</h1>
         <p className="text-xs text-slate-500 mt-0.5">
           Real-time stock valuation, physical count audits, and movement logs.
         </p>
       </div>
 
       {/* Valuation Metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
           title="Total Stock Count"
           value={`${totalStockUnits} units`}

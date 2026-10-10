@@ -21,7 +21,7 @@ export default function ExpensesPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [newExpense, setNewExpense] = useState({
     title: "",
-    category: "Rent & Utilities" as ExpenseCategory,
+    category: "Rent and Utilities" as ExpenseCategory,
     amount: 0,
     paymentMethod: "mpesa" as PaymentMethod,
     description: "",
@@ -66,7 +66,7 @@ export default function ExpensesPage() {
       setIsAddOpen(false);
       setNewExpense({
         title: "",
-        category: "Rent & Utilities",
+        category: "Rent and Utilities",
         amount: 0,
         paymentMethod: "mpesa",
         description: "",
@@ -86,7 +86,7 @@ export default function ExpensesPage() {
 
   const totalAmount = expenses.reduce((sum, e) => sum + e.amount, 0);
   const recurringAmount = expenses.filter((e) => e.isRecurring).reduce((sum, e) => sum + e.amount, 0);
-  const rentTotal = expenses.filter((e) => e.category === "Rent & Utilities").reduce((sum, e) => sum + e.amount, 0);
+  const rentTotal = expenses.filter((e) => e.category === "Rent and Utilities").reduce((sum, e) => sum + e.amount, 0);
 
   const columns: Column<Expense>[] = [
     {
@@ -160,7 +160,7 @@ export default function ExpensesPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-slate-900">Expenses & Outflows</h1>
+          <h1 className="text-2xl font-black tracking-tight text-slate-900">Expenses and Outflows</h1>
           <p className="text-xs text-slate-500 mt-0.5">
             Log operational overhead, lease rents, utility bills, and inventory transport costs.
           </p>
@@ -176,7 +176,7 @@ export default function ExpensesPage() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
         <StatCard
           title="Total Operating Expenses"
           value={formatKES(totalAmount)}
@@ -190,7 +190,7 @@ export default function ExpensesPage() {
           iconBg="bg-blue-50 text-blue-600"
         />
         <StatCard
-          title="Rent & Utilities"
+          title="Rent and Utilities"
           value={formatKES(rentTotal)}
           icon={<Tag className="h-5 w-5" />}
           iconBg="bg-amber-50 text-amber-600"
@@ -235,13 +235,13 @@ export default function ExpensesPage() {
                   onChange={(e) => setNewExpense({ ...newExpense, category: e.target.value as ExpenseCategory })}
                   className="flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs"
                 >
-                  <option value="Rent & Utilities">Rent & Utilities</option>
-                  <option value="Salaries & Wages">Salaries & Wages</option>
-                  <option value="Inventory & Logistics">Inventory & Logistics</option>
-                  <option value="Marketing & Ads">Marketing & Ads</option>
-                  <option value="Maintenance & Repairs">Maintenance & Repairs</option>
-                  <option value="Licenses & Taxes">Licenses & Taxes</option>
-                  <option value="Office & Admin">Office & Admin</option>
+                  <option value="Rent and Utilities">Rent and Utilities</option>
+                  <option value="Salaries and Wages">Salaries and Wages</option>
+                  <option value="Inventory and Logistics">Inventory and Logistics</option>
+                  <option value="Marketing and Ads">Marketing and Ads</option>
+                  <option value="Maintenance and Repairs">Maintenance and Repairs</option>
+                  <option value="Licenses and Taxes">Licenses and Taxes</option>
+                  <option value="Office and Admin">Office and Admin</option>
                   <option value="Other">Other</option>
                 </select>
               </div>

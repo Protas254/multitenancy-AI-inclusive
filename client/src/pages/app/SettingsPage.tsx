@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useTenant } from "@/contexts/TenantContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { SAAS_PLANS } from "@/lib/mock/initialData";
+import { adminApi } from "@/lib/api/admin";
+import { SaaSPlan } from "@/lib/types";
 import { formatKES } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,6 +44,15 @@ export default function SettingsPage() {
   });
 
   const [isSaved, setIsSaved] = useState(false);
+  const [plans, setPlans] = useState<SaaSPlan[]>([]);
+
+  useEffect(() => {
+    adminApi.getPlans().then((data) => {
+      if (Array.isArray(data)) {
+        setPlans(data);
+      }
+    }).catch(console.error);
+  }, []);
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,26 +76,26 @@ export default function SettingsPage() {
   };
 
   const permissionMatrix = [
-    { module: "Dashboard & Insights", owner: true, manager: true, cashier: true, storekeeper: true, accountant: true },
+    { module: "Dashboard and Insights", owner: true, manager: true, cashier: true, storekeeper: true, accountant: true },
     { module: "POS Checkout", owner: true, manager: true, cashier: true, storekeeper: false, accountant: false },
-    { module: "Sales & Receipts", owner: true, manager: true, cashier: true, storekeeper: false, accountant: true },
+    { module: "Sales and Receipts", owner: true, manager: true, cashier: true, storekeeper: false, accountant: true },
     { module: "Product Catalog", owner: true, manager: true, cashier: false, storekeeper: true, accountant: false },
-    { module: "Inventory & Stock Adjustments", owner: true, manager: true, cashier: false, storekeeper: true, accountant: false },
-    { module: "Purchases & Supplier POs", owner: true, manager: true, cashier: false, storekeeper: true, accountant: true },
+    { module: "Inventory and Stock Adjustments", owner: true, manager: true, cashier: false, storekeeper: true, accountant: false },
+    { module: "Purchases and Supplier POs", owner: true, manager: true, cashier: false, storekeeper: true, accountant: true },
     { module: "Expenses Tracking", owner: true, manager: true, cashier: false, storekeeper: false, accountant: true },
-    { module: "Customers & CRM", owner: true, manager: true, cashier: true, storekeeper: false, accountant: false },
-    { module: "Debt & Credit Aging", owner: true, manager: true, cashier: true, storekeeper: false, accountant: true },
+    { module: "Customers and CRM", owner: true, manager: true, cashier: true, storekeeper: false, accountant: false },
+    { module: "Debt and Credit Aging", owner: true, manager: true, cashier: true, storekeeper: false, accountant: true },
     { module: "Invoicing", owner: true, manager: true, cashier: false, storekeeper: false, accountant: true },
-    { module: "Payroll & Commissions", owner: true, manager: false, cashier: false, storekeeper: false, accountant: true },
+    { module: "Payroll and Commissions", owner: true, manager: false, cashier: false, storekeeper: false, accountant: true },
     { module: "Sales Targets", owner: true, manager: true, cashier: false, storekeeper: false, accountant: false },
     { module: "Business Intelligence Reports", owner: true, manager: true, cashier: false, storekeeper: false, accountant: true },
-    { module: "Store Settings & Subscription", owner: true, manager: false, cashier: false, storekeeper: false, accountant: false },
+    { module: "Store Settings and Subscription", owner: true, manager: false, cashier: false, storekeeper: false, accountant: false },
   ];
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
       <div>
-        <h1 className="text-2xl font-black tracking-tight text-slate-900">Business & System Settings</h1>
+        <h1 className="text-2xl font-black tracking-tight text-slate-900">Business and System Settings</h1>
         <p className="text-xs text-slate-500 mt-0.5">
           Configure business details, thermal receipt branding, multi-branch network, and staff role permissions.
         </p>
@@ -102,9 +112,9 @@ export default function SettingsPage() {
         <TabsList className="flex flex-wrap h-auto gap-1">
           <TabsTrigger value="profile">Business Profile</TabsTrigger>
           <TabsTrigger value="branches">Store Branches ({allBranches.length})</TabsTrigger>
-          <TabsTrigger value="tax">Tax & Currency</TabsTrigger>
+          <TabsTrigger value="tax">Tax and Currency</TabsTrigger>
           <TabsTrigger value="roles">Role Permissions Matrix</TabsTrigger>
-          <TabsTrigger value="subscription">Subscription & Limits</TabsTrigger>
+          <TabsTrigger value="subscription">Subscription and Limits</TabsTrigger>
         </TabsList>
 
         {/* TAB 1: Business Profile */}
@@ -200,10 +210,10 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
 
-        {/* TAB 3: Tax & Currency */}
+        {/* TAB 3: Tax and Currency */}
         <TabsContent value="tax" className="space-y-4">
           <Card className="p-6">
-            <CardTitle className="text-sm font-bold mb-4">Tax Configuration & Currency</CardTitle>
+            <CardTitle className="text-sm font-bold mb-4">Tax Configuration and Currency</CardTitle>
             <form onSubmit={handleSaveTax} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-1.5">
@@ -274,7 +284,7 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
 
-        {/* TAB 5: Subscription & Plan Limits */}
+        {/* TAB 5: Subscription and Plan Limits */}
         <TabsContent value="subscription" className="space-y-6">
           {/* Active Subscription Status Banner */}
           <Card className="p-6 bg-slate-900 text-white space-y-4">
@@ -325,7 +335,7 @@ export default function SettingsPage() {
 
           {/* Pricing Tiers Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {SAAS_PLANS.map((plan) => (
+            {plans.map((plan) => (
               <Card
                 key={plan.id}
                 className={`p-6 flex flex-col justify-between ${

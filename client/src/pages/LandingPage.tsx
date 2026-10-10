@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "@/components/ui/link";
 import { SEO } from "@/components/common/SEO";
 import {
-  Store,
   ArrowRight,
   CheckCircle2,
   Receipt,
@@ -11,25 +10,32 @@ import {
   CreditCard,
   Banknote,
   BarChart3,
-  Shield,
-  Smartphone,
-  Sparkles,
-  Zap,
   Mail,
   Phone,
   MapPin,
   Clock,
   Send,
 } from "lucide-react";
+import stockgridLogo from "@/assets/stockgrid-logo.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { SAAS_PLANS } from "@/lib/mock/initialData";
+import { adminApi } from "@/lib/api/admin";
+import { SaaSPlan } from "@/lib/types";
 import { formatKES } from "@/lib/utils";
 import heroBg from "@/assets/hero-bg.jpg";
 
 export default function LandingPage() {
+  const [plans, setPlans] = useState<SaaSPlan[]>([]);
   const [contactSubmitted, setContactSubmitted] = useState(false);
+
+  useEffect(() => {
+    adminApi.getPlans().then((data) => {
+      if (Array.isArray(data)) {
+        setPlans(data);
+      }
+    }).catch(console.error);
+  }, []);
   const [contactForm, setContactForm] = useState({
     name: "",
     email: "",
@@ -44,27 +50,25 @@ export default function LandingPage() {
   };
 
   const modules = [
-    { title: "Point of Sale (POS)", icon: <Receipt className="h-5 w-5 text-blue-600" />, desc: "Touch & barcode-ready retail checkout with instant M-Pesa, Cash & thermal receipts." },
+    { title: "Point of Sale (POS)", icon: <Receipt className="h-5 w-5 text-blue-600" />, desc: "Touch and barcode-ready retail checkout with instant M-Pesa, Cash and thermal receipts." },
     { title: "Real-Time Inventory", icon: <Boxes className="h-5 w-5 text-emerald-600" />, desc: "Stock valuation, automated low-stock reorder triggers, movements audit trail." },
-    { title: "Customer CRM & Loyalty", icon: <Users className="h-5 w-5 text-indigo-600" />, desc: "Customer profiles, purchase histories, reward points, tiers (Bronze to Platinum)." },
-    { title: "Debt & Credit Aging", icon: <CreditCard className="h-5 w-5 text-rose-600" />, desc: "Track customer credit sales, supplier debt, overdue alerts, and partial payments." },
-    { title: "Staff & Payroll Automation", icon: <Banknote className="h-5 w-5 text-amber-600" />, desc: "Employee sales commissions, monthly payroll approvals, and printable payslips." },
-    { title: "Financial & P&L Reports", icon: <BarChart3 className="h-5 w-5 text-purple-600" />, desc: "Gross margins, net profits, category breakdowns, and exportable CSV/PDF reports." },
+    { title: "Customer CRM and Loyalty", icon: <Users className="h-5 w-5 text-indigo-600" />, desc: "Customer profiles, purchase histories, reward points, tiers (Bronze to Platinum)." },
+    { title: "Debt and Credit Aging", icon: <CreditCard className="h-5 w-5 text-rose-600" />, desc: "Track customer credit sales, supplier debt, overdue alerts, and partial payments." },
+    { title: "Staff and Payroll Automation", icon: <Banknote className="h-5 w-5 text-amber-600" />, desc: "Employee sales commissions, monthly payroll approvals, and printable payslips." },
+    { title: "Financial and P&L Reports", icon: <BarChart3 className="h-5 w-5 text-purple-600" />, desc: "Gross margins, net profits, category breakdowns, and exportable CSV/PDF reports." },
   ];
 
   return (
     <div className="min-h-screen bg-white">
-      <SEO title="SME Business Operating System | Multi-Tenant Platform" description="Complete daily business management platform for modern retail and SMEs" />
+      <SEO title="StockGrid | Business Operating System" description="Complete daily business management platform for modern retail and SMEs" />
       {/* Top Navigation */}
       <header className="sticky top-0 z-50 border-b border-slate-100 bg-white/90 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-xs">
-              <Store className="h-5 w-5" />
-            </div>
+            <img src={stockgridLogo} alt="StockGrid Logo" className="h-10 w-10 object-contain" />
             <div className="flex flex-col">
               <span className="text-base font-black tracking-tight text-slate-900 leading-none">
-                SME OS
+                StockGrid
               </span>
               <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">
                 Business Cloud
@@ -86,9 +90,9 @@ export default function LandingPage() {
                 Sign In
               </Button>
             </Link>
-            <Link href="/dashboard">
+            <Link href="/register">
               <Button size="sm" className="text-xs font-semibold gap-1.5 shadow-sm">
-                <span>Enter App</span>
+                <span>Register</span>
                 <ArrowRight className="h-3.5 w-3.5" />
               </Button>
             </Link>
@@ -102,22 +106,17 @@ export default function LandingPage() {
         <div className="absolute inset-0 z-0">
           <img
             src={heroBg}
-            alt="Retail Store & POS Supermarket Background"
+            alt="Retail Store and POS Supermarket Background"
             className="w-full h-full object-cover object-center scale-105"
           />
-          {/* Subtle multi-layer overlay for crisp contrast while keeping the store visually rich */}
-          <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-[1px]" />
-          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/90 via-slate-950/70 to-slate-950" />
+          {/* Enhanced background visibility while keeping crisp contrast and readability */}
+          <div className="absolute inset-0 bg-slate-950/45" />
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/70 via-slate-950/30 to-slate-950/90" />
           <div className="absolute inset-0 bg-radial from-blue-600/15 via-transparent to-transparent" />
         </div>
 
         <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 text-center space-y-6">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/10 border border-blue-400/30 text-blue-300 text-xs font-semibold backdrop-blur-md">
-            <Sparkles className="h-3.5 w-3.5 text-blue-400" />
-            <span>Complete Business Operating System for Retail & SMEs</span>
-          </div>
-
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-white tracking-tight max-w-4xl mx-auto leading-[1.12]">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-white tracking-tight max-w-4xl mx-auto leading-[1.12] drop-shadow-sm">
             Run your entire business from one <span className="text-blue-400">central system.</span>
           </h1>
 
@@ -148,7 +147,7 @@ export default function LandingPage() {
             </div>
             <div className="flex items-center gap-2 bg-slate-900/60 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15">
               <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-              <span>Kenyan M-Pesa & KES Ready</span>
+              <span>Kenyan M-Pesa and KES Ready</span>
             </div>
             <div className="flex items-center gap-2 bg-slate-900/60 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15">
               <CheckCircle2 className="h-4 w-4 text-emerald-400" />
@@ -205,22 +204,22 @@ export default function LandingPage() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
               <div className="p-4 rounded-xl bg-slate-800/80 border border-slate-700">
                 <p className="text-xs text-slate-400 font-medium uppercase">Step 1</p>
-                <p className="text-sm font-bold text-white mt-1">Purchases & Stock</p>
+                <p className="text-sm font-bold text-white mt-1">Purchases and Stock</p>
                 <p className="text-[11px] text-slate-400 mt-1">Receive POs to automatically increase inventory levels</p>
               </div>
               <div className="p-4 rounded-xl bg-slate-800/80 border border-slate-700">
                 <p className="text-xs text-slate-400 font-medium uppercase">Step 2</p>
-                <p className="text-sm font-bold text-white mt-1">POS & Sales</p>
-                <p className="text-[11px] text-slate-400 mt-1">Deduct stock, award loyalty points & record M-Pesa</p>
+                <p className="text-sm font-bold text-white mt-1">POS and Sales</p>
+                <p className="text-[11px] text-slate-400 mt-1">Deduct stock, award loyalty points and record M-Pesa</p>
               </div>
               <div className="p-4 rounded-xl bg-slate-800/80 border border-slate-700">
                 <p className="text-xs text-slate-400 font-medium uppercase">Step 3</p>
-                <p className="text-sm font-bold text-white mt-1">Credit & Invoices</p>
+                <p className="text-sm font-bold text-white mt-1">Credit and Invoices</p>
                 <p className="text-[11px] text-slate-400 mt-1">Track receivables aging and record partial payments</p>
               </div>
               <div className="p-4 rounded-xl bg-slate-800/80 border border-slate-700">
                 <p className="text-xs text-slate-400 font-medium uppercase">Step 4</p>
-                <p className="text-sm font-bold text-white mt-1">Staff Payroll & P&L</p>
+                <p className="text-sm font-bold text-white mt-1">Staff Payroll and P&L</p>
                 <p className="text-[11px] text-slate-400 mt-1">Auto-calculate commissions and net business profit</p>
               </div>
             </div>
@@ -239,7 +238,7 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {SAAS_PLANS.map((plan) => (
+            {plans.map((plan) => (
               <div
                 key={plan.id}
                 className={`bg-white p-7 rounded-2xl border transition-all flex flex-col justify-between ${
@@ -317,7 +316,7 @@ export default function LandingPage() {
                       <Phone className="h-4 w-4" />
                     </div>
                     <div>
-                      <p className="text-xs text-slate-500 font-medium">Call & WhatsApp Support</p>
+                      <p className="text-xs text-slate-500 font-medium">Call and WhatsApp Support</p>
                       <p className="text-sm font-semibold text-slate-900">+254 700 123 456 / +254 711 987 654</p>
                     </div>
                   </div>
@@ -449,18 +448,16 @@ export default function LandingPage() {
       <footer className="bg-slate-950 text-slate-400 py-12 border-t border-slate-800 text-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2">
-            <Store className="h-5 w-5 text-blue-500" />
-            <span className="text-sm font-bold text-white">SME Business Operating System</span>
+            <img src={stockgridLogo} alt="StockGrid Logo" className="h-7 w-7 object-contain" />
+            <span className="text-sm font-bold text-white">StockGrid</span>
           </div>
-          <p>© 2026 SME OS Platform. Multi-tenant Architecture.</p>
+          <p>© 2026 StockGrid. Multi-tenant Architecture.</p>
           <div className="flex items-center gap-6">
             <Link href="/" className="hover:text-white">Home</Link>
             <Link href="/about" className="hover:text-white">About</Link>
             <a href="#features" className="hover:text-white">Features</a>
             <a href="#pricing" className="hover:text-white">Pricing</a>
             <a href="#contact" className="hover:text-white">Contact</a>
-            <Link href="/dashboard" className="hover:text-white">Dashboard</Link>
-            <Link href="/pos" className="hover:text-white">POS</Link>
           </div>
         </div>
       </footer>

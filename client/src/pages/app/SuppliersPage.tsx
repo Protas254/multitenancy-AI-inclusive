@@ -87,7 +87,7 @@ export default function SuppliersPage() {
       ),
     },
     {
-      header: "Phone & Email",
+      header: "Phone and Email",
       accessorKey: "phone",
       cell: (s) => (
         <div className="text-xs space-y-0.5">

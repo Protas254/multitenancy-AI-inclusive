@@ -163,7 +163,7 @@ export default function StaffPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Staff & Team</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Staff and Team</h1>
           <p className="text-sm text-slate-500">
             Manage your store employees, permissions, monthly sales targets, and compensation.
           </p>
@@ -175,7 +175,7 @@ export default function StaffPage() {
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
         <div className="p-5 bg-white rounded-xl border border-slate-200 shadow-xs flex items-center gap-4">
           <div className="h-10 w-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
             <UserCheck className="h-5 w-5" />

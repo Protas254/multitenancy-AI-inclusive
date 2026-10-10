@@ -176,7 +176,7 @@ export default function PurchasesPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-slate-900">Purchases & Supplier Orders</h1>
+          <h1 className="text-2xl font-black tracking-tight text-slate-900">Purchases and Supplier Orders</h1>
           <p className="text-xs text-slate-500 mt-0.5">
             Manage purchase orders, restock inventory, and track supplier payables.
           </p>

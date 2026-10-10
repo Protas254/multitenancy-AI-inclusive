@@ -119,7 +119,7 @@ export default function ProductsPage() {
 
   const columns: Column<Product>[] = [
     {
-      header: "Product & SKU",
+      header: "Product and SKU",
       accessorKey: "name",
       sortable: true,
       cell: (p) => (

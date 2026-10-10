@@ -182,7 +182,7 @@ export default function InvoicesPage() {
         <div className="flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
           {/* Read / View */}
           <Link href={`/invoices/${inv.id}`}>
-            <Button variant="outline" size="sm" className="h-7 w-7 p-0" title="View & Print Invoice">
+            <Button variant="outline" size="sm" className="h-7 w-7 p-0" title="View and Print Invoice">
               <Eye className="h-3.5 w-3.5 text-slate-600" />
             </Button>
           </Link>

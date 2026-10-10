@@ -96,7 +96,7 @@ export default function ReconciliationReportsPage() {
         </p>
       </div>
 
-      {/* Filters Row: Switcher + Month & Year */}
+      {/* Filters Row: Switcher + Month and Year */}
       <div className="flex flex-wrap items-center gap-3">
         {/* Active / All Business Pill Switcher */}
         <div className="flex items-center bg-slate-100/90 p-1 rounded-full border border-slate-200 text-xs font-semibold">

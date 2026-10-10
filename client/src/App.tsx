@@ -4,9 +4,8 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 // Layouts
 import AppLayout from "./pages/app/AppLayout";
 import AuthLayout from "./pages/auth/AuthLayout";
-import AdminLayout from "./pages/admin/AdminLayout";
 
-// Landing & General
+// Landing and General
 import LandingPage from "./pages/LandingPage";
 import AboutPage from "./pages/AboutPage";
 import NotFoundPage from "./pages/NotFoundPage";
@@ -20,9 +19,6 @@ import VerifyEmailPage from "./pages/auth/VerifyEmailPage";
 
 // Onboarding
 import OnboardingPage from "./pages/onboarding/OnboardingPage";
-
-// Admin
-import AdminPage from "./pages/admin/AdminPage";
 
 // App Modules
 import DashboardPage from "./pages/app/DashboardPage";
@@ -56,14 +52,12 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public Landing & About */}
+        {/* Public Landing and About */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/about" element={<AboutPage />} />
 
-        {/* Superadmin Platform */}
-        <Route element={<AdminLayout />}>
-          <Route path="/admin" element={<AdminPage />} />
-        </Route>
+        {/* Admin Route - Redirect to Dashboard */}
+        <Route path="/admin" element={<Navigate to="/dashboard" replace />} />
 
         {/* Onboarding Flow - Redirect to Dashboard */}
         <Route path="/onboarding" element={<Navigate to="/dashboard" replace />} />

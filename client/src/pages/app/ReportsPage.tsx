@@ -338,7 +338,7 @@ export default function ReportsPage() {
       {activeTab === "reconciliation" && (
         <Card className="rounded-2xl border border-slate-100 bg-white shadow-xs overflow-hidden">
           <div className="p-6 md:p-8">
-            {/* Heading & Subtitle */}
+            {/* Heading and Subtitle */}
             <h2 className="text-2xl md:text-3xl font-serif text-[#1e293b] font-bold tracking-tight">
               Monthly Reconciliation Summary
             </h2>
@@ -742,7 +742,7 @@ export default function ReportsPage() {
 
           <Card className="rounded-2xl border border-slate-100 shadow-xs">
             <CardHeader>
-              <CardTitle className="text-base font-bold text-slate-900">Top Patrons by Loyalty & Referrals</CardTitle>
+              <CardTitle className="text-base font-bold text-slate-900">Top Patrons by Loyalty and Referrals</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
               <div className="divide-y divide-slate-100 text-xs">

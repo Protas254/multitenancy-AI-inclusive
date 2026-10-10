@@ -1,5 +1,5 @@
 // ==========================================
-// USER & TENANT & RBAC TYPES
+// USER and TENANT and RBAC TYPES
 // ==========================================
 
 export type UserRole =
@@ -71,7 +71,7 @@ export interface Tenant {
   name: string;
   slug: string;
   logo?: string;
-  businessType: string; // e.g. "Fashion & Apparel", "Cosmetics & Beauty", "Retail Supermarket"
+  businessType: string; // e.g. "Fashion and Apparel", "Cosmetics and Beauty", "Retail Supermarket"
   phone: string;
   email: string;
   address: string;
@@ -96,7 +96,7 @@ export interface Membership {
 }
 
 // ==========================================
-// PRODUCT & INVENTORY
+// PRODUCT and INVENTORY
 // ==========================================
 
 export interface Category {
@@ -154,7 +154,7 @@ export interface StockAdjustmentRequest {
 }
 
 // ==========================================
-// SALES & POS
+// SALES and POS
 // ==========================================
 
 export type PaymentMethod = "cash" | "mpesa" | "card" | "credit" | "bank_transfer" | "split";
@@ -196,12 +196,13 @@ export interface Sale {
   staffId: string;
   staffName: string;
   date: string;
+  createdAt?: string;
   notes?: string;
   isCreditSale?: boolean;
 }
 
 // ==========================================
-// CUSTOMER & CRM & LOYALTY
+// CUSTOMER and CRM and LOYALTY
 // ==========================================
 
 export interface Customer {
@@ -246,7 +247,7 @@ export interface LoyaltyTransaction {
 }
 
 // ==========================================
-// SUPPLIERS & PURCHASES
+// SUPPLIERS and PURCHASES
 // ==========================================
 
 export interface Supplier {
@@ -304,13 +305,13 @@ export interface Purchase {
 // ==========================================
 
 export type ExpenseCategory =
-  | "Rent & Utilities"
-  | "Salaries & Wages"
-  | "Inventory & Logistics"
-  | "Marketing & Ads"
-  | "Maintenance & Repairs"
-  | "Licenses & Taxes"
-  | "Office & Admin"
+  | "Rent and Utilities"
+  | "Salaries and Wages"
+  | "Inventory and Logistics"
+  | "Marketing and Ads"
+  | "Maintenance and Repairs"
+  | "Licenses and Taxes"
+  | "Office and Admin"
   | "Other";
 
 export interface Expense {
@@ -330,7 +331,7 @@ export interface Expense {
 }
 
 // ==========================================
-// DEBT & CREDIT MANAGEMENT
+// DEBT and CREDIT MANAGEMENT
 // ==========================================
 
 export interface CreditAccount {
@@ -411,7 +412,7 @@ export interface Invoice {
 }
 
 // ==========================================
-// STAFF & PAYROLL & TARGETS
+// STAFF and PAYROLL and TARGETS
 // ==========================================
 
 export interface Staff {
@@ -481,7 +482,7 @@ export interface SalesTarget {
 }
 
 // ==========================================
-// NOTIFICATIONS & PLATFORM ADMIN
+// NOTIFICATIONS and PLATFORM ADMIN
 // ==========================================
 
 export type NotificationType =

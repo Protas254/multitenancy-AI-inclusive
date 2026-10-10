@@ -318,3 +318,273 @@ class DailyReconciliation(models.Model):
     class Meta:
         ordering = ["-date"]
         unique_together = [("tenant", "date")]
+
+
+def gen_cacc_id():
+    return f"cacc-{uuid.uuid4().hex[:10]}"
+
+def gen_cpay_id():
+    return f"cpay-{uuid.uuid4().hex[:10]}"
+
+def gen_mov_id():
+    return f"mov-{uuid.uuid4().hex[:10]}"
+
+def gen_inv_id():
+    return f"inv-{uuid.uuid4().hex[:10]}"
+
+def gen_po_id():
+    return f"po-{uuid.uuid4().hex[:10]}"
+
+def gen_rew_id():
+    return f"rew-{uuid.uuid4().hex[:10]}"
+
+def gen_ltx_id():
+    return f"ltx-{uuid.uuid4().hex[:10]}"
+
+def gen_plan_id():
+    return f"plan-{uuid.uuid4().hex[:10]}"
+
+
+class CreditAccount(models.Model):
+    STATUS_CHOICES = [
+        ("current", "Current"),
+        ("due_soon", "Due Soon"),
+        ("overdue", "Overdue"),
+        ("cleared", "Cleared"),
+    ]
+    ENTITY_TYPE_CHOICES = [
+        ("customer", "Customer"),
+        ("supplier", "Supplier"),
+    ]
+    id = models.CharField(max_length=64, primary_key=True, default=gen_cacc_id)
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name="credit_accounts")
+    entity_type = models.CharField(max_length=20, choices=ENTITY_TYPE_CHOICES, default="customer")
+    entity_id = models.CharField(max_length=64, blank=True)
+    entity_name = models.CharField(max_length=255)
+    entity_phone = models.CharField(max_length=50, blank=True)
+    reference_doc_id = models.CharField(max_length=100, blank=True)
+    reference_doc_type = models.CharField(max_length=20, default="sale")
+    total_amount = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+    paid_amount = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+    balance_due = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+    due_date = models.DateField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="current")
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.entity_name} - Due: {self.balance_due}"
+
+
+class CreditPayment(models.Model):
+    id = models.CharField(max_length=64, primary_key=True, default=gen_cpay_id)
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name="credit_payments")
+    credit_account = models.ForeignKey(CreditAccount, on_delete=models.CASCADE, related_name="payments")
+    entity_type = models.CharField(max_length=20, default="customer")
+    entity_name = models.CharField(max_length=255, blank=True)
+    amount = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+    payment_method = models.CharField(max_length=50, default="cash")
+    reference_code = models.CharField(max_length=100, blank=True)
+    date = models.DateTimeField(auto_now_add=True)
+    recorded_by = models.CharField(max_length=255, blank=True)
+    notes = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ["-date"]
+
+    def __str__(self):
+        return f"Payment {self.amount} for {self.entity_name}"
+
+
+class StockMovement(models.Model):
+    TYPE_CHOICES = [
+        ("purchase", "Purchase"),
+        ("sale", "Sale"),
+        ("adjustment_increase", "Adjustment (Increase)"),
+        ("adjustment_decrease", "Adjustment (Decrease)"),
+        ("transfer", "Transfer"),
+    ]
+    id = models.CharField(max_length=64, primary_key=True, default=gen_mov_id)
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name="stock_movements")
+    product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, blank=True, related_name="movements")
+    product_name = models.CharField(max_length=255)
+    type = models.CharField(max_length=50, choices=TYPE_CHOICES, default="adjustment_increase")
+    quantity = models.IntegerField(default=0)
+    previous_stock = models.IntegerField(default=0)
+    new_stock = models.IntegerField(default=0)
+    reference_id = models.CharField(max_length=100, blank=True)
+    reason = models.CharField(max_length=255, blank=True)
+    staff_name = models.CharField(max_length=255, blank=True)
+    date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-date"]
+
+    def __str__(self):
+        return f"{self.product_name} ({self.type}): {self.quantity}"
+
+
+class Invoice(models.Model):
+    STATUS_CHOICES = [
+        ("draft", "Draft"),
+        ("sent", "Sent"),
+        ("partially_paid", "Partially Paid"),
+        ("paid", "Paid"),
+        ("overdue", "Overdue"),
+        ("cancelled", "Cancelled"),
+    ]
+    id = models.CharField(max_length=64, primary_key=True, default=gen_inv_id)
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name="invoices")
+    invoice_number = models.CharField(max_length=100)
+    customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, null=True, blank=True, related_name="invoices")
+    customer_name = models.CharField(max_length=255)
+    customer_email = models.EmailField(blank=True)
+    customer_phone = models.CharField(max_length=50, blank=True)
+    customer_address = models.TextField(blank=True)
+    issue_date = models.DateField()
+    due_date = models.DateField()
+    subtotal = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+    tax_amount = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+    discount_amount = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+    total_amount = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+    amount_paid = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+    balance_due = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="sent")
+    notes = models.TextField(blank=True)
+    terms = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.invoice_number} - {self.customer_name}"
+
+
+class InvoiceItem(models.Model):
+    id = models.CharField(max_length=64, primary_key=True, default=gen_item_id)
+    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name="items")
+    product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, blank=True)
+    description = models.CharField(max_length=255)
+    quantity = models.IntegerField(default=1)
+    unit_price = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    discount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    tax_rate = models.DecimalField(max_digits=5, decimal_places=2, default=16)
+    amount = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+
+    def __str__(self):
+        return f"{self.description} ({self.amount})"
+
+
+class Purchase(models.Model):
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("received", "Received"),
+        ("partially_received", "Partially Received"),
+        ("canceled", "Canceled"),
+    ]
+    PAYMENT_STATUS_CHOICES = [
+        ("unpaid", "Unpaid"),
+        ("partially_paid", "Partially Paid"),
+        ("paid", "Paid"),
+    ]
+    id = models.CharField(max_length=64, primary_key=True, default=gen_po_id)
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name="purchases")
+    purchase_number = models.CharField(max_length=100)
+    supplier = models.ForeignKey(Supplier, on_delete=models.SET_NULL, null=True, blank=True, related_name="purchases")
+    supplier_name = models.CharField(max_length=255)
+    subtotal = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+    tax = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+    shipping = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+    total_amount = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+    amount_paid = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+    balance = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default="unpaid")
+    date = models.DateField()
+    expected_delivery_date = models.DateField(null=True, blank=True)
+    received_date = models.DateTimeField(null=True, blank=True)
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.purchase_number} - {self.supplier_name}"
+
+
+class PurchaseItem(models.Model):
+    id = models.CharField(max_length=64, primary_key=True, default=gen_item_id)
+    purchase = models.ForeignKey(Purchase, on_delete=models.CASCADE, related_name="items")
+    product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, blank=True)
+    product_name = models.CharField(max_length=255)
+    sku = models.CharField(max_length=100, blank=True)
+    quantity_ordered = models.IntegerField(default=1)
+    quantity_received = models.IntegerField(default=0)
+    unit_cost = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    total = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+
+    def __str__(self):
+        return f"{self.product_name} x {self.quantity_ordered}"
+
+
+class LoyaltyReward(models.Model):
+    id = models.CharField(max_length=64, primary_key=True, default=gen_rew_id)
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name="loyalty_rewards")
+    title = models.CharField(max_length=255)
+    points_required = models.IntegerField(default=100)
+    discount_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["points_required"]
+
+    def __str__(self):
+        return f"{self.title} ({self.points_required} pts)"
+
+
+class LoyaltyTransaction(models.Model):
+    TYPE_CHOICES = [
+        ("earned", "Earned"),
+        ("redeemed", "Redeemed"),
+        ("adjusted", "Adjusted"),
+    ]
+    id = models.CharField(max_length=64, primary_key=True, default=gen_ltx_id)
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name="loyalty_transactions")
+    customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, null=True, blank=True, related_name="loyalty_transactions")
+    customer_name = models.CharField(max_length=255)
+    type = models.CharField(max_length=20, choices=TYPE_CHOICES, default="earned")
+    points = models.IntegerField(default=0)
+    sale = models.ForeignKey(Sale, on_delete=models.SET_NULL, null=True, blank=True)
+    description = models.CharField(max_length=255, blank=True)
+    date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-date"]
+
+    def __str__(self):
+        return f"{self.customer_name} {self.type} {self.points} pts"
+
+
+class SaaSPlan(models.Model):
+    id = models.CharField(max_length=64, primary_key=True, default=gen_plan_id)
+    slug = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=100)
+    price = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    billing_period = models.CharField(max_length=20, default="monthly")
+    description = models.TextField(blank=True)
+    features = models.JSONField(default=list)
+    max_staff = models.IntegerField(default=5)
+    max_products = models.IntegerField(default=500)
+    max_invoices_per_month = models.IntegerField(default=100)
+    is_popular = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.price} KES)"

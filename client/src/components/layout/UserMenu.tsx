@@ -17,7 +17,7 @@ export const UserMenu: React.FC = () => {
   const { user, currentRole, switchSimulatedRole, logout } = useAuth();
 
   const roles: { role: UserRole; label: string; desc: string }[] = [
-    { role: "owner", label: "Owner (All Modules)", desc: "Full administrative & financial control" },
+    { role: "owner", label: "Owner (All Modules)", desc: "Full administrative and financial control" },
     { role: "manager", label: "Store Manager", desc: "Sales, products, stock, CRM, reports" },
     { role: "cashier", label: "Cashier", desc: "POS checkout, sales, customers" },
     { role: "salesperson", label: "Salesperson", desc: "POS, products, sales targets" },

@@ -26,7 +26,7 @@ export default function NewInvoicePage() {
     new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]
   );
   const [items, setItems] = useState<InvoiceItem[]>([
-    { description: "Consulting & Executive Styling Package", quantity: 1, unitPrice: 15000, discount: 0, taxRate: 16, amount: 15000 },
+    { description: "Consulting and Executive Styling Package", quantity: 1, unitPrice: 15000, discount: 0, taxRate: 16, amount: 15000 },
   ]);
   const [notes, setNotes] = useState("Corporate hospitality styling package.");
   const [terms, setTerms] = useState("Strict 14-day settlement term via Standard Chartered Bank or M-Pesa Paybill.");
@@ -117,9 +117,9 @@ export default function NewInvoicePage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Customer & Date Details */}
+        {/* Customer and Date Details */}
         <Card className="p-6 space-y-4">
-          <CardTitle className="text-sm font-bold">Client & Billing Terms</CardTitle>
+          <CardTitle className="text-sm font-bold">Client and Billing Terms</CardTitle>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-1.5">
@@ -253,7 +253,7 @@ export default function NewInvoicePage() {
           </div>
         </Card>
 
-        {/* Notes & Terms */}
+        {/* Notes and Terms */}
         <Card className="p-6 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
@@ -272,7 +272,7 @@ export default function NewInvoicePage() {
             <Button type="button" variant="outline">Cancel</Button>
           </Link>
           <Button type="submit" isLoading={isLoading} className="bg-blue-600 hover:bg-blue-700 font-bold px-8">
-            Create & Issue Invoice ({formatKES(totalAmount)})
+            Create and Issue Invoice ({formatKES(totalAmount)})
           </Button>
         </div>
       </form>

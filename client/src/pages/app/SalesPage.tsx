@@ -93,7 +93,7 @@ export default function SalesPage() {
       cell: (sale) => <StatusBadge status={sale.status} />,
     },
     {
-      header: "Date & Time",
+      header: "Date and Time",
       accessorKey: "date",
       sortable: true,
       cell: (sale) => <span className="text-xs text-slate-500">{formatDateTime(sale.date)}</span>,

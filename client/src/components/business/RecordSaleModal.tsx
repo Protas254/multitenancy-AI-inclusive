@@ -288,7 +288,7 @@ export const RecordSaleModal: React.FC<RecordSaleModalProps> = ({
           {/* Items Table */}
           <div className="space-y-2.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-slate-800">Products & Quantities</label>
+              <label className="text-xs font-bold text-slate-800">Products and Quantities</label>
               <Button
                 type="button"
                 variant="outline"
@@ -460,7 +460,7 @@ export const RecordSaleModal: React.FC<RecordSaleModalProps> = ({
               className="bg-blue-600 hover:bg-blue-700 text-white font-bold gap-1.5"
             >
               <CheckCircle2 className="h-4 w-4" />
-              <span>Complete & Record Sale</span>
+              <span>Complete and Record Sale</span>
             </Button>
           </DialogFooter>
         </form>

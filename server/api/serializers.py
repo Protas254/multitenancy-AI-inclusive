@@ -1,8 +1,11 @@
+from django.db import models
 from rest_framework import serializers
 from .models import (
     Tenant, User, Membership, Category, Supplier, Product, Customer,
     Sale, SaleItem, Expense, StaffMember, PayrollRecord, Target, Notification,
-    DailyReconciliation
+    DailyReconciliation, CreditAccount, CreditPayment, StockMovement,
+    Invoice, InvoiceItem, Purchase, PurchaseItem, LoyaltyReward,
+    LoyaltyTransaction, SaaSPlan
 )
 
 class TenantSerializer(serializers.ModelSerializer):
@@ -14,13 +17,20 @@ class TenantSerializer(serializers.ModelSerializer):
     planStatus = serializers.SerializerMethodField()
     settings = serializers.SerializerMethodField()
     branches = serializers.SerializerMethodField()
+    staffCount = serializers.SerializerMethodField()
+    productsCount = serializers.SerializerMethodField()
+    monthlyRevenue = serializers.SerializerMethodField()
+    totalSalesVolume = serializers.SerializerMethodField()
+    ownerName = serializers.SerializerMethodField()
+    ownerEmail = serializers.SerializerMethodField()
 
     class Meta:
         model = Tenant
         fields = [
             "id", "name", "slug", "domain", "businessType", "phone", "email",
             "address", "location", "vatRate", "plan", "planStatus", "currency",
-            "status", "settings", "branches", "createdAt"
+            "status", "settings", "branches", "staffCount", "productsCount",
+            "monthlyRevenue", "totalSalesVolume", "ownerName", "ownerEmail", "createdAt"
         ]
         read_only_fields = ["id", "createdAt"]
 
@@ -52,6 +62,32 @@ class TenantSerializer(serializers.ModelSerializer):
                 "isMain": True,
             }
         ]
+
+    def get_staffCount(self, obj):
+        return obj.staff.count()
+
+    def get_productsCount(self, obj):
+        return obj.products.count()
+
+    def get_monthlyRevenue(self, obj):
+        from django.utils import timezone
+        now = timezone.now()
+        rev = obj.sales.filter(created_at__year=now.year, created_at__month=now.month, payment_status="paid").aggregate(models.Sum("total_amount"))["total_amount__sum"] or 0
+        if rev == 0:
+            rev = obj.sales.filter(payment_status="paid").aggregate(models.Sum("total_amount"))["total_amount__sum"] or 0
+        return float(rev)
+
+    def get_totalSalesVolume(self, obj):
+        vol = obj.sales.aggregate(models.Sum("total_amount"))["total_amount__sum"] or 0
+        return float(vol)
+
+    def get_ownerName(self, obj):
+        owner_mem = obj.memberships.filter(role="owner").select_related("user").first()
+        return owner_mem.user.name or owner_mem.user.username if owner_mem else "Business Owner"
+
+    def get_ownerEmail(self, obj):
+        owner_mem = obj.memberships.filter(role="owner").select_related("user").first()
+        return owner_mem.user.email if owner_mem else (obj.email or "owner@business.co.ke")
 
 class MembershipSerializer(serializers.ModelSerializer):
     tenant = TenantSerializer(read_only=True)
@@ -239,3 +275,182 @@ class DailyReconciliationSerializer(serializers.ModelSerializer):
             "totalCollected", "status", "reconciledBy", "notes",
             "createdAt", "updatedAt"
         ]
+
+
+class CreditPaymentSerializer(serializers.ModelSerializer):
+    tenantId = serializers.CharField(source="tenant_id", read_only=True)
+    creditAccountId = serializers.CharField(source="credit_account_id", required=False)
+    entityType = serializers.CharField(source="entity_type", required=False)
+    entityName = serializers.CharField(source="entity_name", required=False, allow_blank=True)
+    paymentMethod = serializers.CharField(source="payment_method", default="cash")
+    referenceCode = serializers.CharField(source="reference_code", required=False, allow_blank=True)
+    recordedBy = serializers.CharField(source="recorded_by", required=False, allow_blank=True)
+    amount = serializers.FloatField()
+    date = serializers.DateTimeField(read_only=True)
+
+    class Meta:
+        model = CreditPayment
+        fields = [
+            "id", "tenantId", "creditAccountId", "entityType", "entityName",
+            "amount", "paymentMethod", "referenceCode", "date", "recordedBy", "notes"
+        ]
+
+
+class CreditAccountSerializer(serializers.ModelSerializer):
+    tenantId = serializers.CharField(source="tenant_id", read_only=True)
+    entityType = serializers.CharField(source="entity_type")
+    entityId = serializers.CharField(source="entity_id", required=False, allow_blank=True)
+    entityName = serializers.CharField(source="entity_name")
+    entityPhone = serializers.CharField(source="entity_phone", required=False, allow_blank=True)
+    referenceDocId = serializers.CharField(source="reference_doc_id", required=False, allow_blank=True)
+    referenceDocType = serializers.CharField(source="reference_doc_type", required=False, default="sale")
+    totalAmount = serializers.FloatField(source="total_amount")
+    paidAmount = serializers.FloatField(source="paid_amount", required=False, default=0.0)
+    balanceDue = serializers.FloatField(source="balance_due", required=False)
+    dueDate = serializers.DateField(source="due_date")
+    createdAt = serializers.DateTimeField(source="created_at", read_only=True)
+    payments = CreditPaymentSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = CreditAccount
+        fields = [
+            "id", "tenantId", "entityType", "entityId", "entityName", "entityPhone",
+            "referenceDocId", "referenceDocType", "totalAmount", "paidAmount",
+            "balanceDue", "dueDate", "status", "notes", "createdAt", "payments"
+        ]
+
+
+class StockMovementSerializer(serializers.ModelSerializer):
+    tenantId = serializers.CharField(source="tenant_id", read_only=True)
+    productId = serializers.CharField(source="product_id", read_only=True, allow_null=True)
+    productName = serializers.CharField(source="product_name")
+    previousStock = serializers.IntegerField(source="previous_stock", read_only=True)
+    newStock = serializers.IntegerField(source="new_stock", read_only=True)
+    referenceId = serializers.CharField(source="reference_id", required=False, allow_blank=True)
+    staffName = serializers.CharField(source="staff_name", required=False, allow_blank=True)
+    date = serializers.DateTimeField(read_only=True)
+
+    class Meta:
+        model = StockMovement
+        fields = [
+            "id", "tenantId", "productId", "productName", "type", "quantity",
+            "previousStock", "newStock", "referenceId", "reason", "staffName", "date"
+        ]
+
+
+class InvoiceItemSerializer(serializers.ModelSerializer):
+    productId = serializers.CharField(source="product_id", required=False, allow_null=True, allow_blank=True)
+    unitPrice = serializers.FloatField(source="unit_price")
+    taxRate = serializers.FloatField(source="tax_rate", default=16.0)
+    amount = serializers.FloatField(required=False)
+
+    class Meta:
+        model = InvoiceItem
+        fields = ["id", "productId", "description", "quantity", "unitPrice", "discount", "taxRate", "amount"]
+
+
+class InvoiceSerializer(serializers.ModelSerializer):
+    tenantId = serializers.CharField(source="tenant_id", read_only=True)
+    invoiceNumber = serializers.CharField(source="invoice_number", required=False)
+    customerId = serializers.CharField(source="customer_id", required=False, allow_null=True, allow_blank=True)
+    customerName = serializers.CharField(source="customer_name")
+    customerEmail = serializers.EmailField(source="customer_email", required=False, allow_blank=True)
+    customerPhone = serializers.CharField(source="customer_phone", required=False, allow_blank=True)
+    customerAddress = serializers.CharField(source="customer_address", required=False, allow_blank=True)
+    issueDate = serializers.DateField(source="issue_date")
+    dueDate = serializers.DateField(source="due_date")
+    subtotal = serializers.FloatField()
+    taxAmount = serializers.FloatField(source="tax_amount", required=False, default=0.0)
+    discountAmount = serializers.FloatField(source="discount_amount", required=False, default=0.0)
+    totalAmount = serializers.FloatField(source="total_amount")
+    amountPaid = serializers.FloatField(source="amount_paid", required=False, default=0.0)
+    balanceDue = serializers.FloatField(source="balance_due", required=False)
+    items = InvoiceItemSerializer(many=True, required=False)
+    createdAt = serializers.DateTimeField(source="created_at", read_only=True)
+
+    class Meta:
+        model = Invoice
+        fields = [
+            "id", "tenantId", "invoiceNumber", "customerId", "customerName",
+            "customerEmail", "customerPhone", "customerAddress", "issueDate", "dueDate",
+            "subtotal", "taxAmount", "discountAmount", "totalAmount", "amountPaid",
+            "balanceDue", "status", "notes", "terms", "items", "createdAt"
+        ]
+
+
+class PurchaseItemSerializer(serializers.ModelSerializer):
+    productId = serializers.CharField(source="product_id", required=False, allow_null=True, allow_blank=True)
+    productName = serializers.CharField(source="product_name")
+    quantityOrdered = serializers.IntegerField(source="quantity_ordered")
+    quantityReceived = serializers.IntegerField(source="quantity_received", required=False, default=0)
+    unitCost = serializers.FloatField(source="unit_cost")
+    total = serializers.FloatField(required=False)
+
+    class Meta:
+        model = PurchaseItem
+        fields = ["id", "productId", "productName", "sku", "quantityOrdered", "quantityReceived", "unitCost", "total"]
+
+
+class PurchaseSerializer(serializers.ModelSerializer):
+    tenantId = serializers.CharField(source="tenant_id", read_only=True)
+    purchaseNumber = serializers.CharField(source="purchase_number", required=False)
+    supplierId = serializers.CharField(source="supplier_id", required=False, allow_null=True, allow_blank=True)
+    supplierName = serializers.CharField(source="supplier_name")
+    totalAmount = serializers.FloatField(source="total_amount")
+    amountPaid = serializers.FloatField(source="amount_paid", required=False, default=0.0)
+    balance = serializers.FloatField(required=False)
+    paymentStatus = serializers.CharField(source="payment_status", default="unpaid")
+    expectedDeliveryDate = serializers.DateField(source="expected_delivery_date", required=False, allow_null=True)
+    receivedDate = serializers.DateTimeField(source="received_date", required=False, allow_null=True)
+    items = PurchaseItemSerializer(many=True, required=False)
+    createdAt = serializers.DateTimeField(source="created_at", read_only=True)
+
+    class Meta:
+        model = Purchase
+        fields = [
+            "id", "tenantId", "purchaseNumber", "supplierId", "supplierName",
+            "subtotal", "tax", "shipping", "totalAmount", "amountPaid", "balance",
+            "status", "paymentStatus", "date", "expectedDeliveryDate", "receivedDate",
+            "notes", "items", "createdAt"
+        ]
+
+
+class LoyaltyRewardSerializer(serializers.ModelSerializer):
+    tenantId = serializers.CharField(source="tenant_id", read_only=True)
+    pointsRequired = serializers.IntegerField(source="points_required")
+    discountAmount = serializers.FloatField(source="discount_amount")
+    isActive = serializers.BooleanField(source="is_active", default=True)
+    createdAt = serializers.DateTimeField(source="created_at", read_only=True)
+
+    class Meta:
+        model = LoyaltyReward
+        fields = ["id", "tenantId", "title", "pointsRequired", "discountAmount", "description", "isActive", "createdAt"]
+
+
+class LoyaltyTransactionSerializer(serializers.ModelSerializer):
+    tenantId = serializers.CharField(source="tenant_id", read_only=True)
+    customerId = serializers.CharField(source="customer_id", required=False, allow_null=True)
+    customerName = serializers.CharField(source="customer_name")
+    saleId = serializers.CharField(source="sale_id", required=False, allow_null=True)
+    date = serializers.DateTimeField(read_only=True)
+
+    class Meta:
+        model = LoyaltyTransaction
+        fields = ["id", "tenantId", "customerId", "customerName", "type", "points", "saleId", "description", "date"]
+
+
+class SaaSPlanSerializer(serializers.ModelSerializer):
+    billingPeriod = serializers.CharField(source="billing_period", default="monthly")
+    maxStaff = serializers.IntegerField(source="max_staff", default=5)
+    maxProducts = serializers.IntegerField(source="max_products", default=500)
+    maxInvoicesPerMonth = serializers.IntegerField(source="max_invoices_per_month", default=100)
+    isPopular = serializers.BooleanField(source="is_popular", default=False)
+    isActive = serializers.BooleanField(source="is_active", default=True)
+
+    class Meta:
+        model = SaaSPlan
+        fields = [
+            "id", "slug", "name", "price", "billingPeriod", "description",
+            "features", "maxStaff", "maxProducts", "maxInvoicesPerMonth", "isPopular", "isActive"
+        ]
+

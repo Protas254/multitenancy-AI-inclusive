@@ -72,7 +72,7 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
           </div>
         </div>
 
-        {/* Bill To & Ship To */}
+        {/* Bill To and Ship To */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 py-8 border-b border-slate-200">
           <div>
             <span className="text-xs font-bold uppercase tracking-wider text-slate-400">BILLED TO</span>
@@ -155,7 +155,7 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
           </div>
         </div>
 
-        {/* Terms & Notes */}
+        {/* Terms and Notes */}
         <div className="mt-12 pt-6 border-t border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-slate-500">
           <div>
             <h4 className="font-semibold text-slate-900 mb-1">Payment Instructions</h4>
@@ -165,7 +165,7 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
             <p>M-Pesa Paybill: 522522 | Account: {invoice.invoiceNumber}</p>
           </div>
           <div>
-            <h4 className="font-semibold text-slate-900 mb-1">Terms & Conditions</h4>
+            <h4 className="font-semibold text-slate-900 mb-1">Terms and Conditions</h4>
             <p className="whitespace-pre-line">{invoice.terms || "Goods delivered in good order. Payment due strictly on agreed terms."}</p>
           </div>
         </div>

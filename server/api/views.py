@@ -7,16 +7,23 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Sum, Count, Q
 from django.db.models.functions import TruncMonth
 
+from django.utils import timezone
+from datetime import timedelta
 from .models import (
     Tenant, User, Membership, Category, Supplier, Product, Customer,
     Sale, SaleItem, Expense, StaffMember, PayrollRecord, Target, Notification,
-    DailyReconciliation
+    DailyReconciliation, CreditAccount, CreditPayment, StockMovement,
+    Invoice, InvoiceItem, Purchase, PurchaseItem, LoyaltyReward,
+    LoyaltyTransaction, SaaSPlan
 )
 from .serializers import (
     TenantSerializer, UserSerializer, MembershipSerializer, CategorySerializer,
     SupplierSerializer, ProductSerializer, CustomerSerializer, SaleSerializer,
     ExpenseSerializer, StaffMemberSerializer, PayrollRecordSerializer,
-    TargetSerializer, NotificationSerializer, DailyReconciliationSerializer
+    TargetSerializer, NotificationSerializer, DailyReconciliationSerializer,
+    CreditAccountSerializer, CreditPaymentSerializer, StockMovementSerializer,
+    InvoiceSerializer, PurchaseSerializer, LoyaltyRewardSerializer,
+    LoyaltyTransactionSerializer, SaaSPlanSerializer
 )
 
 from rest_framework import exceptions
@@ -201,6 +208,324 @@ class DailyReconciliationViewSet(TenantScopedViewSet):
         tenant = get_object_or_404(Tenant, id=tenant_id)
         serializer.save(tenant=tenant)
 
+
+class CreditAccountViewSet(TenantScopedViewSet):
+    queryset = CreditAccount.objects.all()
+    serializer_class = CreditAccountSerializer
+
+    def perform_create(self, serializer):
+        tenant_id = self.get_tenant_id()
+        if not tenant_id:
+            raise exceptions.ValidationError({"detail": "Active tenant ID is required."})
+        tenant = get_object_or_404(Tenant, id=tenant_id)
+        total_amount = float(serializer.validated_data.get("total_amount", 0))
+        paid_amount = float(serializer.validated_data.get("paid_amount", 0))
+        balance_due = max(0.0, total_amount - paid_amount)
+        status_val = "cleared" if balance_due == 0 else serializer.validated_data.get("status", "current")
+        serializer.save(tenant=tenant, balance_due=balance_due, status=status_val)
+
+    def perform_update(self, serializer):
+        total_amount = float(serializer.validated_data.get("total_amount", serializer.instance.total_amount))
+        paid_amount = float(serializer.validated_data.get("paid_amount", serializer.instance.paid_amount))
+        balance_due = max(0.0, total_amount - paid_amount)
+        status_val = "cleared" if balance_due == 0 else serializer.validated_data.get("status", serializer.instance.status)
+        serializer.save(balance_due=balance_due, status=status_val)
+
+
+class CreditPaymentViewSet(TenantScopedViewSet):
+    queryset = CreditPayment.objects.all()
+    serializer_class = CreditPaymentSerializer
+
+    def create(self, request, *args, **kwargs):
+        data = request.data
+        tenant_id = self.get_tenant_id()
+        tenant = get_object_or_404(Tenant, id=tenant_id)
+
+        credit_account_id = data.get("creditAccountId")
+        account = get_object_or_404(CreditAccount, id=credit_account_id, tenant=tenant)
+
+        amount = float(data.get("amount", 0))
+        account.paid_amount = float(account.paid_amount) + amount
+        account.balance_due = max(0.0, float(account.total_amount) - float(account.paid_amount))
+        if account.balance_due == 0:
+            account.status = "cleared"
+        account.save()
+
+        payment = CreditPayment.objects.create(
+            tenant=tenant,
+            credit_account=account,
+            entity_type=account.entity_type,
+            entity_name=account.entity_name,
+            amount=amount,
+            payment_method=data.get("paymentMethod", "cash"),
+            reference_code=data.get("referenceCode", ""),
+            recorded_by=data.get("recordedBy", request.user.name or request.user.username),
+            notes=data.get("notes", "")
+        )
+
+        serializer = self.get_serializer(payment)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class StockMovementViewSet(TenantScopedViewSet):
+    queryset = StockMovement.objects.all()
+    serializer_class = StockMovementSerializer
+
+    @action(detail=False, methods=["POST"], url_path="adjust")
+    def adjust_stock(self, request):
+        data = request.data
+        tenant_id = self.get_tenant_id()
+        tenant = get_object_or_404(Tenant, id=tenant_id)
+
+        product_id = data.get("productId")
+        product = get_object_or_404(Product, id=product_id, tenant=tenant)
+
+        adj_type = data.get("type", "increase")
+        quantity = int(data.get("quantity", 0))
+        reason = data.get("reason", "Stock adjustment")
+        notes = data.get("notes", "")
+        staff_name = request.user.name or request.user.username or "Store Staff"
+
+        prev_stock = product.current_stock
+        if adj_type == "increase":
+            new_stock = prev_stock + quantity
+            mov_type = "adjustment_increase"
+            diff = quantity
+        elif adj_type == "decrease":
+            new_stock = max(0, prev_stock - quantity)
+            mov_type = "adjustment_decrease"
+            diff = -quantity
+        elif adj_type == "set":
+            new_stock = max(0, quantity)
+            diff = new_stock - prev_stock
+            mov_type = "adjustment_increase" if diff >= 0 else "adjustment_decrease"
+        else:
+            new_stock = prev_stock
+            mov_type = "adjustment_increase"
+            diff = 0
+
+        product.current_stock = new_stock
+        product.save()
+
+        full_reason = f"{reason} - {notes}" if notes else reason
+        StockMovement.objects.create(
+            tenant=tenant,
+            product=product,
+            product_name=product.name,
+            type=mov_type,
+            quantity=diff,
+            previous_stock=prev_stock,
+            new_stock=new_stock,
+            reference_id=f"ADJ-{timezone.now().strftime('%Y%m%d%H%M')}",
+            reason=full_reason,
+            staff_name=staff_name
+        )
+
+        prod_serializer = ProductSerializer(product)
+        return Response(prod_serializer.data, status=status.HTTP_200_OK)
+
+
+class InvoiceViewSet(TenantScopedViewSet):
+    queryset = Invoice.objects.all()
+    serializer_class = InvoiceSerializer
+
+    def create(self, request, *args, **kwargs):
+        data = request.data
+        tenant_id = self.get_tenant_id()
+        tenant = get_object_or_404(Tenant, id=tenant_id)
+
+        items_data = data.get("items", [])
+        invoice_number = data.get("invoiceNumber") or f"INV-2026-{str(Invoice.objects.filter(tenant=tenant).count() + 101).zfill(4)}"
+
+        total_amount = float(data.get("totalAmount", 0))
+        amount_paid = float(data.get("amountPaid", 0))
+        balance_due = max(0.0, total_amount - amount_paid)
+        status_val = "paid" if balance_due == 0 else data.get("status", "sent")
+
+        customer_id = data.get("customerId")
+        customer = Customer.objects.filter(id=customer_id, tenant=tenant).first() if customer_id else None
+
+        invoice = Invoice.objects.create(
+            tenant=tenant,
+            invoice_number=invoice_number,
+            customer=customer,
+            customer_name=data.get("customerName", customer.name if customer else "Client"),
+            customer_email=data.get("customerEmail", customer.email if customer else ""),
+            customer_phone=data.get("customerPhone", customer.phone if customer else ""),
+            customer_address=data.get("customerAddress", customer.address if customer else ""),
+            issue_date=data.get("issueDate") or timezone.now().date(),
+            due_date=data.get("dueDate") or (timezone.now().date() + timedelta(days=14)),
+            subtotal=data.get("subtotal", total_amount),
+            tax_amount=data.get("taxAmount", 0),
+            discount_amount=data.get("discountAmount", 0),
+            total_amount=total_amount,
+            amount_paid=amount_paid,
+            balance_due=balance_due,
+            status=status_val,
+            notes=data.get("notes", ""),
+            terms=data.get("terms", "")
+        )
+
+        for item in items_data:
+            InvoiceItem.objects.create(
+                invoice=invoice,
+                description=item.get("description", "Item"),
+                quantity=item.get("quantity", 1),
+                unit_price=item.get("unitPrice", 0),
+                discount=item.get("discount", 0),
+                tax_rate=item.get("taxRate", 16),
+                amount=item.get("amount", 0)
+            )
+
+        serializer = self.get_serializer(invoice)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["POST"], url_path="record_payment")
+    def record_payment(self, request, pk=None):
+        invoice = self.get_object()
+        amount = float(request.data.get("amount", 0))
+        invoice.amount_paid = float(invoice.amount_paid) + amount
+        invoice.balance_due = max(0.0, float(invoice.total_amount) - float(invoice.amount_paid))
+        if invoice.balance_due == 0:
+            invoice.status = "paid"
+        else:
+            invoice.status = "partially_paid"
+        invoice.save()
+        serializer = self.get_serializer(invoice)
+        return Response(serializer.data)
+
+
+class PurchaseViewSet(TenantScopedViewSet):
+    queryset = Purchase.objects.all()
+    serializer_class = PurchaseSerializer
+
+    def create(self, request, *args, **kwargs):
+        data = request.data
+        tenant_id = self.get_tenant_id()
+        tenant = get_object_or_404(Tenant, id=tenant_id)
+
+        items_data = data.get("items", [])
+        purchase_number = data.get("purchaseNumber") or f"PO-2026-{str(Purchase.objects.filter(tenant=tenant).count() + 101).zfill(3)}"
+
+        total_amount = float(data.get("totalAmount", 0))
+        amount_paid = float(data.get("amountPaid", 0))
+        balance = max(0.0, total_amount - amount_paid)
+        payment_status = "paid" if balance == 0 else "partially_paid" if amount_paid > 0 else "unpaid"
+
+        supplier_id = data.get("supplierId")
+        supplier = Supplier.objects.filter(id=supplier_id, tenant=tenant).first() if supplier_id else None
+
+        purchase = Purchase.objects.create(
+            tenant=tenant,
+            purchase_number=purchase_number,
+            supplier=supplier,
+            supplier_name=data.get("supplierName", supplier.name if supplier else "Supplier"),
+            subtotal=data.get("subtotal", total_amount),
+            tax=data.get("tax", 0),
+            shipping=data.get("shipping", 0),
+            total_amount=total_amount,
+            amount_paid=amount_paid,
+            balance=balance,
+            status="pending",
+            payment_status=payment_status,
+            date=data.get("date") or timezone.now().date(),
+            expected_delivery_date=data.get("expectedDeliveryDate"),
+            notes=data.get("notes", "")
+        )
+
+        for item in items_data:
+            prod_id = item.get("productId")
+            product = Product.objects.filter(id=prod_id, tenant=tenant).first() if prod_id else None
+            qty = item.get("quantity", item.get("quantityOrdered", 1))
+            unit_cost = item.get("unitCost", 0)
+            PurchaseItem.objects.create(
+                purchase=purchase,
+                product=product,
+                product_name=item.get("productName", product.name if product else "Item"),
+                sku=item.get("sku", product.sku if product else ""),
+                quantity_ordered=qty,
+                unit_cost=unit_cost,
+                total=item.get("total", float(qty) * float(unit_cost))
+            )
+
+        serializer = self.get_serializer(purchase)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["POST"], url_path="receive")
+    def receive_stock(self, request, pk=None):
+        purchase = self.get_object()
+        purchase.status = "received"
+        purchase.received_date = timezone.now()
+        purchase.save()
+
+        staff_name = request.data.get("staffName", request.user.name or request.user.username or "Store Manager")
+        for item in purchase.items.all():
+            item.quantity_received = item.quantity_ordered
+            item.save()
+
+            if item.product:
+                prev = item.product.current_stock
+                nxt = prev + item.quantity_ordered
+                item.product.current_stock = nxt
+                item.product.save()
+
+                StockMovement.objects.create(
+                    tenant=purchase.tenant,
+                    product=item.product,
+                    product_name=item.product.name,
+                    type="purchase",
+                    quantity=item.quantity_ordered,
+                    previous_stock=prev,
+                    new_stock=nxt,
+                    reference_id=purchase.purchase_number,
+                    reason=f"Restocked from {purchase.supplier_name}",
+                    staff_name=staff_name
+                )
+
+        serializer = self.get_serializer(purchase)
+        return Response(serializer.data)
+
+
+class LoyaltyRewardViewSet(TenantScopedViewSet):
+    queryset = LoyaltyReward.objects.all()
+    serializer_class = LoyaltyRewardSerializer
+
+    @action(detail=True, methods=["POST"], url_path="redeem")
+    def redeem_reward(self, request, pk=None):
+        reward = self.get_object()
+        customer_id = request.data.get("customerId")
+        customer = get_object_or_404(Customer, id=customer_id, tenant=reward.tenant)
+
+        if customer.loyalty_points < reward.points_required:
+            return Response(
+                {"detail": f"Insufficient points. Customer has {customer.loyalty_points} points, needs {reward.points_required}."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        customer.loyalty_points -= reward.points_required
+        customer.save()
+
+        tx = LoyaltyTransaction.objects.create(
+            tenant=reward.tenant,
+            customer=customer,
+            customer_name=customer.name,
+            type="redeemed",
+            points=reward.points_required,
+            description=f"Redeemed {reward.title}"
+        )
+        return Response(LoyaltyTransactionSerializer(tx).data, status=status.HTTP_201_CREATED)
+
+
+class LoyaltyTransactionViewSet(TenantScopedViewSet):
+    queryset = LoyaltyTransaction.objects.all()
+    serializer_class = LoyaltyTransactionSerializer
+
+
+class SaaSPlanViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [permissions.AllowAny]
+    queryset = SaaSPlan.objects.filter(is_active=True)
+    serializer_class = SaaSPlanSerializer
+
 # Auth API Endpoints
 @api_view(["POST"])
 @permission_classes([permissions.AllowAny])
@@ -361,4 +686,169 @@ def monthly_reconciliation_report(request):
         summary.append(m)
 
     return Response(summary)
+
+
+@api_view(["GET"])
+@permission_classes([permissions.IsAuthenticated])
+def admin_platform_stats(request):
+    total_tenants = Tenant.objects.count()
+    active_tenants = Tenant.objects.filter(status="active").count()
+
+    plan_prices = {"starter": 2500, "professional": 6500, "pro": 6500, "enterprise": 15000}
+    mrr = sum(plan_prices.get(t.plan.lower(), 2500) for t in Tenant.objects.filter(status="active"))
+
+    total_sales_volume = float(Sale.objects.aggregate(Sum("total_amount"))["total_amount__sum"] or 0)
+    now = timezone.now()
+    new_tenants = Tenant.objects.filter(created_at__year=now.year, created_at__month=now.month).count()
+
+    return Response({
+        "totalTenants": total_tenants,
+        "activeTenants": active_tenants,
+        "mrr": mrr,
+        "totalSalesVolume": total_sales_volume,
+        "churnRate": 1.5,
+        "newTenantsThisMonth": new_tenants if new_tenants > 0 else total_tenants,
+    })
+
+
+@api_view(["GET"])
+@permission_classes([permissions.AllowAny])
+def saas_plans_view(request):
+    plans = SaaSPlan.objects.filter(is_active=True)
+    if not plans.exists():
+        defaults = [
+            {
+                "id": "starter",
+                "slug": "starter",
+                "name": "Starter Retail",
+                "price": 2500,
+                "billing_period": "monthly",
+                "description": "Perfect for single-shop retailers and sole proprietors starting out.",
+                "features": ["1 Branch Location", "Up to 3 Staff Accounts", "Basic POS & Barcode Scanner", "Daily Cash Reconciliation", "Up to 500 Inventory SKUs", "Standard Email Support"],
+                "max_staff": 3,
+                "max_products": 500,
+                "max_invoices_per_month": 50,
+                "is_popular": False,
+            },
+            {
+                "id": "professional",
+                "slug": "professional",
+                "name": "Growth Pro",
+                "price": 6500,
+                "billing_period": "monthly",
+                "description": "Ideal for growing multi-staff retail stores, boutiques and supermarkets.",
+                "features": ["Up to 3 Branch Locations", "Up to 10 Staff Roles (RBAC)", "Full Invoicing & Credit Accounts", "Automated Daily Reconciliations", "Supplier Purchase Orders & Restocking", "Customer Loyalty Program", "Real-Time Profit & Loss Reports"],
+                "max_staff": 10,
+                "max_products": 5000,
+                "max_invoices_per_month": 500,
+                "is_popular": True,
+            },
+            {
+                "id": "enterprise",
+                "slug": "enterprise",
+                "name": "Enterprise Chain",
+                "price": 15000,
+                "billing_period": "monthly",
+                "description": "For supermarket chains, franchise retailers, and high-volume operations.",
+                "features": ["Unlimited Branches & Warehouses", "Unlimited Staff & Advanced RBAC", "Automated Multi-Branch Audits", "Custom ERP & Accounting Integrations", "Priority 24/7 Dedicated Support", "Dedicated Database & Custom Domain"],
+                "max_staff": 999,
+                "max_products": 99999,
+                "max_invoices_per_month": 99999,
+                "is_popular": False,
+            },
+        ]
+        for p in defaults:
+            SaaSPlan.objects.create(**p)
+        plans = SaaSPlan.objects.filter(is_active=True)
+
+    return Response(SaaSPlanSerializer(plans, many=True).data)
+
+
+@api_view(["GET"])
+@permission_classes([permissions.IsAuthenticated])
+def dashboard_stats_view(request):
+    user = request.user
+    tenant_id = request.headers.get("X-Tenant-ID") or getattr(request, "tenant_id", None)
+    if not tenant_id and user.is_authenticated:
+        mem = user.memberships.select_related("tenant").first()
+        if mem:
+            tenant_id = mem.tenant_id
+    if not tenant_id:
+        first_t = Tenant.objects.first()
+        tenant_id = first_t.id if first_t else None
+
+    if not tenant_id:
+        return Response({})
+
+    tenant = get_object_or_404(Tenant, id=tenant_id)
+    today = timezone.now().date()
+
+    today_sales_qs = Sale.objects.filter(tenant=tenant, created_at__date=today)
+    today_sales = float(today_sales_qs.aggregate(Sum("total_amount"))["total_amount__sum"] or 0)
+    today_orders = today_sales_qs.count()
+
+    today_expenses = float(Expense.objects.filter(tenant=tenant, date=today).aggregate(Sum("amount"))["amount__sum"] or 0)
+    today_profit = today_sales - today_expenses
+
+    chart_data_7d = []
+    for i in range(6, -1, -1):
+        day = today - timedelta(days=i)
+        day_str = "Today" if i == 0 else day.strftime("%a %d")
+        s_val = float(Sale.objects.filter(tenant=tenant, created_at__date=day).aggregate(Sum("total_amount"))["total_amount__sum"] or 0)
+        e_val = float(Expense.objects.filter(tenant=tenant, date=day).aggregate(Sum("amount"))["amount__sum"] or 0)
+        chart_data_7d.append({
+            "date": day_str,
+            "sales": s_val,
+            "expenses": e_val,
+            "profit": s_val - e_val
+        })
+
+    chart_data_30d = []
+    for w in range(4, 0, -1):
+        start_w = today - timedelta(days=w * 7)
+        end_w = start_w + timedelta(days=7)
+        s_val = float(Sale.objects.filter(tenant=tenant, created_at__date__gte=start_w, created_at__date__lt=end_w).aggregate(Sum("total_amount"))["total_amount__sum"] or 0)
+        e_val = float(Expense.objects.filter(tenant=tenant, date__gte=start_w, date__lt=end_w).aggregate(Sum("amount"))["amount__sum"] or 0)
+        chart_data_30d.append({
+            "date": f"Week {5 - w}",
+            "sales": s_val,
+            "expenses": e_val,
+            "profit": s_val - e_val
+        })
+
+    top_items = (
+        SaleItem.objects.filter(sale__tenant=tenant)
+        .values("product_name")
+        .annotate(unitsSold=Sum("quantity"), revenue=Sum("subtotal"))
+        .order_by("-revenue")[:5]
+    )
+    top_products = [
+        {
+            "name": item["product_name"],
+            "unitsSold": item["unitsSold"],
+            "revenue": float(item["revenue"]),
+            "category": "Catalog Item"
+        }
+        for item in top_items
+    ]
+
+    target_obj = Target.objects.filter(tenant=tenant).first()
+    target_data = {
+        "title": target_obj.title if target_obj else "Monthly Revenue Target",
+        "targetAmount": float(target_obj.target_amount) if target_obj else 500000,
+        "achievedAmount": float(target_obj.current_amount) if target_obj else today_sales,
+        "periodLabel": f"{target_obj.start_date.strftime('%d %b')} – {target_obj.end_date.strftime('%d %b %Y')}" if target_obj else "This Month",
+    }
+
+    return Response({
+        "todaySales": today_sales,
+        "todayExpenses": today_expenses,
+        "todayProfit": today_profit,
+        "todayOrders": today_orders,
+        "chartData7d": chart_data_7d,
+        "chartData30d": chart_data_30d,
+        "topProducts": top_products,
+        "target": target_data,
+    })
+
 

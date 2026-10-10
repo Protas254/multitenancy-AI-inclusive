@@ -14,7 +14,7 @@ export const Topbar: React.FC = () => {
   return (
     <>
       <header className="sticky top-0 z-20 flex h-16 w-full items-center justify-between border-b border-slate-200/80 bg-white/95 px-4 sm:px-6 backdrop-blur-md">
-        {/* Left Side: Mobile Toggle & Branch Selector */}
+        {/* Left Side: Mobile Toggle and Branch Selector */}
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsMobileNavOpen(true)}
@@ -63,7 +63,7 @@ export const Topbar: React.FC = () => {
           </button>
         </div>
 
-        {/* Right Side: Notifications & User Profile */}
+        {/* Right Side: Notifications and User Profile */}
         <div className="flex items-center gap-2">
           <NotificationDropdown />
           <div className="h-5 w-px bg-slate-200 mx-1" />

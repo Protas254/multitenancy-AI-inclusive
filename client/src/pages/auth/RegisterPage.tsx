@@ -40,13 +40,13 @@ export default function RegisterPage() {
 
     // Step 2: Business
     businessName: "",
-    businessCategory: "Retail Supermarket & Grocery",
+    businessCategory: "Retail Supermarket and Grocery",
     businessPhone: "",
     businessEmail: "",
     location: "Nairobi, Kenya",
     address: "",
 
-    // Step 3: Setup
+    // (Financial settings removed — defaults applied automatically)
     currency: "KES",
     taxRate: 16,
     financialYear: "01-01",
@@ -54,21 +54,21 @@ export default function RegisterPage() {
     acceptCash: true,
     acceptCard: true,
 
-    // Step 4: Products
+    // Step 3: Products
     products: [
       { name: "", buyingPrice: 0, sellingPrice: 0, stock: 10 },
     ],
 
-    // Step 5: Staff
+    // Step 4: Staff
     staff: [
       { name: "", role: "Cashier", phone: "" },
     ],
 
-    // Step 6: Target
+    // Step 5: Target
     monthlyTarget: 100000,
   });
 
-  const nextStep = () => setStep((s) => Math.min(7, s + 1));
+  const nextStep = () => setStep((s) => Math.min(6, s + 1));
   const prevStep = () => setStep((s) => Math.max(1, s - 1));
 
   const addProductRow = () => {
@@ -118,7 +118,6 @@ export default function RegisterPage() {
   const stepTitles = [
     "Personal Account",
     "Business Details",
-    "Financial Settings",
     "Initial Products",
     "Staff Team",
     "Sales Target",
@@ -128,15 +127,15 @@ export default function RegisterPage() {
   return (
     <div className="space-y-6">
       {/* Wizard Step Progress */}
-      {step < 7 && (
+      {step < 6 && (
         <div className="space-y-2">
           <div className="flex justify-between items-center text-xs">
             <span className="font-bold text-blue-600">
-              Step {step} of 6: {stepTitles[step - 1]}
+              Step {step} of 5: {stepTitles[step - 1]}
             </span>
-            <span className="text-slate-400 font-medium">{Math.round((step / 6) * 100)}%</span>
+            <span className="text-slate-400 font-medium">{Math.round((step / 5) * 100)}%</span>
           </div>
-          <Progress value={step} max={6} />
+          <Progress value={step} max={5} />
         </div>
       )}
 
@@ -236,13 +235,13 @@ export default function RegisterPage() {
                 onChange={(e) => setFormData({ ...formData, businessCategory: e.target.value })}
                 className="flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs"
               >
-                <option value="Retail Supermarket & Grocery">Retail Supermarket & Grocery</option>
-                <option value="Fashion & Apparel">Fashion & Apparel</option>
-                <option value="Cosmetics & Beauty Care">Cosmetics & Beauty Care</option>
-                <option value="Hardware & Building Supplies">Hardware & Building Supplies</option>
-                <option value="Pharmacy & Chemist">Pharmacy & Chemist</option>
-                <option value="Electronics & Tech">Electronics & Tech</option>
-                <option value="Restaurant & Hospitality">Restaurant & Hospitality</option>
+                <option value="Retail Supermarket and Grocery">Retail Supermarket and Grocery</option>
+                <option value="Fashion and Apparel">Fashion and Apparel</option>
+                <option value="Cosmetics and Beauty Care">Cosmetics and Beauty Care</option>
+                <option value="Hardware and Building Supplies">Hardware and Building Supplies</option>
+                <option value="Pharmacy and Chemist">Pharmacy and Chemist</option>
+                <option value="Electronics and Tech">Electronics and Tech</option>
+                <option value="Restaurant and Hospitality">Restaurant and Hospitality</option>
               </select>
             </div>
             <div className="grid grid-cols-2 gap-2">
@@ -269,82 +268,6 @@ export default function RegisterPage() {
               <span>Back</span>
             </Button>
             <Button onClick={nextStep} className="gap-1.5 text-xs font-bold">
-              <span>Next: Financials</span>
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* STEP 3: Setup Financials */}
-      {step === 3 && (
-        <div className="space-y-4">
-          <div>
-            <h2 className="text-xl font-black text-slate-900">Financial & Tax Setup</h2>
-            <p className="text-xs text-slate-500 mt-1">
-              Configure currencies, standard tax rates, and POS payment methods.
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700">Operating Currency</label>
-                <Input
-                  value={formData.currency}
-                  onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700">VAT / Tax Rate (%)</label>
-                <Input
-                  type="number"
-                  value={formData.taxRate}
-                  onChange={(e) => setFormData({ ...formData, taxRate: Number(e.target.value) })}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2 pt-2">
-              <label className="text-xs font-semibold text-slate-700">Enabled Payment Methods</label>
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 text-xs text-slate-800 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.acceptMpesa}
-                    onChange={(e) => setFormData({ ...formData, acceptMpesa: e.target.checked })}
-                    className="h-4 w-4 text-blue-600 rounded"
-                  />
-                  <span className="font-semibold">M-Pesa Express & Till / Paybill</span>
-                </label>
-                <label className="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 text-xs text-slate-800 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.acceptCash}
-                    onChange={(e) => setFormData({ ...formData, acceptCash: e.target.checked })}
-                    className="h-4 w-4 text-blue-600 rounded"
-                  />
-                  <span className="font-semibold">Cash & Drawer Reconciliation</span>
-                </label>
-                <label className="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 text-xs text-slate-800 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.acceptCard}
-                    onChange={(e) => setFormData({ ...formData, acceptCard: e.target.checked })}
-                    className="h-4 w-4 text-blue-600 rounded"
-                  />
-                  <span className="font-semibold">Credit & Debit Cards (PDQ Terminal)</span>
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <div className="pt-2 flex justify-between items-center">
-            <Button variant="outline" size="sm" onClick={prevStep} className="gap-1.5 text-xs">
-              <ArrowLeft className="h-3.5 w-3.5" />
-              <span>Back</span>
-            </Button>
-            <Button onClick={nextStep} className="gap-1.5 text-xs font-bold">
               <span>Next: Initial Products</span>
               <ArrowRight className="h-3.5 w-3.5" />
             </Button>
@@ -352,8 +275,8 @@ export default function RegisterPage() {
         </div>
       )}
 
-      {/* STEP 4: Initial Products */}
-      {step === 4 && (
+      {/* STEP 3: Initial Products */}
+      {step === 3 && (
         <div className="space-y-4">
           <div>
             <h2 className="text-xl font-black text-slate-900">Add your first products</h2>
@@ -444,15 +367,15 @@ export default function RegisterPage() {
               <span>Back</span>
             </Button>
             <Button onClick={nextStep} className="gap-1.5 text-xs font-bold">
-              <span>Next: Team & Staff</span>
+              <span>Next: Team and Staff</span>
               <ArrowRight className="h-3.5 w-3.5" />
             </Button>
           </div>
         </div>
       )}
 
-      {/* STEP 5: Staff Team */}
-      {step === 5 && (
+      {/* STEP 4: Staff Team */}
+      {step === 4 && (
         <div className="space-y-4">
           <div>
             <h2 className="text-xl font-black text-slate-900">Add Staff Accounts</h2>
@@ -521,8 +444,8 @@ export default function RegisterPage() {
         </div>
       )}
 
-      {/* STEP 6: Sales Targets */}
-      {step === 6 && (
+      {/* STEP 5: Sales Targets */}
+      {step === 5 && (
         <div className="space-y-4">
           <div>
             <h2 className="text-xl font-black text-slate-900">Set Monthly Sales Target</h2>
@@ -568,8 +491,8 @@ export default function RegisterPage() {
         </div>
       )}
 
-      {/* STEP 7: Completed State */}
-      {step === 7 && (
+      {/* STEP 6: Completed State */}
+      {step === 6 && (
         <div className="text-center py-6 space-y-6">
           <div className="flex h-16 w-16 mx-auto items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600">
             <CheckCircle2 className="h-10 w-10" />

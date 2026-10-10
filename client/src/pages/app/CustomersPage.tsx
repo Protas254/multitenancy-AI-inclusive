@@ -160,7 +160,7 @@ export default function CustomersPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-slate-900">Customers CRM & Loyalty</h1>
+          <h1 className="text-2xl font-black tracking-tight text-slate-900">Customers CRM and Loyalty</h1>
           <p className="text-xs text-slate-500 mt-0.5">
             Maintain customer relationship profiles, track credit receivables, and manage reward tiers.
           </p>

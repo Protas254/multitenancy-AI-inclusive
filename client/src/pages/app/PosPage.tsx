@@ -119,9 +119,9 @@ export default function PosPage() {
 
   return (
     <div className="h-[calc(100vh-6.5rem)] flex flex-col lg:flex-row gap-4">
-      {/* LEFT PANEL: Products Catalog & Search */}
+      {/* LEFT PANEL: Products Catalog and Search */}
       <div className="flex-1 flex flex-col bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-        {/* Search & Category Header */}
+        {/* Search and Category Header */}
         <div className="p-4 border-b border-slate-100 space-y-3">
           <div className="flex items-center gap-2">
             <Input
@@ -171,7 +171,7 @@ export default function PosPage() {
           </div>
         </div>
 
-        {/* Products Table (Rows & Columns) */}
+        {/* Products Table (Rows and Columns) */}
         <div className="flex-1 overflow-y-auto overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead className="bg-slate-50 text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-200 sticky top-0 z-10 select-none">
@@ -206,7 +206,7 @@ export default function PosPage() {
                           : "hover:bg-blue-50/50 cursor-pointer"
                       } ${cartItem ? "bg-blue-50/20" : ""}`}
                     >
-                      {/* Product & SKU */}
+                      {/* Product and SKU */}
                       <td className="py-3 px-4">
                         <div>
                           <p className="font-bold text-slate-900 leading-tight group-hover:text-blue-600 transition-colors">
@@ -280,9 +280,9 @@ export default function PosPage() {
         </div>
       </div>
 
-      {/* RIGHT PANEL: Live Cart & Checkout Slip */}
+      {/* RIGHT PANEL: Live Cart and Checkout Slip */}
       <div className="w-full lg:w-96 flex flex-col bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-        {/* Customer Selector & Title */}
+        {/* Customer Selector and Title */}
         <div className="p-3.5 border-b border-slate-100 bg-slate-50/50 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-900">Current Sale Slip</span>
@@ -340,7 +340,7 @@ export default function PosPage() {
                   </span>
                 </div>
 
-                {/* Quantity Controls & Discount */}
+                {/* Quantity Controls and Discount */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg">
                     <button
@@ -385,9 +385,9 @@ export default function PosPage() {
           )}
         </div>
 
-        {/* Calculations & Payment Selection */}
+        {/* Calculations and Payment Selection */}
         <div className="p-4 border-t border-slate-200 bg-slate-50/70 space-y-3">
-          {/* Subtotal, Discount & Total */}
+          {/* Subtotal, Discount and Total */}
           <div className="space-y-1 text-xs">
             <div className="flex justify-between text-slate-500">
               <span>Subtotal:</span>
@@ -481,7 +481,7 @@ export default function PosPage() {
             isLoading={isProcessing}
             className="w-full h-12 text-sm font-black bg-blue-600 hover:bg-blue-700 shadow-md"
           >
-            Complete Sale & Print Receipt ({formatKES(totalAmount)})
+            Complete Sale and Print Receipt ({formatKES(totalAmount)})
           </Button>
         </div>
       </div>

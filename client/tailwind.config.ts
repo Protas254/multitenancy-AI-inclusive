@@ -17,6 +17,11 @@ const config: Config = {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['"Google Sans"', "Roboto", "Arial", "sans-serif"],
+        display: ['"Google Sans Display"', '"Google Sans"', "Roboto", "sans-serif"],
+        mono: ['"Google Sans Mono"', "monospace"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
