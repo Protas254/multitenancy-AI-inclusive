@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import Link from "@/components/ui/link";
 import { SEO } from "@/components/common/SEO";
 import {
-  ArrowRight,
   CheckCircle2,
   Receipt,
   Boxes,
@@ -91,9 +90,8 @@ export default function LandingPage() {
               </Button>
             </Link>
             <Link href="/register">
-              <Button size="sm" className="text-xs font-semibold gap-1.5 shadow-sm">
-                <span>Register</span>
-                <ArrowRight className="h-3.5 w-3.5" />
+              <Button size="sm" className="text-xs font-semibold shadow-sm">
+                <span>Get Started</span>
               </Button>
             </Link>
           </div>
@@ -124,35 +122,17 @@ export default function LandingPage() {
             Not just another basic POS. Manage sales, inventory, purchases, expenses, customers, staff payroll, debt, loyalty, and business insights with multi-tenant isolation.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
-            <Link href="/dashboard" className="w-full sm:w-auto">
-              <Button size="lg" className="w-full sm:w-auto gap-2 text-sm font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-xl shadow-blue-900/40 h-12 px-7">
+          <div className="flex items-center justify-center pt-4">
+            <a
+              href="https://wa.me/254743849304?text=Hello%20StockGrid%2C%20I%20would%20like%20to%20request%20a%20live%20demo%20of%20the%20business%20system."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full sm:w-auto"
+            >
+              <Button size="lg" className="w-full sm:w-auto text-sm font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-xl shadow-blue-900/40 h-12 px-8">
                 <span>Launch Live Demo</span>
-                <ArrowRight className="h-4 w-4" />
               </Button>
-            </Link>
-            <Link href="/pos" className="w-full sm:w-auto">
-              <Button variant="outline" size="lg" className="w-full sm:w-auto gap-2 text-sm font-semibold h-12 px-6 bg-white/10 hover:bg-white/20 border-white/20 text-white backdrop-blur-md">
-                <Receipt className="h-4 w-4 text-slate-200" />
-                <span>Test POS Terminal</span>
-              </Button>
-            </Link>
-          </div>
-
-          {/* Quick proof badges */}
-          <div className="pt-6 flex flex-wrap items-center justify-center gap-4 text-xs text-slate-200">
-            <div className="flex items-center gap-2 bg-slate-900/60 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15">
-              <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-              <span>Multi-Tenant Architecture</span>
-            </div>
-            <div className="flex items-center gap-2 bg-slate-900/60 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15">
-              <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-              <span>Kenyan M-Pesa and KES Ready</span>
-            </div>
-            <div className="flex items-center gap-2 bg-slate-900/60 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15">
-              <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-              <span>Role-Based Permissions (RBAC)</span>
-            </div>
+            </a>
           </div>
         </div>
       </section>

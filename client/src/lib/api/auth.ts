@@ -39,14 +39,17 @@ export const authApi = {
     businessCategory?: string;
     products?: any[];
     [key: string]: any;
-  }): Promise<{ user: User; token: string; refreshToken?: string; memberships?: Membership[]; activeTenantId?: string }> {
-    const res = await apiClient.post<{ user: User; token: string; refreshToken?: string; memberships?: Membership[]; activeTenantId?: string }>("/auth/register/", data);
-    if (typeof window !== "undefined") {
+  }): Promise<{ user?: User; token?: string; refreshToken?: string; memberships?: Membership[]; activeTenantId?: string; pendingActivation?: boolean; businessName?: string; email?: string; message?: string }> {
+    const res = await apiClient.post<{ user?: User; token?: string; refreshToken?: string; memberships?: Membership[]; activeTenantId?: string; pendingActivation?: boolean; businessName?: string; email?: string; message?: string }>("/auth/register/", data);
+    // Only store credentials if an actual token was returned (not pending)
+    if (res.token && typeof window !== "undefined") {
       localStorage.setItem("auth_token", res.token);
       if (res.refreshToken) {
         localStorage.setItem("refresh_token", res.refreshToken);
       }
-      localStorage.setItem("sme_user", JSON.stringify(res.user));
+      if (res.user) {
+        localStorage.setItem("sme_user", JSON.stringify(res.user));
+      }
       if (res.activeTenantId) {
         localStorage.setItem("active_tenant_id", res.activeTenantId);
       }

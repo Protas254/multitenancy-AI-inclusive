@@ -184,15 +184,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     try {
       const res = await authApi.register(data);
-      setUser(res.user);
-      const userMemberships = res.memberships || [];
-      if (userMemberships.length > 0) {
-        setMemberships(userMemberships);
-        setCurrentRole(userMemberships[0].role);
+      // If pending activation, do not set user state — caller handles the redirect
+      if (res.pendingActivation) {
+        return res;
       }
-      if (typeof window !== "undefined" && res.activeTenantId) {
-        localStorage.setItem("active_tenant_id", res.activeTenantId);
+      // Legacy: if token returned (e.g. super-admin path)
+      if (res.token) {
+        setUser(res.user);
+        const userMemberships = res.memberships || [];
+        if (userMemberships.length > 0) {
+          setMemberships(userMemberships);
+          setCurrentRole(userMemberships[0].role);
+        }
+        if (typeof window !== "undefined" && res.activeTenantId) {
+          localStorage.setItem("active_tenant_id", res.activeTenantId);
+        }
       }
+      return res;
     } finally {
       setIsLoading(false);
     }

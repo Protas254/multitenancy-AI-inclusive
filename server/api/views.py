@@ -535,6 +535,15 @@ def login_view(request):
 
     user = User.objects.filter(email__iexact=email).first()
     if user and user.check_password(password):
+        # Super admins can always log in
+        if not user.is_superuser:
+            memberships = user.memberships.select_related("tenant").all()
+            if memberships.exists() and all(m.tenant.status == "pending" for m in memberships):
+                return Response(
+                    {"detail": "Your business account is pending activation by the administrator. You will be notified once it is approved.", "pendingActivation": True},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
         refresh = RefreshToken.for_user(user)
         user_data = UserSerializer(user).data
         memberships_data = MembershipSerializer(user.memberships.select_related("tenant").all(), many=True).data
@@ -584,7 +593,9 @@ def register_view(request):
         address=data.get("address") or data.get("location") or "Nairobi, Kenya",
         vat_rate=data.get("taxRate", 16.0),
         plan=data.get("plan", "pro"),
-        currency=data.get("currency", "KES")
+        currency=data.get("currency", "KES"),
+        status="pending",
+        is_active=False,
     )
 
     # Seed default category for new tenant
@@ -614,16 +625,11 @@ def register_view(request):
     # Create Owner Membership
     Membership.objects.create(user=user, tenant=tenant, role="owner", designation="Business Owner")
 
-    refresh = RefreshToken.for_user(user)
-    user_data = UserSerializer(user).data
-    memberships_data = MembershipSerializer(user.memberships.select_related("tenant").all(), many=True).data
-
     return Response({
-        "token": str(refresh.access_token),
-        "refreshToken": str(refresh),
-        "user": user_data,
-        "memberships": memberships_data,
-        "activeTenantId": tenant.id
+        "message": "Registration successful. Your business account is pending activation by the administrator.",
+        "pendingActivation": True,
+        "businessName": business_name,
+        "email": email,
     }, status=status.HTTP_201_CREATED)
 
 @api_view(["GET"])

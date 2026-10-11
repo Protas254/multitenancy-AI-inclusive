@@ -1,0 +1,86 @@
+{% if current_tenant %}
+<style>
+  .tenant-nav-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 18px;
+    padding: 12px 18px;
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  .tenant-nav-bar-title {
+    color: #94a3b8;
+    font-size: 12px;
+    margin-right: 6px;
+    padding-right: 12px;
+    border-right: 1px solid #334155;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tenant-nav-bar-title strong {
+    color: #f8fafc;
+    font-size: 13px;
+  }
+  .tenant-nav-link {
+    color: #38bdf8;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 5px 10px;
+    border-radius: 5px;
+    transition: all 0.15s ease-in-out;
+    display: inline-flex;
+    align-items: center;
+  }
+  .tenant-nav-link:hover {
+    color: #ffffff;
+    background: #1e293b;
+    text-decoration: underline;
+  }
+  .tenant-nav-link.active-tab {
+    background: #ffffff;
+    color: #0f172a !important;
+    font-weight: 700;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    text-decoration: none !important;
+  }
+  .all-businesses-btn {
+    margin-left: auto;
+    font-size: 11px;
+    color: #94a3b8;
+    background: #1e293b;
+    padding: 4px 10px;
+    border-radius: 5px;
+    text-decoration: none;
+    border: 1px solid #334155;
+  }
+  .all-businesses-btn:hover {
+    color: #ffffff;
+    background: #334155;
+  }
+</style>
+
+<div class="tenant-nav-bar">
+  <div class="tenant-nav-bar-title">
+    🏢 <strong>{{ current_tenant.name }}</strong>
+  </div>
+  <a href="{% url 'admin:api_tenant_change' current_tenant.pk %}" class="tenant-nav-link {% if active_tenant_section == 'business_info' %}active-tab{% endif %}">Business Information</a>
+  <a href="{% url 'admin:api_customer_changelist' %}?tenant__id__exact={{ current_tenant.pk }}" class="tenant-nav-link {% if active_tenant_section == 'customer' %}active-tab{% endif %}">Customers</a>
+  <a href="{% url 'admin:api_staffmember_changelist' %}?tenant__id__exact={{ current_tenant.pk }}" class="tenant-nav-link {% if active_tenant_section == 'staffmember' %}active-tab{% endif %}">Staff members</a>
+  <a href="{% url 'admin:api_category_changelist' %}?tenant__id__exact={{ current_tenant.pk }}" class="tenant-nav-link {% if active_tenant_section == 'category' %}active-tab{% endif %}">Categories</a>
+  <a href="{% url 'admin:api_product_changelist' %}?tenant__id__exact={{ current_tenant.pk }}" class="tenant-nav-link {% if active_tenant_section == 'product' %}active-tab{% endif %}">Products & Catalog</a>
+  <a href="{% url 'admin:api_sale_changelist' %}?tenant__id__exact={{ current_tenant.pk }}" class="tenant-nav-link {% if active_tenant_section == 'sale' %}active-tab{% endif %}">Sales</a>
+  <a href="{% url 'admin:api_expense_changelist' %}?tenant__id__exact={{ current_tenant.pk }}" class="tenant-nav-link {% if active_tenant_section == 'expense' %}active-tab{% endif %}">Expenses</a>
+  <a href="{% url 'admin:api_payrollrecord_changelist' %}?tenant__id__exact={{ current_tenant.pk }}" class="tenant-nav-link {% if active_tenant_section == 'payrollrecord' %}active-tab{% endif %}">Payroll</a>
+  <a href="{% url 'admin:api_supplier_changelist' %}?tenant__id__exact={{ current_tenant.pk }}" class="tenant-nav-link {% if active_tenant_section == 'supplier' %}active-tab{% endif %}">Suppliers</a>
+  <a href="{% url 'admin:api_target_changelist' %}?tenant__id__exact={{ current_tenant.pk }}" class="tenant-nav-link {% if active_tenant_section == 'target' %}active-tab{% endif %}">Targets</a>
+  <a href="{% url 'admin:api_notification_changelist' %}?tenant__id__exact={{ current_tenant.pk }}" class="tenant-nav-link {% if active_tenant_section == 'notification' %}active-tab{% endif %}">Notifications</a>
+  <a href="{% url 'admin:api_membership_changelist' %}?tenant__id__exact={{ current_tenant.pk }}" class="tenant-nav-link {% if active_tenant_section == 'membership' %}active-tab{% endif %}">Team Access</a>
+  <a href="{% url 'admin:api_tenant_changelist' %}" class="all-businesses-btn">&larr; All Businesses</a>
+</div>
+{% endif %}

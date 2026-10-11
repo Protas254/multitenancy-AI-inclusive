@@ -24,8 +24,7 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
-  Sparkles,
-  HelpCircle,
+  ChevronDown,
 } from "lucide-react";
 import { PermissionModule } from "@/lib/types";
 
@@ -39,17 +38,29 @@ interface NavItem {
 
 interface NavSection {
   title?: string;
+  collapsible?: boolean;
   items: NavItem[];
 }
 
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
-  const { hasPermission, currentRole } = useAuth();
+  const { hasPermission } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
+
+  const toggleSection = (title: string) => {
+    setCollapsedSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(title)) next.delete(title);
+      else next.add(title);
+      return next;
+    });
+  };
 
   const sections: NavSection[] = [
     {
       title: "OPERATIONS",
+      collapsible: false,
       items: [
         { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard className="h-4 w-4" />, module: "dashboard" },
         { label: "POS Terminal", href: "/pos", icon: <Receipt className="h-4 w-4" />, module: "pos" },
@@ -60,6 +71,7 @@ export const Sidebar: React.FC = () => {
     },
     {
       title: "FINANCE and PURCHASES",
+      collapsible: true,
       items: [
         { label: "Purchases", href: "/purchases", icon: <Truck className="h-4 w-4" />, module: "purchases" },
         { label: "Expenses", href: "/expenses", icon: <TrendingDown className="h-4 w-4" />, module: "expenses" },
@@ -69,6 +81,7 @@ export const Sidebar: React.FC = () => {
     },
     {
       title: "CRM and TEAM",
+      collapsible: true,
       items: [
         { label: "Customers", href: "/customers", icon: <Users className="h-4 w-4" />, module: "customers" },
         { label: "Suppliers", href: "/suppliers", icon: <Building className="h-4 w-4" />, module: "suppliers" },
@@ -80,6 +93,7 @@ export const Sidebar: React.FC = () => {
     },
     {
       title: "SYSTEM and INSIGHTS",
+      collapsible: true,
       items: [
         { label: "Reports", href: "/reports", icon: <BarChart3 className="h-4 w-4" />, module: "reports" },
         { label: "Notifications", href: "/notifications", icon: <Bell className="h-4 w-4" />, module: "notifications" },
@@ -100,52 +114,74 @@ export const Sidebar: React.FC = () => {
       </div>
 
       {/* Main Navigation Scroll Area */}
-      <div className="flex-1 overflow-y-auto py-4 px-3 space-y-6">
+      <div className="flex-1 overflow-y-auto py-4 px-3 space-y-4">
         {sections.map((section, sIdx) => {
           // Filter items based on current role permissions
           const visibleItems = section.items.filter((item) => hasPermission(item.module, "view"));
           if (visibleItems.length === 0) return null;
 
+          const isSectionCollapsed = section.collapsible && section.title
+            ? collapsedSections.has(section.title)
+            : false;
+
           return (
             <div key={sIdx} className="space-y-1">
               {!isCollapsed && section.title && (
-                <p className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-300 mb-1.5">
-                  {section.title}
-                </p>
+                section.collapsible ? (
+                  <button
+                    onClick={() => toggleSection(section.title!)}
+                    className="w-full flex items-center justify-between px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 transition-all mb-1"
+                  >
+                    <span>{section.title}</span>
+                    <ChevronDown
+                      className={`h-3 w-3 transition-transform duration-200 ${
+                        isSectionCollapsed ? "-rotate-90" : "rotate-0"
+                      }`}
+                    />
+                  </button>
+                ) : (
+                  <p className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+                    {section.title}
+                  </p>
+                )
               )}
-              <div className="space-y-0.5">
-                {visibleItems.map((item) => {
-                  const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
 
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      title={isCollapsed ? item.label : undefined}
-                      className={`group flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
-                        isActive
-                          ? "bg-blue-600 text-white font-semibold shadow-xs shadow-blue-600/30"
-                          : "text-slate-300 hover:bg-slate-800/90 hover:text-white"
-                      } ${isCollapsed ? "justify-center px-0" : ""}`}
-                    >
-                      <div className={`shrink-0 ${isActive ? "text-white" : "text-slate-400 group-hover:text-slate-200"}`}>
-                        {item.icon}
-                      </div>
+              {/* Items — hidden when section is collapsed */}
+              {!isSectionCollapsed && (
+                <div className="space-y-0.5">
+                  {visibleItems.map((item) => {
+                    const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
 
-                      {!isCollapsed && (
-                        <div className="flex flex-1 items-center justify-between truncate">
-                          <span className="truncate">{item.label}</span>
-                          {item.badge && (
-                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-blue-500/30 text-blue-200 uppercase tracking-tight">
-                              {item.badge}
-                            </span>
-                          )}
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        title={isCollapsed ? item.label : undefined}
+                        className={`group flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
+                          isActive
+                            ? "bg-blue-600 text-white font-semibold shadow-xs shadow-blue-600/30"
+                            : "text-slate-300 hover:bg-slate-800/90 hover:text-white"
+                        } ${isCollapsed ? "justify-center px-0" : ""}`}
+                      >
+                        <div className={`shrink-0 ${isActive ? "text-white" : "text-slate-400 group-hover:text-slate-200"}`}>
+                          {item.icon}
                         </div>
-                      )}
-                    </Link>
-                  );
-                })}
-              </div>
+
+                        {!isCollapsed && (
+                          <div className="flex flex-1 items-center justify-between truncate">
+                            <span className="truncate">{item.label}</span>
+                            {item.badge && (
+                              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-blue-500/30 text-blue-200 uppercase tracking-tight">
+                                {item.badge}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           );
         })}

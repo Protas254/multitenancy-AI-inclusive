@@ -160,8 +160,8 @@ export const DailyReconciliationCard: React.FC = () => {
                 <span>Physical Cash Count</span>
               </div>
 
-              <div className="flex items-center h-12 w-full rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus-within:bg-white focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100 transition-all px-3.5">
-                <span className="text-xs font-bold text-slate-400 font-mono select-none mr-2">
+              <div className="flex items-center h-12 w-full rounded-xl border border-slate-200 bg-white hover:border-slate-300 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100 transition-all px-3 shadow-2xs">
+                <span className="text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-md select-none mr-2.5 tracking-wider">
                   KES
                 </span>
                 <input
@@ -170,22 +170,22 @@ export const DailyReconciliationCard: React.FC = () => {
                   value={physicalCash}
                   onChange={(e) => setPhysicalCash(e.target.value)}
                   placeholder="0.00"
-                  className="w-full bg-transparent text-sm font-bold text-slate-900 font-mono focus:outline-none"
+                  className="w-full bg-transparent text-base font-bold text-slate-900 tracking-tight focus:outline-none"
                 />
               </div>
 
-              <div className="flex items-center justify-between text-[11px] pt-1 px-1">
-                <span className="text-slate-400 font-medium">
+              <div className="flex items-center justify-between text-xs pt-1 px-1">
+                <span className="text-slate-500 font-medium">
                   System Recorded:{" "}
-                  <strong className="text-slate-600 font-mono">{formatKES(systemCash)}</strong>
+                  <strong className="text-slate-900 font-bold">{formatKES(systemCash)}</strong>
                 </span>
                 <span
-                  className={`font-mono font-bold ${
+                  className={`inline-flex items-center text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${
                     cashDiff === 0
-                      ? "text-slate-500"
+                      ? "bg-slate-100 text-slate-600 border-slate-200"
                       : cashDiff > 0
-                      ? "text-blue-600"
-                      : "text-rose-600"
+                      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                      : "bg-rose-50 text-rose-700 border-rose-200"
                   }`}
                 >
                   Diff: {cashDiff >= 0 ? `+${cashDiff.toLocaleString("en-KE", { minimumFractionDigits: 2 })}` : cashDiff.toLocaleString("en-KE", { minimumFractionDigits: 2 })}
@@ -200,8 +200,8 @@ export const DailyReconciliationCard: React.FC = () => {
                 <span>M-Pesa Statement Total</span>
               </div>
 
-              <div className="flex items-center h-12 w-full rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus-within:bg-white focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100 transition-all px-3.5">
-                <span className="text-xs font-bold text-slate-400 font-mono select-none mr-2">
+              <div className="flex items-center h-12 w-full rounded-xl border border-slate-200 bg-white hover:border-slate-300 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100 transition-all px-3 shadow-2xs">
+                <span className="text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-md select-none mr-2.5 tracking-wider">
                   KES
                 </span>
                 <input
@@ -210,22 +210,22 @@ export const DailyReconciliationCard: React.FC = () => {
                   value={mpesaStatement}
                   onChange={(e) => setMpesaStatement(e.target.value)}
                   placeholder="0.00"
-                  className="w-full bg-transparent text-sm font-bold text-slate-900 font-mono focus:outline-none"
+                  className="w-full bg-transparent text-base font-bold text-slate-900 tracking-tight focus:outline-none"
                 />
               </div>
 
-              <div className="flex items-center justify-between text-[11px] pt-1 px-1">
-                <span className="text-slate-400 font-medium">
+              <div className="flex items-center justify-between text-xs pt-1 px-1">
+                <span className="text-slate-500 font-medium">
                   System Recorded:{" "}
-                  <strong className="text-slate-600 font-mono">{formatKES(systemMpesa)}</strong>
+                  <strong className="text-slate-900 font-bold">{formatKES(systemMpesa)}</strong>
                 </span>
                 <span
-                  className={`font-mono font-bold ${
+                  className={`inline-flex items-center text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${
                     mpesaDiff === 0
-                      ? "text-slate-500"
+                      ? "bg-slate-100 text-slate-600 border-slate-200"
                       : mpesaDiff > 0
-                      ? "text-blue-600"
-                      : "text-rose-600"
+                      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                      : "bg-rose-50 text-rose-700 border-rose-200"
                   }`}
                 >
                   Diff: {mpesaDiff >= 0 ? `+${mpesaDiff.toLocaleString("en-KE", { minimumFractionDigits: 2 })}` : mpesaDiff.toLocaleString("en-KE", { minimumFractionDigits: 2 })}
@@ -235,34 +235,40 @@ export const DailyReconciliationCard: React.FC = () => {
           </div>
 
           {/* ROW 2: Auto-Calculated Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 pt-2">
             {/* Card 1: TOTAL PHYSICAL COLLECTION */}
-            <div className="p-4 rounded-xl border border-slate-200 bg-white flex items-center gap-4 shadow-2xs">
-              <div className="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                <Layers className="h-5 w-5" />
+            <div className="p-5 rounded-2xl border border-slate-200/90 bg-white flex items-center gap-4 shadow-xs hover:border-slate-300 transition-all">
+              <div className="h-12 w-12 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center shrink-0">
+                <Layers className="h-6 w-6" />
               </div>
               <div>
-                <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">
+                <span className="text-[11px] uppercase font-bold tracking-wider text-slate-400 block">
                   TOTAL PHYSICAL COLLECTION
                 </span>
-                <span className="text-lg font-black font-mono text-slate-900 block mt-0.5">
-                  KES {totalPhysicalCollection.toLocaleString("en-KE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </span>
+                <div className="flex items-baseline gap-1 mt-0.5">
+                  <span className="text-xs font-bold text-slate-400">KES</span>
+                  <span className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                    {totalPhysicalCollection.toLocaleString("en-KE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                </div>
               </div>
             </div>
 
             {/* Card 2: TOTAL SYSTEM RECORDS */}
-            <div className="p-4 rounded-xl border border-slate-200 bg-white flex items-center gap-4 shadow-2xs">
-              <div className="h-10 w-10 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center shrink-0">
-                <Layers className="h-5 w-5" />
+            <div className="p-5 rounded-2xl border border-slate-200/90 bg-white flex items-center gap-4 shadow-xs hover:border-slate-300 transition-all">
+              <div className="h-12 w-12 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center shrink-0">
+                <Layers className="h-6 w-6" />
               </div>
               <div>
-                <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">
+                <span className="text-[11px] uppercase font-bold tracking-wider text-slate-400 block">
                   TOTAL SYSTEM RECORDS
                 </span>
-                <span className="text-lg font-black font-mono text-slate-900 block mt-0.5">
-                  KES {totalSystemRecords.toLocaleString("en-KE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </span>
+                <div className="flex items-baseline gap-1 mt-0.5">
+                  <span className="text-xs font-bold text-slate-400">KES</span>
+                  <span className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                    {totalSystemRecords.toLocaleString("en-KE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                </div>
               </div>
             </div>
           </div>

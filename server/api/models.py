@@ -57,6 +57,7 @@ class Tenant(models.Model):
     plan = models.CharField(max_length=50, default="pro")
     currency = models.CharField(max_length=10, default="KES")
     status = models.CharField(max_length=20, default="active")
+    is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
@@ -66,6 +67,11 @@ class Tenant(models.Model):
             from django.utils.text import slugify
             base_slug = slugify(self.name) or "business"
             self.slug = f"{base_slug}-{uuid.uuid4().hex[:6]}"
+        # Keep status and is_active synchronized
+        if self.status == "active":
+            self.is_active = True
+        elif self.status in ("pending", "inactive", "suspended"):
+            self.is_active = False
         super().save(*args, **kwargs)
 
     def __str__(self):
