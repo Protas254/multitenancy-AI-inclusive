@@ -116,11 +116,15 @@ class Membership(models.Model):
         ("admin", "Admin"),
         ("manager", "Manager"),
         ("cashier", "Cashier"),
+        ("salesperson", "Salesperson"),
+        ("storekeeper", "Storekeeper"),
+        ("accountant", "Accountant"),
+        ("staff", "Staff"),
     ]
     id = models.CharField(max_length=64, primary_key=True, default=gen_mem_id)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="memberships")
     tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name="memberships")
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="owner")
+    role = models.CharField(max_length=30, choices=ROLE_CHOICES, default="owner")
     designation = models.CharField(max_length=100, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

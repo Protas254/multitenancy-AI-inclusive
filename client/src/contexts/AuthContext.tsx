@@ -103,7 +103,6 @@ const ROLE_PERMISSIONS: Record<UserRole, Partial<Record<PermissionModule, Permis
     sales: ["view", "create"],
     products: ["view"],
     customers: ["view", "create"],
-    inventory: ["view"],
     notifications: ["view"],
   },
   admin: {

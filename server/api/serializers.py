@@ -196,13 +196,25 @@ class SaleSerializer(serializers.ModelSerializer):
     taxTotal = serializers.SerializerMethodField()
     discountTotal = serializers.SerializerMethodField()
 
+    status = serializers.SerializerMethodField()
+
     class Meta:
         model = Sale
         fields = [
             "id", "tenantId", "invoiceNumber", "saleNumber", "customerId", "customerName",
             "cashierId", "cashierName", "staffName", "totalAmount", "paidAmount", "paymentStatus",
-            "paymentMethod", "notes", "items", "createdAt", "date", "subtotal", "taxTotal", "discountTotal"
+            "paymentMethod", "status", "notes", "items", "createdAt", "date", "subtotal", "taxTotal", "discountTotal"
         ]
+
+    def get_status(self, obj):
+        """Derive a frontend-compatible status from payment_status and payment_method."""
+        if obj.payment_method == "credit":
+            return "credit"
+        if obj.payment_status == "paid":
+            return "completed"
+        if obj.payment_status == "partial":
+            return "partially_refunded"
+        return "completed"  # default
 
     def get_subtotal(self, obj):
         items = obj.items.all()
@@ -228,10 +240,50 @@ class ExpenseSerializer(serializers.ModelSerializer):
 class StaffMemberSerializer(serializers.ModelSerializer):
     tenantId = serializers.CharField(source="tenant_id", read_only=True)
     monthlySalary = serializers.FloatField(source="monthly_salary")
+    basicSalary = serializers.FloatField(source="monthly_salary")  # alias for frontend
+    hireDate = serializers.SerializerMethodField()
+    salesThisMonth = serializers.SerializerMethodField()
+    commissionRate = serializers.SerializerMethodField()
+    monthlyTarget = serializers.SerializerMethodField()
+    hasLoginAccount = serializers.SerializerMethodField()
+    loginEmail = serializers.SerializerMethodField()
 
     class Meta:
         model = StaffMember
-        fields = ["id", "tenantId", "name", "email", "phone", "role", "monthlySalary", "status"]
+        fields = [
+            "id", "tenantId", "name", "email", "phone", "role",
+            "monthlySalary", "basicSalary", "status",
+            "hireDate", "salesThisMonth", "commissionRate", "monthlyTarget",
+            "hasLoginAccount", "loginEmail"
+        ]
+
+    def get_hireDate(self, obj):
+        return str(obj.id)[:10] if obj.id else ""
+
+    def get_salesThisMonth(self, obj):
+        from django.utils import timezone
+        from .models import Sale
+        now = timezone.now()
+        total = Sale.objects.filter(
+            tenant=obj.tenant,
+            cashier_name__iexact=obj.name,
+            created_at__year=now.year,
+            created_at__month=now.month
+        ).aggregate(total=models.Sum("total_amount"))["total"]
+        return float(total or 0)
+
+    def get_commissionRate(self, obj):
+        return 2.0
+
+    def get_monthlyTarget(self, obj):
+        return 300000.0
+
+    def get_hasLoginAccount(self, obj):
+        from .models import User, Membership
+        return Membership.objects.filter(tenant=obj.tenant, user__email=obj.email).exists()
+
+    def get_loginEmail(self, obj):
+        return obj.email
 
 class PayrollRecordSerializer(serializers.ModelSerializer):
     tenantId = serializers.CharField(source="tenant_id", read_only=True)

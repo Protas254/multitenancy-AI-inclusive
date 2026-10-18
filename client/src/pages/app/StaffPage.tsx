@@ -10,7 +10,7 @@ import { StatusBadge } from "@/components/business/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Eye, UserCheck, Award, DollarSign, Calendar, TrendingUp } from "lucide-react";
+import { Plus, Eye, UserCheck, Award, DollarSign, Calendar, TrendingUp, KeyRound, ShieldCheck, Lock, CheckCircle2 } from "lucide-react";
 import { StaffPerformanceCard } from "@/components/business/StaffPerformanceCard";
 import { SEO } from "@/components/common/SEO";
 
@@ -31,7 +31,15 @@ export default function StaffPage() {
     basicSalary: 35000,
     commissionRate: 2,
     monthlyTarget: 300000,
+    createLogin: true,
+    password: "",
   });
+
+  // Grant login modal for existing staff
+  const [grantLoginStaff, setGrantLoginStaff] = useState<Staff | null>(null);
+  const [loginForm, setLoginForm] = useState({ email: "", password: "", role: "cashier" });
+  const [isGrantingLogin, setIsGrantingLogin] = useState(false);
+  const [loginSuccess, setLoginSuccess] = useState<string | null>(null);
 
   const loadData = async () => {
     setIsLoading(true);
@@ -50,10 +58,14 @@ export default function StaffPage() {
   const handleCreateStaff = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newStaff.name || !newStaff.email) return;
+    if (newStaff.createLogin && newStaff.password.length < 6) {
+      alert("Password must be at least 6 characters.");
+      return;
+    }
     setIsSubmitting(true);
 
     try {
-      await staffApi.createStaff({
+      const created = await staffApi.createStaff({
         tenantId: currentTenant.id,
         name: newStaff.name,
         role: newStaff.role as any,
@@ -61,24 +73,52 @@ export default function StaffPage() {
         phone: newStaff.phone || "+254 700 000 000",
         hireDate: new Date().toISOString().split("T")[0],
         basicSalary: Number(newStaff.basicSalary),
+        monthlySalary: Number(newStaff.basicSalary),
         commissionRate: Number(newStaff.commissionRate),
         salesThisMonth: 0,
         monthlyTarget: Number(newStaff.monthlyTarget),
         status: "active",
       });
+
+      // Also create login account if requested
+      if (newStaff.createLogin && newStaff.password && created?.id) {
+        await staffApi.createLoginAccount(created.id, {
+          email: newStaff.email,
+          password: newStaff.password,
+          role: newStaff.role,
+        });
+      }
+
       setIsAddOpen(false);
-      setNewStaff({
-        name: "",
-        role: "staff",
-        email: "",
-        phone: "",
-        basicSalary: 35000,
-        commissionRate: 2,
-        monthlyTarget: 300000,
-      });
+      setNewStaff({ name: "", role: "cashier", email: "", phone: "", basicSalary: 35000, commissionRate: 2, monthlyTarget: 300000, createLogin: true, password: "" });
       loadData();
+    } catch (err: any) {
+      alert(err.message || "Failed to add staff member.");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleGrantLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!grantLoginStaff) return;
+    if (loginForm.password.length < 6) {
+      alert("Password must be at least 6 characters.");
+      return;
+    }
+    setIsGrantingLogin(true);
+    try {
+      const res = await staffApi.createLoginAccount(grantLoginStaff.id, {
+        email: loginForm.email || grantLoginStaff.email,
+        password: loginForm.password,
+        role: loginForm.role,
+      });
+      setLoginSuccess(res?.detail || "Login account created successfully!");
+      loadData();
+    } catch (err: any) {
+      alert(err.message || "Failed to create login account.");
+    } finally {
+      setIsGrantingLogin(false);
     }
   };
 
@@ -97,7 +137,7 @@ export default function StaffPage() {
           <div>
             <span className="font-semibold text-slate-900 block">{member.name}</span>
             <span className="text-xs text-slate-500 font-medium capitalize">
-              {member.role === "owner" ? "Owner" : "Staff"}
+              {member.role || "Staff"}
             </span>
           </div>
         </div>
@@ -108,10 +148,36 @@ export default function StaffPage() {
       accessorKey: "email",
       cell: (member) => (
         <div className="text-xs space-y-0.5">
-          <div className="text-slate-700">{member.email}</div>
+          <div className="text-slate-700 font-medium">{member.email}</div>
           <div className="text-slate-400">{member.phone}</div>
         </div>
       ),
+    },
+    {
+      header: "Login Access",
+      cell: (member) => {
+        const hasLogin = Boolean((member as any).hasLoginAccount);
+        return hasLogin ? (
+          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+            <KeyRound className="h-3 w-3 text-emerald-600" />
+            <span>Login Active</span>
+          </span>
+        ) : (
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 px-2.5 text-[11px] font-semibold gap-1 text-blue-700 bg-blue-50/70 border-blue-200 hover:bg-blue-100 hover:text-blue-800"
+            onClick={() => {
+              setGrantLoginStaff(member);
+              setLoginForm({ email: member.email, password: "", role: member.role || "cashier" });
+              setLoginSuccess(null);
+            }}
+          >
+            <KeyRound className="h-3 w-3 text-blue-600" />
+            <span>Set Password</span>
+          </Button>
+        );
+      },
     },
     {
       header: "Basic Salary",
@@ -146,14 +212,31 @@ export default function StaffPage() {
     {
       header: "Actions",
       cell: (member) => (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 w-8 p-0"
-          onClick={() => navigate(`/staff/${member.id}`)}
-        >
-          <Eye className="h-4 w-4 text-slate-500" />
-        </Button>
+        <div className="flex items-center gap-1.5 justify-end">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 px-2 text-xs gap-1 text-slate-700"
+            title="Create or Reset Login Password"
+            onClick={() => {
+              setGrantLoginStaff(member);
+              setLoginForm({ email: member.email, password: "", role: member.role || "cashier" });
+              setLoginSuccess(null);
+            }}
+          >
+            <KeyRound className="h-3.5 w-3.5 text-blue-600" />
+            <span className="hidden sm:inline">Credentials</span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0"
+            title="View Details"
+            onClick={() => navigate(`/staff/${member.id}`)}
+          >
+            <Eye className="h-4 w-4 text-slate-500" />
+          </Button>
+        </div>
       ),
     },
   ];
@@ -246,11 +329,14 @@ export default function StaffPage() {
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-slate-700">Role</label>
                 <select
-                  className="w-full h-10 px-3 border border-slate-200 rounded-md text-sm bg-white"
+                  className="w-full h-10 px-3 border border-slate-200 rounded-md text-xs bg-white font-medium"
                   value={newStaff.role}
                   onChange={(e) => setNewStaff({ ...newStaff, role: e.target.value })}
                 >
-                  <option value="staff">Staff (Floor &amp; POS)</option>
+                  <option value="cashier">Cashier (POS &amp; Sales)</option>
+                  <option value="salesperson">Salesperson (Sales &amp; Targets)</option>
+                  <option value="storekeeper">Storekeeper (Inventory &amp; Stock)</option>
+                  <option value="manager">Store Manager (POS &amp; Approvals)</option>
                   <option value="owner">Co-Owner (Full Admin)</option>
                 </select>
               </div>
@@ -264,15 +350,51 @@ export default function StaffPage() {
               </div>
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-700">Email</label>
+              <label className="text-xs font-semibold text-slate-700">Email (Username for Login)</label>
               <Input
                 type="email"
                 required
                 value={newStaff.email}
                 onChange={(e) => setNewStaff({ ...newStaff, email: e.target.value })}
-                placeholder="staff@store.co.ke"
+                placeholder="e.g. kelvin@store.co.ke"
               />
             </div>
+
+            {/* Login Account Credentials Box */}
+            <div className="p-3.5 bg-blue-50/70 rounded-xl border border-blue-200/90 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <KeyRound className="h-4 w-4 text-blue-600" />
+                  <span className="text-xs font-bold text-slate-900">POS &amp; App Login Access</span>
+                </div>
+                <label className="flex items-center gap-1.5 cursor-pointer text-xs font-semibold text-blue-700">
+                  <input
+                    type="checkbox"
+                    checked={newStaff.createLogin}
+                    onChange={(e) => setNewStaff({ ...newStaff, createLogin: e.target.checked })}
+                    className="h-4 w-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300"
+                  />
+                  <span>Enable Login</span>
+                </label>
+              </div>
+
+              {newStaff.createLogin && (
+                <div className="space-y-1.5 pt-1 border-t border-blue-200/60">
+                  <label className="text-[11px] font-semibold text-slate-700">Set Initial Password</label>
+                  <Input
+                    type="password"
+                    eyeToggle={true}
+                    required={newStaff.createLogin}
+                    minLength={6}
+                    value={newStaff.password}
+                    onChange={(e) => setNewStaff({ ...newStaff, password: e.target.value })}
+                    placeholder="Set password (min 6 chars, e.g. Staff1234)"
+                    className="bg-white text-xs h-9"
+                  />
+                </div>
+              )}
+            </div>
+
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-slate-700">Basic Salary (KES)</label>
@@ -292,15 +414,103 @@ export default function StaffPage() {
                 />
               </div>
             </div>
+
             <DialogFooter className="pt-2">
               <Button type="button" variant="outline" onClick={() => setIsAddOpen(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Adding..." : "Add Staff"}
+              <Button type="submit" disabled={isSubmitting} className="bg-blue-600 hover:bg-blue-700 text-white font-bold">
+                {isSubmitting ? "Adding..." : "Add Staff Member"}
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Grant / Reset Login Credentials Modal for Existing Staff */}
+      <Dialog open={!!grantLoginStaff} onOpenChange={(open) => !open && setGrantLoginStaff(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                <KeyRound className="h-4 w-4" />
+              </div>
+              <div>
+                <DialogTitle className="text-base font-bold text-slate-900">
+                  Login Credentials: {grantLoginStaff?.name}
+                </DialogTitle>
+                <p className="text-xs text-slate-500">
+                  Set password and system role so this employee can log in to the POS terminal.
+                </p>
+              </div>
+            </div>
+          </DialogHeader>
+
+          {loginSuccess ? (
+            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl space-y-3 text-center">
+              <div className="h-10 w-10 mx-auto rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                <CheckCircle2 className="h-6 w-6" />
+              </div>
+              <p className="text-xs font-semibold text-emerald-800">{loginSuccess}</p>
+              <Button
+                size="sm"
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                onClick={() => setGrantLoginStaff(null)}
+              >
+                Done
+              </Button>
+            </div>
+          ) : (
+            <form onSubmit={handleGrantLogin} className="space-y-4 pt-1">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-700">Login Email / Username</label>
+                <Input
+                  type="email"
+                  required
+                  value={loginForm.email}
+                  onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
+                  placeholder="staff@store.co.ke"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-700">Assign System Role</label>
+                <select
+                  className="w-full h-10 px-3 border border-slate-200 rounded-md text-xs bg-white font-medium"
+                  value={loginForm.role}
+                  onChange={(e) => setLoginForm({ ...loginForm, role: e.target.value })}
+                >
+                  <option value="cashier">Cashier (Floor POS &amp; Sales)</option>
+                  <option value="salesperson">Salesperson (Sales &amp; Targets)</option>
+                  <option value="storekeeper">Storekeeper (Inventory &amp; Stock)</option>
+                  <option value="manager">Store Manager (Discounts &amp; Till Closeout)</option>
+                  <option value="owner">Co-Owner (Full Admin Access)</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-700">Set Login Password</label>
+                <Input
+                  type="password"
+                  eyeToggle={true}
+                  required
+                  minLength={6}
+                  value={loginForm.password}
+                  onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                  placeholder="Enter new password (min 6 characters)"
+                />
+              </div>
+
+              <DialogFooter className="pt-2">
+                <Button type="button" variant="outline" onClick={() => setGrantLoginStaff(null)}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isGrantingLogin} className="bg-blue-600 hover:bg-blue-700 text-white font-bold">
+                  {isGrantingLogin ? "Saving Credentials..." : "Save Login Credentials"}
+                </Button>
+              </DialogFooter>
+            </form>
+          )}
         </DialogContent>
       </Dialog>
     </div>

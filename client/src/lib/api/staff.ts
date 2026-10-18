@@ -28,6 +28,10 @@ export const staffApi = {
     return await apiClient.patch<StaffMember>(`/staff/${id}/`, data);
   },
 
+  async createLoginAccount(staffId: string, data: { email: string; password: string; role: string }): Promise<any> {
+    return await apiClient.post(`/staff/${staffId}/create-login/`, data);
+  },
+
   async deleteStaff(id: string): Promise<boolean> {
     try {
       await apiClient.delete(`/staff/${id}/`);

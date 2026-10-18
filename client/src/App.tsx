@@ -78,7 +78,11 @@ export default function App() {
           {/* Operations Available to all roles with their specific views */}
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/pos" element={<PosPage />} />
-          <Route path="/inventory" element={<InventoryPage />} />
+          <Route path="/inventory" element={
+            <ProtectedModuleRoute module="inventory" action="create">
+              <InventoryPage />
+            </ProtectedModuleRoute>
+          } />
           <Route path="/products" element={<ProductsPage />} />
           <Route path="/products/:id" element={<ProductDetailPage />} />
           <Route path="/sales" element={<SalesPage />} />

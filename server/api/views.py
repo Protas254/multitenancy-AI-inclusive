@@ -197,6 +197,69 @@ class StaffMemberViewSet(TenantScopedViewSet):
     queryset = StaffMember.objects.all()
     serializer_class = StaffMemberSerializer
 
+    @action(detail=True, methods=["post"], url_path="create-login")
+    def create_login_account(self, request, pk=None):
+        """Create a User account + Membership for a staff member so they can log in."""
+        staff = self.get_object()
+        tenant_id = self.get_tenant_id()
+        tenant = get_object_or_404(Tenant, id=tenant_id)
+
+        email = request.data.get("email") or staff.email
+        password = request.data.get("password")
+        role = request.data.get("role", "cashier")  # default cashier
+
+        if not email:
+            return Response({"detail": "Email is required."}, status=status.HTTP_400_BAD_REQUEST)
+        if not password or len(password) < 6:
+            return Response({"detail": "Password must be at least 6 characters."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check if user with this email already exists
+        existing_user = User.objects.filter(email=email).first()
+        if existing_user:
+            # Just add membership if they don't already have one for this tenant
+            membership, created = Membership.objects.get_or_create(
+                user=existing_user,
+                tenant=tenant,
+                defaults={"role": role, "designation": staff.role}
+            )
+            if not created:
+                return Response({"detail": "This email already has access to this business."}, status=status.HTTP_409_CONFLICT)
+            return Response({
+                "detail": f"Existing user {email} has been granted {role} access to this business.",
+                "userId": existing_user.id,
+                "role": role
+            })
+
+        # Create new User
+        import uuid
+        user = User.objects.create_user(
+            email=email,
+            password=password,
+            name=staff.name,
+            username=email,
+            phone=staff.phone or "",
+        )
+
+        # Create membership
+        Membership.objects.create(
+            user=user,
+            tenant=tenant,
+            role=role,
+            designation=staff.role
+        )
+
+        # Update the staff email if different
+        if staff.email != email:
+            staff.email = email
+            staff.save()
+
+        return Response({
+            "detail": f"Login account created for {staff.name}. They can now log in with {email}.",
+            "userId": user.id,
+            "email": email,
+            "role": role
+        }, status=status.HTTP_201_CREATED)
+
 class PayrollRecordViewSet(TenantScopedViewSet):
     queryset = PayrollRecord.objects.all()
     serializer_class = PayrollRecordSerializer

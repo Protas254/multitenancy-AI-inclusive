@@ -12,7 +12,7 @@ import { LogOut, Settings } from "lucide-react";
 import Link from "@/components/ui/link";
 
 export const UserMenu: React.FC = () => {
-  const { user, currentRole, switchSimulatedRole, logout } = useAuth();
+  const { user, currentRole, logout } = useAuth();
 
   return (
     <DropdownMenu>
@@ -38,34 +38,7 @@ export const UserMenu: React.FC = () => {
 
         <DropdownMenuSeparator className="bg-slate-100" />
 
-        <div className="px-2 py-2 bg-slate-50 rounded-lg mx-1 my-1 border border-slate-100">
-          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 flex items-center justify-between">
-            <span>Active Role View</span>
-            <span className="text-[9px] text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded font-semibold">Live Mode</span>
-          </p>
-          <div className="grid grid-cols-2 gap-1 bg-slate-200/60 p-0.5 rounded-lg">
-            <button
-              type="button"
-              onClick={() => switchSimulatedRole("owner")}
-              className={`text-xs py-1 rounded-md font-semibold transition-all ${
-                currentRole === "owner" ? "bg-white text-blue-600 shadow-2xs" : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              Owner
-            </button>
-            <button
-              type="button"
-              onClick={() => switchSimulatedRole("staff")}
-              className={`text-xs py-1 rounded-md font-semibold transition-all ${
-                currentRole !== "owner" ? "bg-white text-blue-600 shadow-2xs" : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              Staff
-            </button>
-          </div>
-        </div>
 
-        <DropdownMenuSeparator className="bg-slate-100" />
 
         <DropdownMenuItem asChild className="p-2 rounded-lg cursor-pointer text-xs">
           <Link href="/settings" className="flex items-center gap-2">
