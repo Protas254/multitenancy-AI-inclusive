@@ -2,10 +2,12 @@ import React from "react";
 import { Outlet } from "react-router-dom";
 import { Link } from "@/components/ui/link";
 import { Store, ShieldCheck, CheckCircle2 } from "lucide-react";
+import { SEO } from "@/components/common/SEO";
 
 export default function AuthLayout({ children }: { children?: React.ReactNode }) {
   return (
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-white">
+      <SEO noindex={true} nofollow={true} />
       {/* Left Column: Interactive Form */}
       <div className="flex flex-col justify-between p-6 sm:p-12 lg:p-16">
         <div className="flex items-center gap-2.5">

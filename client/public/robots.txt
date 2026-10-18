@@ -1,0 +1,60 @@
+# =============================================================
+#  StockGrid Robots Directive Configuration
+#  Production Domain: https://stockgrid.africa
+# =============================================================
+
+User-agent: *
+# Allowed Public Marketing Content and Static Assets
+Allow: /
+Allow: /about
+Allow: /favicon.ico
+Allow: /favicon.svg
+Allow: /apple-touch-icon.png
+Allow: /og-image.png
+Allow: /stockgrid-logo.png
+Allow: /hero-bg.jpg
+Allow: /assets/
+
+# Disallow Private Tenant Dashboard & Operational Workspace
+Disallow: /dashboard
+Disallow: /pos
+Disallow: /inventory
+Disallow: /products
+Disallow: /products/
+Disallow: /sales
+Disallow: /sales/
+Disallow: /customers
+Disallow: /customers/
+Disallow: /invoices
+Disallow: /invoices/
+Disallow: /purchases
+Disallow: /purchases/
+Disallow: /suppliers
+Disallow: /suppliers/
+Disallow: /expenses
+Disallow: /credit
+Disallow: /payroll
+Disallow: /staff
+Disallow: /staff/
+Disallow: /targets
+Disallow: /loyalty
+Disallow: /reports
+Disallow: /reports/
+Disallow: /closing-reports
+Disallow: /notifications
+Disallow: /settings
+
+# Disallow Authentication and Onboarding Forms
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /verify-email
+Disallow: /onboarding
+
+# Disallow Backend APIs and Django Administration
+Disallow: /admin/
+Disallow: /api/
+
+# Sitemap Location
+Sitemap: https://stockgrid.africa/sitemap.xml

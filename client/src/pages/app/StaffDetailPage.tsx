@@ -43,7 +43,12 @@ export default function StaffDetailPage() {
 
   return (
     <div className="space-y-6">
-      <SEO title={`${member.name} | Staff Profile`} description="Staff member details, targets, sales and payroll" />
+      <SEO
+        title={`${member.name} | Staff Profile`}
+        description="Staff member details, targets, sales and payroll"
+        noindex={true}
+        nofollow={true}
+      />
 
       {/* Header */}
       <div className="flex items-center gap-3">

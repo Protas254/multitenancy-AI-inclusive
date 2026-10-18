@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "@/components/ui/link";
 import { SEO } from "@/components/common/SEO";
+import { getOrganizationSchema, getBreadcrumbSchema, getCanonicalUrl } from "@/lib/seo";
 import {
   Store,
   ArrowRight,
@@ -53,6 +54,23 @@ export default function AboutPage() {
       <SEO
         title="About Us | StockGrid Retail Business Cloud"
         description="Learn about StockGrid — the modern multi-tenant operating system built for retail merchants and growing enterprises across Africa."
+        pathname="/about"
+        image="/og-image.png"
+        jsonLd={[
+          getOrganizationSchema(),
+          getBreadcrumbSchema([
+            { name: "Home", url: "/" },
+            { name: "About Us", url: "/about" },
+          ]),
+          {
+            "@context": "https://schema.org",
+            "@type": "AboutPage",
+            name: "About StockGrid Retail Business Cloud",
+            url: getCanonicalUrl("/about"),
+            description:
+              "Learn about StockGrid — the modern multi-tenant operating system built for retail merchants and growing enterprises across Africa.",
+          },
+        ]}
       />
 
       {/* Top Navigation */}

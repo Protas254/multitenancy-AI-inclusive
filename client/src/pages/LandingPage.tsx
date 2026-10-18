@@ -2,6 +2,11 @@ import React, { useState, useEffect } from "react";
 import Link from "@/components/ui/link";
 import { SEO } from "@/components/common/SEO";
 import {
+  getOrganizationSchema,
+  getWebSiteSchema,
+  getSoftwareApplicationSchema,
+} from "@/lib/seo";
+import {
   CheckCircle2,
   Receipt,
   Boxes,
@@ -128,7 +133,17 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <SEO title="StockGrid | Retail Business Platform" description="Complete daily business management platform for modern retail stores and multi-branch chains" />
+      <SEO
+        title="StockGrid | Retail Business Platform & Cloud POS"
+        description="Complete daily business management platform for modern retail stores and multi-branch chains. Streamline POS checkout, real-time inventory, customer credit, M-Pesa verification, staff payroll, and financial reports."
+        pathname="/"
+        image="/og-image.png"
+        jsonLd={[
+          getOrganizationSchema(),
+          getWebSiteSchema(),
+          getSoftwareApplicationSchema(),
+        ]}
+      />
       {/* Top Navigation */}
       <header className="sticky top-0 z-50 border-b border-slate-100 bg-white/90 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">

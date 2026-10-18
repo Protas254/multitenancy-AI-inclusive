@@ -4,6 +4,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { Topbar } from "@/components/layout/Topbar";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
+import { SEO } from "@/components/common/SEO";
 
 export default function AppLayout({ children }: { children?: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -25,6 +26,7 @@ export default function AppLayout({ children }: { children?: React.ReactNode }) 
 
   return (
     <div className="flex h-screen w-full bg-slate-50 overflow-hidden text-slate-900">
+      <SEO noindex={true} nofollow={true} />
       {/* Persistent Left Sidebar */}
       <Sidebar />
 

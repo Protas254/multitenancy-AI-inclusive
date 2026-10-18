@@ -160,7 +160,12 @@ export default function StaffPage() {
 
   return (
     <div className="space-y-6">
-      <SEO title="Staff Management | StockGrid" description="Manage team members, roles, sales quotas, and payroll details" />
+      <SEO
+        title="Staff Management | StockGrid"
+        description="Manage team members, roles, sales quotas, and payroll details"
+        noindex={true}
+        nofollow={true}
+      />
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
