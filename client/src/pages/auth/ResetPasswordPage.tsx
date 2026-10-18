@@ -55,6 +55,7 @@ export default function ResetPasswordPage() {
             <Input
               type="password"
               icon={<Lock className="h-4 w-4" />}
+              eyeToggle
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -67,6 +68,7 @@ export default function ResetPasswordPage() {
             <Input
               type="password"
               icon={<Lock className="h-4 w-4" />}
+              eyeToggle
               placeholder="••••••••"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}

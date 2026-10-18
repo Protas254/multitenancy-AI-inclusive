@@ -97,6 +97,7 @@ export default function LoginPage() {
           <Input
             type="password"
             icon={<Lock className="h-4 w-4" />}
+            eyeToggle
             placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}

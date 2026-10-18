@@ -386,6 +386,7 @@ export default function SettingsPage() {
                   <label className="text-xs font-semibold text-slate-600">Current PIN</label>
                   <Input
                     type="password"
+                    eyeToggle
                     maxLength={4}
                     placeholder="Current 4-digit PIN"
                     value={currentPinInput}
@@ -397,6 +398,7 @@ export default function SettingsPage() {
                   <label className="text-xs font-semibold text-slate-600">New PIN</label>
                   <Input
                     type="password"
+                    eyeToggle
                     maxLength={4}
                     placeholder="New 4-digit PIN"
                     value={newPinInput}
@@ -408,6 +410,7 @@ export default function SettingsPage() {
                   <label className="text-xs font-semibold text-slate-600">Confirm New PIN</label>
                   <Input
                     type="password"
+                    eyeToggle
                     maxLength={4}
                     placeholder="Confirm new PIN"
                     value={confirmPinInput}

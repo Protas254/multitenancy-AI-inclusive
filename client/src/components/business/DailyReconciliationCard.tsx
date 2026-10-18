@@ -24,8 +24,8 @@ export const DailyReconciliationCard: React.FC = () => {
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   // Direct Interactive Inputs matching the user's screenshot
-  const [physicalCash, setPhysicalCash] = useState<string>("20000.00");
-  const [mpesaStatement, setMpesaStatement] = useState<string>("6000.00");
+  const [physicalCash, setPhysicalCash] = useState<string>("");
+  const [mpesaStatement, setMpesaStatement] = useState<string>("");
 
   // System Recorded Values from POS
   const [systemCash, setSystemCash] = useState<number>(0);
@@ -34,23 +34,26 @@ export const DailyReconciliationCard: React.FC = () => {
 
   const loadData = async () => {
     const data = await reconciliationsApi.getAllReconciliations();
-    setAllReconciliations(data);
+    // Only keep records belonging to this tenant
+    const tenantData = data.filter((r) => r.tenantId === currentTenant.id);
+    setAllReconciliations(tenantData);
 
     const todayStr = new Date().toISOString().split("T")[0];
-    const match = data.find((r) => r.tenantId === currentTenant.id && r.date === todayStr);
+    const match = tenantData.find((r) => r.date === todayStr);
     if (match) {
+      // Restore today's already-saved values
       setPhysicalCash(String(match.actualCash.toFixed(2)));
       setMpesaStatement(String(match.mpesaActual.toFixed(2)));
       setSystemCash(match.cashSales - match.cashExpenses);
       setSystemMpesa(match.mpesaExpected);
       setHasSavedToday(true);
     } else {
-      // Default to today's tenant values
-      const current = data.find((r) => r.tenantId === currentTenant.id) || data[0];
-      if (current) {
-        setSystemCash(Math.max(0, current.cashSales - current.cashExpenses));
-        setSystemMpesa(current.mpesaExpected);
-      }
+      // New day or new account — start completely blank
+      setPhysicalCash("");
+      setMpesaStatement("");
+      setSystemCash(0);
+      setSystemMpesa(0);
+      setHasSavedToday(false);
     }
   };
 
@@ -58,7 +61,7 @@ export const DailyReconciliationCard: React.FC = () => {
     loadData();
   }, [currentTenant.id]);
 
-  const currentRec = allReconciliations.find((r) => r.tenantId === currentTenant.id) || allReconciliations[0];
+  const currentRec = allReconciliations.find((r) => r.tenantId === currentTenant.id);
 
   // Live Auto-Calculations matching screenshot 3
   const numPhysicalCash = parseFloat(physicalCash) || 0;

@@ -73,6 +73,7 @@ export default function RegisterPage() {
     confirmPassword: "",
     businessName: "",
     businessCategory: "Retail Supermarket and Grocery",
+    businessCategoryOther: "",
     businessPhone: "",
     businessEmail: "",
     location: "Nairobi, Kenya",
@@ -203,11 +204,11 @@ export default function RegisterPage() {
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-slate-700">Password</label>
-                <Input type="password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} required />
+                <Input type="password" eyeToggle value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} required />
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-slate-700">Confirm Password</label>
-                <Input type="password" value={formData.confirmPassword} onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })} required />
+                <Input type="password" eyeToggle value={formData.confirmPassword} onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })} required />
               </div>
             </div>
           </div>
@@ -244,8 +245,19 @@ export default function RegisterPage() {
                 <option>Pharmacy and Chemist</option>
                 <option>Electronics and Tech</option>
                 <option>Restaurant and Hospitality</option>
+                <option value="Other">Other (Describe your business)</option>
               </select>
             </div>
+            {formData.businessCategory === "Other" && (
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-700">Describe Your Business</label>
+                <Input
+                  placeholder="Please describe your type of business"
+                  value={formData.businessCategoryOther}
+                  onChange={(e) => setFormData({ ...formData, businessCategoryOther: e.target.value })}
+                />
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-slate-700">Store City / Region</label>
@@ -389,70 +401,18 @@ export default function RegisterPage() {
             <p className="text-xs text-slate-500 mt-1">Choose the plan that fits your business scale, and set your monthly milestone.</p>
           </div>
 
-          {/* Package Selection Cards */}
+          {/* Package Selection */}
           <div className="space-y-2">
             <label className="text-xs font-bold uppercase tracking-wider text-slate-700">Choose Your Subscription Tier</label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-              {/* Starter Retail */}
-              <div
-                onClick={() => setFormData({ ...formData, plan: "starter" })}
-                className={`p-3.5 rounded-xl border cursor-pointer transition-all flex flex-col justify-between ${
-                  formData.plan === "starter"
-                    ? "border-blue-600 bg-blue-50/50 ring-2 ring-blue-600/30 shadow-xs"
-                    : "border-slate-200 bg-white hover:bg-slate-50"
-                }`}
-              >
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-900">Starter Retail</span>
-                    {formData.plan === "starter" && <CheckCircle2 className="h-4 w-4 text-blue-600" />}
-                  </div>
-                  <p className="text-sm font-black font-mono text-slate-900">KES 1,000<span className="text-[10px] font-normal text-slate-500">/mo</span></p>
-                  <p className="text-[10px] text-slate-500 leading-tight">1 Shop, 2 Staff, core POS, basic inventory up to 500 SKUs.</p>
-                </div>
-              </div>
-
-              {/* Growth Pro */}
-              <div
-                onClick={() => setFormData({ ...formData, plan: "professional" })}
-                className={`p-3.5 rounded-xl border cursor-pointer transition-all flex flex-col justify-between relative ${
-                  formData.plan === "professional"
-                    ? "border-blue-600 bg-blue-50/50 ring-2 ring-blue-600/30 shadow-xs"
-                    : "border-slate-200 bg-white hover:bg-slate-50"
-                }`}
-              >
-                <span className="absolute -top-2 right-2 bg-blue-600 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-full">
-                  Recommended
-                </span>
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-900">Growth Pro</span>
-                    {formData.plan === "professional" && <CheckCircle2 className="h-4 w-4 text-blue-600" />}
-                  </div>
-                  <p className="text-sm font-black font-mono text-slate-900">KES 2,000<span className="text-[10px] font-normal text-slate-500">/mo</span></p>
-                  <p className="text-[10px] text-slate-500 leading-tight">Up to 3 branches, 10 staff, Manager PIN protection, Loyalty, Expenses &amp; B2B Credit.</p>
-                </div>
-              </div>
-
-              {/* Enterprise Chain */}
-              <div
-                onClick={() => setFormData({ ...formData, plan: "enterprise" })}
-                className={`p-3.5 rounded-xl border cursor-pointer transition-all flex flex-col justify-between ${
-                  formData.plan === "enterprise"
-                    ? "border-blue-600 bg-blue-50/50 ring-2 ring-blue-600/30 shadow-xs"
-                    : "border-slate-200 bg-white hover:bg-slate-50"
-                }`}
-              >
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-900">Enterprise Chain</span>
-                    {formData.plan === "enterprise" && <CheckCircle2 className="h-4 w-4 text-blue-600" />}
-                  </div>
-                  <p className="text-sm font-black font-mono text-slate-900">KES 3,000<span className="text-[10px] font-normal text-slate-500">/mo</span></p>
-                  <p className="text-[10px] text-slate-500 leading-tight">Unlimited stores &amp; warehouses, inter-branch stock transfers, consolidated HQ reports &amp; AI.</p>
-                </div>
-              </div>
-            </div>
+            <select
+              value={formData.plan}
+              onChange={(e) => setFormData({ ...formData, plan: e.target.value })}
+              className="flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
+            >
+              <option value="starter">Starter Retail — KES 1,000/mo</option>
+              <option value="professional">Growth Pro — KES 2,000/mo</option>
+              <option value="enterprise">Enterprise Chain — KES 3,000/mo</option>
+            </select>
           </div>
 
           <div className="space-y-3 pt-2">
