@@ -173,6 +173,16 @@ class SaleViewSet(TenantScopedViewSet):
             if product and product.current_stock >= qty:
                 product.current_stock -= qty
                 product.save()
+                from .notifications import trigger_low_stock_notification
+                trigger_low_stock_notification(product)
+
+        # Automated checks on quota achievement and credit limits
+        from .notifications import trigger_quota_achievement_notification, trigger_credit_limit_notification
+        if customer:
+            trigger_credit_limit_notification(customer, tenant)
+        cashier = StaffMember.objects.filter(tenant=tenant, name__iexact=sale.cashier_name).first()
+        if cashier:
+            trigger_quota_achievement_notification(cashier, tenant)
 
         serializer = self.get_serializer(sale)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -194,8 +204,17 @@ class TargetViewSet(TenantScopedViewSet):
     serializer_class = TargetSerializer
 
 class NotificationViewSet(TenantScopedViewSet):
-    queryset = Notification.objects.all()
+    queryset = Notification.objects.all().order_by("-created_at")
     serializer_class = NotificationSerializer
+
+    def list(self, request, *args, **kwargs):
+        tenant_id = self.get_tenant_id()
+        if tenant_id:
+            tenant = Tenant.objects.filter(id=tenant_id).first()
+            if tenant:
+                from .notifications import run_all_background_checks
+                run_all_background_checks(tenant)
+        return super().list(request, *args, **kwargs)
 
 class DailyReconciliationViewSet(TenantScopedViewSet):
     queryset = DailyReconciliation.objects.all()
@@ -839,12 +858,29 @@ def dashboard_stats_view(request):
     ]
 
     target_obj = Target.objects.filter(tenant=tenant).first()
-    target_data = {
-        "title": target_obj.title if target_obj else "Monthly Revenue Target",
-        "targetAmount": float(target_obj.target_amount) if target_obj else 500000,
-        "achievedAmount": float(target_obj.current_amount) if target_obj else today_sales,
-        "periodLabel": f"{target_obj.start_date.strftime('%d %b')} – {target_obj.end_date.strftime('%d %b %Y')}" if target_obj else "This Month",
-    }
+    if target_obj:
+        if target_obj.current_amount and float(target_obj.current_amount) > 0:
+            achieved = float(target_obj.current_amount)
+        else:
+            achieved = float(Sale.objects.filter(
+                tenant=tenant,
+                created_at__date__gte=target_obj.start_date,
+                created_at__date__lte=target_obj.end_date,
+                payment_status="paid"
+            ).aggregate(Sum("total_amount"))["total_amount__sum"] or 0)
+        target_data = {
+            "title": target_obj.title,
+            "targetAmount": float(target_obj.target_amount),
+            "achievedAmount": achieved,
+            "periodLabel": f"{target_obj.start_date.strftime('%d %b')} – {target_obj.end_date.strftime('%d %b %Y')}",
+        }
+    else:
+        target_data = {
+            "title": "Monthly Revenue Target",
+            "targetAmount": 500000,
+            "achievedAmount": today_sales,
+            "periodLabel": "This Month",
+        }
 
     return Response({
         "todaySales": today_sales,

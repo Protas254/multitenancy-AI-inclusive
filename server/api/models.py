@@ -183,6 +183,7 @@ class Customer(models.Model):
     email = models.EmailField(blank=True)
     phone = models.CharField(max_length=50, blank=True)
     address = models.TextField(blank=True)
+    credit_limit = models.DecimalField(max_digits=14, decimal_places=2, default=50000)
     total_purchases = models.DecimalField(max_digits=14, decimal_places=2, default=0)
     loyalty_points = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -273,11 +274,14 @@ class Target(models.Model):
     id = models.CharField(max_length=64, primary_key=True, default=gen_tgt_id)
     tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name="targets")
     title = models.CharField(max_length=255)
+    type = models.CharField(max_length=50, default="business")
+    assigned_to_staff = models.ForeignKey("StaffMember", on_delete=models.SET_NULL, null=True, blank=True, related_name="targets")
     target_amount = models.DecimalField(max_digits=14, decimal_places=2, default=0)
     current_amount = models.DecimalField(max_digits=14, decimal_places=2, default=0)
     period = models.CharField(max_length=50, default="Monthly")
     start_date = models.DateField()
     end_date = models.DateField()
+    status = models.CharField(max_length=50, default="active")
 
 class Notification(models.Model):
     id = models.CharField(max_length=64, primary_key=True, default=gen_notif_id)

@@ -157,13 +157,14 @@ class ProductSerializer(serializers.ModelSerializer):
 
 class CustomerSerializer(serializers.ModelSerializer):
     tenantId = serializers.CharField(source="tenant_id", read_only=True)
+    creditLimit = serializers.FloatField(source="credit_limit", required=False, default=50000.0)
     totalPurchases = serializers.FloatField(source="total_purchases", read_only=True)
     loyaltyPoints = serializers.IntegerField(source="loyalty_points", read_only=True)
     createdAt = serializers.DateTimeField(source="created_at", read_only=True)
 
     class Meta:
         model = Customer
-        fields = ["id", "tenantId", "name", "email", "phone", "address", "totalPurchases", "loyaltyPoints", "createdAt"]
+        fields = ["id", "tenantId", "name", "email", "phone", "address", "creditLimit", "totalPurchases", "loyaltyPoints", "createdAt"]
 
 class SaleItemSerializer(serializers.ModelSerializer):
     productId = serializers.CharField(source="product_id", read_only=True, allow_null=True)
@@ -228,13 +229,38 @@ class PayrollRecordSerializer(serializers.ModelSerializer):
 class TargetSerializer(serializers.ModelSerializer):
     tenantId = serializers.CharField(source="tenant_id", read_only=True)
     targetAmount = serializers.FloatField(source="target_amount")
-    currentAmount = serializers.FloatField(source="current_amount")
+    currentAmount = serializers.FloatField(source="current_amount", required=False, default=0.0)
+    achievedAmount = serializers.SerializerMethodField()
+    assignedToStaffId = serializers.CharField(source="assigned_to_staff_id", required=False, allow_null=True)
+    assignedToStaffName = serializers.SerializerMethodField()
     startDate = serializers.DateField(source="start_date")
     endDate = serializers.DateField(source="end_date")
+    type = serializers.CharField(required=False, default="business")
+    status = serializers.CharField(required=False, default="active")
 
     class Meta:
         model = Target
-        fields = ["id", "tenantId", "title", "targetAmount", "currentAmount", "period", "startDate", "endDate"]
+        fields = [
+            "id", "tenantId", "title", "type", "targetAmount", "currentAmount",
+            "achievedAmount", "assignedToStaffId", "assignedToStaffName",
+            "period", "startDate", "endDate", "status"
+        ]
+
+    def get_achievedAmount(self, obj):
+        if obj.current_amount and float(obj.current_amount) > 0:
+            return float(obj.current_amount)
+        from .models import Sale
+        from django.db.models import Sum
+        sales_sum = Sale.objects.filter(
+            tenant=obj.tenant,
+            created_at__date__gte=obj.start_date,
+            created_at__date__lte=obj.end_date,
+            payment_status="paid"
+        ).aggregate(Sum("total_amount"))["total_amount__sum"] or 0
+        return float(sales_sum)
+
+    def get_assignedToStaffName(self, obj):
+        return obj.assigned_to_staff.name if obj.assigned_to_staff else None
 
 class NotificationSerializer(serializers.ModelSerializer):
     tenantId = serializers.CharField(source="tenant_id", read_only=True)

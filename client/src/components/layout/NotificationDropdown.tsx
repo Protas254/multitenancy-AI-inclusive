@@ -13,6 +13,7 @@ import { useTenant } from "@/contexts/TenantContext";
 import { NotificationItem } from "@/lib/types";
 import { formatRelativeTime } from "@/lib/utils";
 import Link from "@/components/ui/link";
+import { checkAndDispatchNewAlerts } from "@/lib/pushNotifications";
 
 export const NotificationDropdown: React.FC = () => {
   const { currentTenant } = useTenant();
@@ -20,7 +21,13 @@ export const NotificationDropdown: React.FC = () => {
 
   useEffect(() => {
     if (currentTenant.id) {
-      notificationsApi.getNotifications(currentTenant.id).then(setNotifications).catch(() => {});
+      notificationsApi
+        .getNotifications(currentTenant.id)
+        .then((data) => {
+          setNotifications(data);
+          checkAndDispatchNewAlerts(data);
+        })
+        .catch(() => {});
     }
   }, [currentTenant.id]);
 

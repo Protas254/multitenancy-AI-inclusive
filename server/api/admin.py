@@ -210,7 +210,7 @@ class SaleAdmin(TenantScopedModelAdmin):
 
 @admin.register(Customer)
 class CustomerAdmin(TenantScopedModelAdmin):
-    list_display = ("name", "tenant", "phone", "total_purchases", "loyalty_points")
+    list_display = ("name", "tenant", "phone", "credit_limit", "total_purchases", "loyalty_points")
     search_fields = ("name", "phone", "tenant__name")
     list_filter = ("tenant",)
 
@@ -234,9 +234,9 @@ class PayrollRecordAdmin(TenantScopedModelAdmin):
 
 @admin.register(Target)
 class TargetAdmin(TenantScopedModelAdmin):
-    list_display = ("title", "tenant", "target_amount", "current_amount", "period")
-    search_fields = ("title", "tenant__name")
-    list_filter = ("tenant", "period")
+    list_display = ("title", "tenant", "type", "assigned_to_staff", "target_amount", "current_amount", "period", "status")
+    search_fields = ("title", "tenant__name", "assigned_to_staff__name")
+    list_filter = ("tenant", "type", "period", "status")
 
 @admin.register(Notification)
 class NotificationAdmin(TenantScopedModelAdmin):

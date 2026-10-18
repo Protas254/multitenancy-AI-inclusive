@@ -21,14 +21,18 @@ export default function TargetsPage() {
   // Modal State
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const now = new Date();
+  const defaultStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split("T")[0];
+  const defaultEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split("T")[0];
+
   const [newTarget, setNewTarget] = useState({
     title: "",
     type: "individual" as "business" | "team" | "individual",
     assignedToStaffId: "",
     targetAmount: 350000,
     period: "monthly" as "daily" | "weekly" | "monthly" | "quarterly",
-    startDate: "2026-09-01",
-    endDate: "2026-09-30",
+    startDate: defaultStart,
+    endDate: defaultEnd,
   });
 
   const loadData = async () => {
@@ -106,23 +110,26 @@ export default function TargetsPage() {
 
       {/* Target Progress Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {targets.map((tgt) => (
-          <div key={tgt.id} className="relative group">
-            <TargetProgress
-              title={tgt.title}
-              targetAmount={tgt.targetAmount}
-              achievedAmount={tgt.achievedAmount}
-              periodLabel={`${formatDate(tgt.startDate)} – ${formatDate(tgt.endDate)}`}
-            />
-            <button
-              onClick={() => handleDeleteTarget(tgt.id)}
-              className="absolute top-3 right-3 text-slate-300 hover:text-red-600 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-              title="Delete target"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-            </button>
-          </div>
-        ))}
+        {targets.map((tgt) => {
+          const achieved = tgt.achievedAmount ?? (tgt as any).currentAmount ?? 0;
+          return (
+            <div key={tgt.id} className="relative group">
+              <TargetProgress
+                title={tgt.title}
+                targetAmount={tgt.targetAmount}
+                achievedAmount={achieved}
+                periodLabel={`${formatDate(tgt.startDate)} – ${formatDate(tgt.endDate)}`}
+              />
+              <button
+                onClick={() => handleDeleteTarget(tgt.id)}
+                className="absolute top-3 right-3 text-slate-300 hover:text-red-600 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                title="Delete target"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          );
+        })}
       </div>
 
       {/* Target Performance Table */}
@@ -144,18 +151,19 @@ export default function TargetsPage() {
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {targets.map((tgt) => {
-                const percent = Math.min(100, Math.round((tgt.achievedAmount / tgt.targetAmount) * 100)) || 0;
+                const achieved = tgt.achievedAmount ?? (tgt as any).currentAmount ?? 0;
+                const percent = tgt.targetAmount > 0 ? Math.min(100, Math.round((achieved / tgt.targetAmount) * 100)) : 0;
                 return (
                   <tr key={tgt.id}>
                     <td className="p-3.5 font-semibold text-slate-900">{tgt.title}</td>
                     <td className="p-3.5">
-                      <span className="capitalize">{tgt.type}</span>
+                      <span className="capitalize">{tgt.type || "business"}</span>
                       {tgt.assignedToStaffName && (
                         <p className="text-[11px] text-slate-400 font-medium">({tgt.assignedToStaffName})</p>
                       )}
                     </td>
                     <td className="p-3.5 text-right font-mono font-bold text-slate-900">{formatKES(tgt.targetAmount)}</td>
-                    <td className="p-3.5 text-right font-mono font-bold text-emerald-600">{formatKES(tgt.achievedAmount)}</td>
+                    <td className="p-3.5 text-right font-mono font-bold text-emerald-600">{formatKES(achieved)}</td>
                     <td className="p-3.5 text-center font-bold font-mono">{percent}%</td>
                     <td className="p-3.5">
                       <StatusBadge status={percent >= 100 ? "completed" : "active"} />

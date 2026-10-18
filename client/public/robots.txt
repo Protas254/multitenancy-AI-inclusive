@@ -1,6 +1,6 @@
 # =============================================================
 #  StockGrid Robots Directive Configuration
-#  Production Domain: https://stockgrid.africa
+#  Production Domain: http://localhost:3000
 # =============================================================
 
 User-agent: *
@@ -57,4 +57,4 @@ Disallow: /admin/
 Disallow: /api/
 
 # Sitemap Location
-Sitemap: https://stockgrid.africa/sitemap.xml
+Sitemap: http://localhost:3000/sitemap.xml

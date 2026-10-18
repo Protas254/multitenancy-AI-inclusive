@@ -68,10 +68,19 @@ export function getOrganizationSchema() {
     contactPoint: [
       {
         "@type": "ContactPoint",
-        telephone: "+254700123456",
+        telephone: "+254743849304",
+        email: "stockgridke@gmail.com",
         contactType: "customer service",
         areaServed: ["KE", "UG", "TZ", "RW"],
         availableLanguage: ["English", "Swahili"],
+        hoursAvailable: {
+          "@type": "OpeningHoursSpecification",
+          dayOfWeek: [
+            "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
+          ],
+          opens: "00:00",
+          closes: "23:59"
+        }
       },
     ],
   };

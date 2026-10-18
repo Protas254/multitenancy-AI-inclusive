@@ -20,6 +20,7 @@ import {
   Clock,
   Send,
 } from "lucide-react";
+import { FloatingWhatsApp } from "@/components/common/FloatingWhatsApp";
 import stockgridLogo from "@/assets/stockgrid-logo.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -381,7 +382,9 @@ export default function LandingPage() {
                     </div>
                     <div>
                       <p className="text-xs text-slate-500 font-medium">Call and WhatsApp Support</p>
-                      <p className="text-sm font-semibold text-slate-900">+254 700 123 456 / +254 711 987 654</p>
+                      <a href="https://wa.me/254743849304" target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-slate-900 hover:text-emerald-600 transition-colors">
+                        +254 743 849 304 / 0743849304
+                      </a>
                     </div>
                   </div>
 
@@ -391,7 +394,9 @@ export default function LandingPage() {
                     </div>
                     <div>
                       <p className="text-xs text-slate-500 font-medium">Email Inquiries</p>
-                      <p className="text-sm font-semibold text-slate-900">support@stockgrid.africa</p>
+                      <a href="mailto:stockgridke@gmail.com" className="text-sm font-semibold text-slate-900 hover:text-blue-600 transition-colors">
+                        stockgridke@gmail.com
+                      </a>
                     </div>
                   </div>
 
@@ -411,7 +416,10 @@ export default function LandingPage() {
                     </div>
                     <div>
                       <p className="text-xs text-slate-500 font-medium">Business Hours</p>
-                      <p className="text-sm font-semibold text-slate-900">Monday - Saturday: 8:00 AM - 7:00 PM EAT</p>
+                      <p className="text-sm font-semibold text-emerald-600 flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                        24/7 (Always Open)
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -525,6 +533,9 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+
+      {/* Floating WhatsApp Quick Contact Button (24/7) */}
+      <FloatingWhatsApp phoneNumber="254743849304" />
     </div>
   );
 }
