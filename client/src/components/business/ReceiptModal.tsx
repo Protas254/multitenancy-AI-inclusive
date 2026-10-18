@@ -20,6 +20,27 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
 }) => {
   if (!sale) return null;
 
+  const saleNumber = sale.saleNumber || (sale as any).invoiceNumber || `REC-${(sale.id || "0000").slice(0, 8).toUpperCase()}`;
+  const saleDate = sale.date || (sale as any).createdAt || new Date().toISOString();
+  const staffName = sale.staffName || (sale as any).cashierName || "Store Cashier";
+  const items = (sale.items || []).map((item: any) => {
+    const qty = Number(item.quantity) || 1;
+    const price = Number(item.unitPrice) || 0;
+    const discount = Number(item.discount) || 0;
+    const computedTotal = item.total ?? item.subtotal ?? (qty * price - discount);
+    return {
+      ...item,
+      quantity: qty,
+      unitPrice: price,
+      discount,
+      total: Number(computedTotal),
+    };
+  });
+  const subtotal = sale.subtotal ?? (items.length > 0 ? items.reduce((acc, it) => acc + it.total, 0) : (sale.totalAmount || 0));
+  const discountTotal = sale.discountTotal || 0;
+  const totalAmount = sale.totalAmount ?? (sale as any).paidAmount ?? subtotal;
+  const taxTotal = sale.taxTotal ?? Math.round((totalAmount * 0.16 / 1.16) * 100) / 100;
+
   const handlePrint = () => {
     window.print();
   };
@@ -66,15 +87,15 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
             <div className="space-y-0.5 text-[11px] border-b border-dashed border-slate-300 pb-2">
               <div className="flex justify-between">
                 <span className="text-slate-500">Receipt No:</span>
-                <span className="font-bold text-slate-900">{sale.saleNumber}</span>
+                <span className="font-bold text-slate-900">{saleNumber}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500">Date:</span>
-                <span>{formatDateTime(sale.date)}</span>
+                <span>{formatDateTime(saleDate)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500">Served By:</span>
-                <span>{sale.staffName}</span>
+                <span>{staffName}</span>
               </div>
               {sale.customerName && (
                 <div className="flex justify-between">
@@ -90,7 +111,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
                 <span>ITEM / QTY</span>
                 <span>TOTAL</span>
               </div>
-              {sale.items.map((item, idx) => (
+              {items.map((item, idx) => (
                 <div key={idx} className="space-y-0.5">
                   <div className="flex justify-between text-slate-900 font-medium">
                     <span className="truncate max-w-[200px]">{item.productName}</span>
@@ -110,21 +131,21 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
             <div className="space-y-1 text-xs border-b border-dashed border-slate-300 pb-3">
               <div className="flex justify-between">
                 <span className="text-slate-500">Subtotal:</span>
-                <span>{formatKES(sale.subtotal)}</span>
+                <span>{formatKES(subtotal)}</span>
               </div>
-              {sale.discountTotal > 0 && (
+              {discountTotal > 0 && (
                 <div className="flex justify-between text-emerald-700">
                   <span>Discount:</span>
-                  <span>-{formatKES(sale.discountTotal)}</span>
+                  <span>-{formatKES(discountTotal)}</span>
                 </div>
               )}
               <div className="flex justify-between text-slate-500">
                 <span>VAT (16% Incl):</span>
-                <span>{formatKES(sale.taxTotal)}</span>
+                <span>{formatKES(taxTotal)}</span>
               </div>
               <div className="flex justify-between text-sm font-bold text-slate-950 pt-1 border-t border-slate-200">
                 <span>TOTAL:</span>
-                <span>{formatKES(sale.totalAmount)}</span>
+                <span>{formatKES(totalAmount)}</span>
               </div>
             </div>
 

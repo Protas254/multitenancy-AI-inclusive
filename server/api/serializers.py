@@ -170,32 +170,52 @@ class SaleItemSerializer(serializers.ModelSerializer):
     productId = serializers.CharField(source="product_id", read_only=True, allow_null=True)
     productName = serializers.CharField(source="product_name")
     unitPrice = serializers.FloatField(source="unit_price")
+    total = serializers.FloatField(source="subtotal", read_only=True)
 
     class Meta:
         model = SaleItem
-        fields = ["id", "productId", "productName", "quantity", "unitPrice", "subtotal"]
+        fields = ["id", "productId", "productName", "quantity", "unitPrice", "subtotal", "total"]
 
 class SaleSerializer(serializers.ModelSerializer):
     tenantId = serializers.CharField(source="tenant_id", read_only=True)
     invoiceNumber = serializers.CharField(source="invoice_number")
+    saleNumber = serializers.CharField(source="invoice_number", read_only=True)
     customerId = serializers.CharField(source="customer_id", read_only=True, allow_null=True)
     customerName = serializers.CharField(source="customer_name", allow_blank=True)
     cashierId = serializers.CharField(source="cashier_id", read_only=True, allow_null=True)
     cashierName = serializers.CharField(source="cashier_name", allow_blank=True)
+    staffName = serializers.CharField(source="cashier_name", read_only=True)
     totalAmount = serializers.FloatField(source="total_amount")
     paidAmount = serializers.FloatField(source="paid_amount")
     paymentStatus = serializers.CharField(source="payment_status")
     paymentMethod = serializers.CharField(source="payment_method")
     items = SaleItemSerializer(many=True, read_only=True)
     createdAt = serializers.DateTimeField(source="created_at", read_only=True)
+    date = serializers.DateTimeField(source="created_at", read_only=True)
+    subtotal = serializers.SerializerMethodField()
+    taxTotal = serializers.SerializerMethodField()
+    discountTotal = serializers.SerializerMethodField()
 
     class Meta:
         model = Sale
         fields = [
-            "id", "tenantId", "invoiceNumber", "customerId", "customerName",
-            "cashierId", "cashierName", "totalAmount", "paidAmount", "paymentStatus",
-            "paymentMethod", "notes", "items", "createdAt"
+            "id", "tenantId", "invoiceNumber", "saleNumber", "customerId", "customerName",
+            "cashierId", "cashierName", "staffName", "totalAmount", "paidAmount", "paymentStatus",
+            "paymentMethod", "notes", "items", "createdAt", "date", "subtotal", "taxTotal", "discountTotal"
         ]
+
+    def get_subtotal(self, obj):
+        items = obj.items.all()
+        if items.exists():
+            return float(sum(item.subtotal for item in items))
+        return float(obj.total_amount)
+
+    def get_taxTotal(self, obj):
+        # 16% VAT inclusive
+        return round(float(obj.total_amount) * 0.16 / 1.16, 2)
+
+    def get_discountTotal(self, obj):
+        return 0.0
 
 class ExpenseSerializer(serializers.ModelSerializer):
     tenantId = serializers.CharField(source="tenant_id", read_only=True)

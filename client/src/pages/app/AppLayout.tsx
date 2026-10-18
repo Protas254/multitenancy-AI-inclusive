@@ -5,7 +5,6 @@ import { Topbar } from "@/components/layout/Topbar";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 import { SEO } from "@/components/common/SEO";
-import { FloatingWhatsApp } from "@/components/common/FloatingWhatsApp";
 import { PushNotificationPrompt } from "@/components/common/PushNotificationPrompt";
 
 export default function AppLayout({ children }: { children?: React.ReactNode }) {
@@ -39,9 +38,6 @@ export default function AppLayout({ children }: { children?: React.ReactNode }) 
           {children || <Outlet />}
         </main>
       </div>
-
-      {/* Floating 24/7 WhatsApp Support Widget */}
-      <FloatingWhatsApp phoneNumber="254743849304" />
 
       {/* One-Time Web Push Notification Permission Prompt */}
       <PushNotificationPrompt />

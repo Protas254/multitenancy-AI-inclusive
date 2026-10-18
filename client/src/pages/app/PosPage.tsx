@@ -121,13 +121,16 @@ export default function PosPage() {
   const executeSale = async () => {
     setIsProcessing(true);
     try {
+      const saleItems = toSaleItems();
+      const currentStaffName = user?.name || "Staff Cashier";
+
       const sale = await salesApi.recordSale({
         tenantId: currentTenant.id,
         branchId: currentBranch.id,
         customerId: selectedCustomer?.id,
         customerName: selectedCustomer?.name,
         customerPhone: selectedCustomer?.phone,
-        items: toSaleItems(),
+        items: saleItems,
         subtotal,
         discountTotal,
         taxTotal,
@@ -137,12 +140,32 @@ export default function PosPage() {
         isCreditSale,
         notes,
         staffId: user?.id || "stf-1",
-        staffName: user?.name || "Staff Cashier",
+        staffName: currentStaffName,
+        cashierName: currentStaffName,
       });
 
-      setCompletedSale(sale);
+      // Provide fully populated sale object for the receipt modal
+      const populatedSale: Sale = {
+        ...sale,
+        saleNumber: sale?.saleNumber || (sale as any)?.invoiceNumber || `REC-${Date.now().toString().slice(-6)}`,
+        staffName: sale?.staffName || (sale as any)?.cashierName || currentStaffName,
+        date: sale?.date || (sale as any)?.createdAt || new Date().toISOString(),
+        items: (sale?.items && sale.items.length > 0 ? sale.items : saleItems).map((it: any) => ({
+          ...it,
+          total: it.total ?? it.subtotal ?? (Number(it.quantity || 1) * Number(it.unitPrice || 0) - Number(it.discount || 0)),
+        })),
+        subtotal: sale?.subtotal ?? subtotal,
+        discountTotal: sale?.discountTotal ?? discountTotal,
+        taxTotal: sale?.taxTotal ?? taxTotal,
+        totalAmount: sale?.totalAmount ?? totalAmount,
+      };
+
+      setCompletedSale(populatedSale);
       setIsReceiptOpen(true);
       clearCart();
+
+      // Immediately reload catalog data so decremented stock is displayed right away in the POS table
+      await loadPosData();
     } catch (err: any) {
       alert(err.message || "Failed to complete sale.");
     } finally {

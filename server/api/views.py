@@ -136,19 +136,21 @@ class SaleViewSet(TenantScopedViewSet):
         tenant = get_object_or_404(Tenant, id=tenant_id)
 
         items_data = data.get("items", [])
-        invoice_number = data.get("invoiceNumber") or f"INV-{Sale.objects.count() + 1001}"
+        invoice_number = data.get("invoiceNumber") or data.get("saleNumber") or f"INV-{Sale.objects.count() + 1001}"
 
         customer_id = data.get("customerId")
         customer = Customer.objects.filter(id=customer_id).first() if customer_id else None
+
+        cashier_name = data.get("cashierName") or data.get("staffName") or "Store Cashier"
 
         sale = Sale.objects.create(
             tenant=tenant,
             invoice_number=invoice_number,
             customer=customer,
             customer_name=data.get("customerName", customer.name if customer else "Walk-in Customer"),
-            cashier_name=data.get("cashierName", "Store Cashier"),
-            total_amount=data.get("totalAmount", 0),
-            paid_amount=data.get("paidAmount", data.get("totalAmount", 0)),
+            cashier_name=cashier_name,
+            total_amount=float(data.get("totalAmount", 0)),
+            paid_amount=float(data.get("paidAmount", data.get("totalAmount", 0))),
             payment_status=data.get("paymentStatus", "paid"),
             payment_method=data.get("paymentMethod", "mpesa"),
             notes=data.get("notes", "")
@@ -157,9 +159,9 @@ class SaleViewSet(TenantScopedViewSet):
         for item in items_data:
             prod_id = item.get("productId")
             product = Product.objects.filter(id=prod_id).first() if prod_id else None
-            qty = item.get("quantity", 1)
-            unit_price = item.get("unitPrice", 0)
-            subtotal = item.get("subtotal", qty * unit_price)
+            qty = int(item.get("quantity", 1))
+            unit_price = float(item.get("unitPrice", 0))
+            subtotal = float(item.get("subtotal") if item.get("subtotal") is not None else (item.get("total") if item.get("total") is not None else qty * unit_price))
 
             SaleItem.objects.create(
                 sale=sale,
@@ -170,8 +172,8 @@ class SaleViewSet(TenantScopedViewSet):
                 subtotal=subtotal
             )
 
-            if product and product.current_stock >= qty:
-                product.current_stock -= qty
+            if product:
+                product.current_stock = max(0, product.current_stock - qty)
                 product.save()
                 from .notifications import trigger_low_stock_notification
                 trigger_low_stock_notification(product)
