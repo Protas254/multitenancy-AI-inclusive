@@ -61,14 +61,30 @@ export default function PosPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const loadPosData = async () => {
+    setIsLoading(true);
+    try {
+      const tenantId = currentTenant?.id || (typeof window !== "undefined" ? localStorage.getItem("active_tenant_id") : undefined);
+      const [prodData, catData, custData] = await Promise.all([
+        productsApi.getProducts(tenantId || undefined),
+        productsApi.getCategories(tenantId || undefined),
+        customersApi.getCustomers(tenantId || undefined),
+      ]);
+      setProducts(prodData);
+      setCategories(catData);
+      setCustomers(custData);
+    } catch (err) {
+      console.warn("Failed to load POS catalog data:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    if (currentTenant.id) {
-      productsApi.getProducts(currentTenant.id).then(setProducts).catch(() => {});
-      productsApi.getCategories(currentTenant.id).then(setCategories).catch(() => {});
-      customersApi.getCustomers(currentTenant.id).then(setCustomers).catch(() => {});
-    }
-  }, [currentTenant.id]);
+    loadPosData();
+  }, [currentTenant?.id]);
 
   const { currentRole } = useAuth();
   const isStaffRole = currentRole === "cashier" || currentRole === "salesperson";
@@ -84,15 +100,21 @@ export default function PosPage() {
   const [pinConfig, setPinConfig] = useState<{ title: string; desc: string; onApproved: () => void } | null>(null);
   const [isBlindCloseoutOpen, setIsBlindCloseoutOpen] = useState(false);
 
-  // Filter products by search and category
+  // Filter products by search and category safely
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
-      const matchesCategory = selectedCategory === "all" || p.categoryId === selectedCategory;
-      const matchesSearch =
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (p.barcode && p.barcode.includes(searchQuery));
-      return matchesCategory && matchesSearch;
+      const matchesCategory =
+        selectedCategory === "all" ||
+        p.categoryId === selectedCategory ||
+        (selectedCategory === "general" && (!p.categoryId || p.categoryName === "General"));
+
+      const query = (searchQuery || "").trim().toLowerCase();
+      if (!query) return matchesCategory;
+
+      const nameMatch = (p.name || "").toLowerCase().includes(query);
+      const skuMatch = (p.sku || "").toLowerCase().includes(query);
+      const barcodeMatch = Boolean(p.barcode && p.barcode.includes(query));
+      return matchesCategory && (nameMatch || skuMatch || barcodeMatch);
     });
   }, [products, searchQuery, selectedCategory]);
 
@@ -248,10 +270,23 @@ export default function PosPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-800">
-              {filteredProducts.length === 0 ? (
+              {isLoading ? (
                 <tr>
                   <td colSpan={5} className="py-16 text-center text-slate-400 text-xs">
-                    No products found matching &ldquo;{searchQuery}&rdquo;
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <div className="h-5 w-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                      <span>Loading products for POS terminal...</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : filteredProducts.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-16 text-center text-slate-400 text-xs">
+                    {searchQuery ? (
+                      <span>No products found matching &ldquo;{searchQuery}&rdquo;</span>
+                    ) : (
+                      <span>No products available in this category.</span>
+                    )}
                   </td>
                 </tr>
               ) : (

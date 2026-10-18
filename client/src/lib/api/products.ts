@@ -2,9 +2,10 @@ import { Product, Category } from "../types";
 import { apiClient } from "./client";
 
 export const productsApi = {
-  async getProducts(_tenantId?: string): Promise<Product[]> {
+  async getProducts(tenantId?: string): Promise<Product[]> {
     try {
-      const data = await apiClient.get<Product[]>("/products/");
+      const options = tenantId ? { headers: { "X-Tenant-ID": tenantId } } : {};
+      const data = await apiClient.get<Product[]>("/products/", options);
       return Array.isArray(data) ? data : [];
     } catch (err) {
       console.warn("Error fetching products:", err);
@@ -20,9 +21,10 @@ export const productsApi = {
     }
   },
 
-  async getCategories(_tenantId?: string): Promise<Category[]> {
+  async getCategories(tenantId?: string): Promise<Category[]> {
     try {
-      const data = await apiClient.get<Category[]>("/categories/");
+      const options = tenantId ? { headers: { "X-Tenant-ID": tenantId } } : {};
+      const data = await apiClient.get<Category[]>("/categories/", options);
       return Array.isArray(data) ? data : [];
     } catch (err) {
       console.warn("Error fetching categories:", err);

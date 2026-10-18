@@ -61,8 +61,8 @@ class ApiClient {
     }
   }
 
-  public get<T>(endpoint: string): Promise<T> {
-    return this.request<T>(endpoint, { method: "GET" });
+  public get<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    return this.request<T>(endpoint, { ...options, method: "GET" });
   }
 
   public post<T>(endpoint: string, data: any): Promise<T> {

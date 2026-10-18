@@ -2,9 +2,10 @@ import { Customer } from "../types";
 import { apiClient } from "./client";
 
 export const customersApi = {
-  async getCustomers(_tenantId?: string): Promise<Customer[]> {
+  async getCustomers(tenantId?: string): Promise<Customer[]> {
     try {
-      const data = await apiClient.get<Customer[]>("/customers/");
+      const options = tenantId ? { headers: { "X-Tenant-ID": tenantId } } : {};
+      const data = await apiClient.get<Customer[]>("/customers/", options);
       return Array.isArray(data) ? data : [];
     } catch (err) {
       console.warn("Error fetching customers:", err);
