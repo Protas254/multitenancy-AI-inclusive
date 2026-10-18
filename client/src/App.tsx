@@ -48,6 +48,8 @@ import ReconciliationReportsPage from "./pages/app/ReconciliationReportsPage";
 import NotificationsPage from "./pages/app/NotificationsPage";
 import SettingsPage from "./pages/app/SettingsPage";
 
+import { ProtectedModuleRoute } from "./components/auth/ProtectedModuleRoute";
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -73,6 +75,7 @@ export default function App() {
 
         {/* Core SaaS App Routes */}
         <Route element={<AppLayout />}>
+          {/* Operations Available to all roles with their specific views */}
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/pos" element={<PosPage />} />
           <Route path="/inventory" element={<InventoryPage />} />
@@ -80,26 +83,149 @@ export default function App() {
           <Route path="/products/:id" element={<ProductDetailPage />} />
           <Route path="/sales" element={<SalesPage />} />
           <Route path="/sales/:id" element={<SaleDetailPage />} />
-          <Route path="/invoices" element={<InvoicesPage />} />
-          <Route path="/invoices/new" element={<NewInvoicePage />} />
-          <Route path="/invoices/:id" element={<InvoiceDetailPage />} />
+
+          {/* Customer CRM and Invoices */}
           <Route path="/customers" element={<CustomersPage />} />
           <Route path="/customers/:id" element={<CustomerDetailPage />} />
-          <Route path="/suppliers" element={<SuppliersPage />} />
-          <Route path="/suppliers/:id" element={<SupplierDetailPage />} />
-          <Route path="/staff" element={<StaffPage />} />
-          <Route path="/staff/:id" element={<StaffDetailPage />} />
-          <Route path="/expenses" element={<ExpensesPage />} />
-          <Route path="/purchases" element={<PurchasesPage />} />
-          <Route path="/credit" element={<CreditPage />} />
-          <Route path="/payroll" element={<PayrollPage />} />
-          <Route path="/loyalty" element={<LoyaltyPage />} />
-          <Route path="/targets" element={<TargetsPage />} />
-          <Route path="/reports" element={<ReportsPage />} />
-          <Route path="/reports/closing" element={<ReconciliationReportsPage />} />
-          <Route path="/closing-reports" element={<ReconciliationReportsPage />} />
+          <Route
+            path="/invoices"
+            element={
+              <ProtectedModuleRoute module="invoices">
+                <InvoicesPage />
+              </ProtectedModuleRoute>
+            }
+          />
+          <Route
+            path="/invoices/new"
+            element={
+              <ProtectedModuleRoute module="invoices" action="create">
+                <NewInvoicePage />
+              </ProtectedModuleRoute>
+            }
+          />
+          <Route
+            path="/invoices/:id"
+            element={
+              <ProtectedModuleRoute module="invoices">
+                <InvoiceDetailPage />
+              </ProtectedModuleRoute>
+            }
+          />
+
+          {/* Protected Financial & Wholesale Management Areas */}
+          <Route
+            path="/purchases"
+            element={
+              <ProtectedModuleRoute module="purchases">
+                <PurchasesPage />
+              </ProtectedModuleRoute>
+            }
+          />
+          <Route
+            path="/suppliers"
+            element={
+              <ProtectedModuleRoute module="suppliers">
+                <SuppliersPage />
+              </ProtectedModuleRoute>
+            }
+          />
+          <Route
+            path="/suppliers/:id"
+            element={
+              <ProtectedModuleRoute module="suppliers">
+                <SupplierDetailPage />
+              </ProtectedModuleRoute>
+            }
+          />
+          <Route
+            path="/expenses"
+            element={
+              <ProtectedModuleRoute module="expenses">
+                <ExpensesPage />
+              </ProtectedModuleRoute>
+            }
+          />
+          <Route
+            path="/credit"
+            element={
+              <ProtectedModuleRoute module="credit">
+                <CreditPage />
+              </ProtectedModuleRoute>
+            }
+          />
+          <Route
+            path="/payroll"
+            element={
+              <ProtectedModuleRoute module="payroll">
+                <PayrollPage />
+              </ProtectedModuleRoute>
+            }
+          />
+          <Route
+            path="/staff"
+            element={
+              <ProtectedModuleRoute module="staff">
+                <StaffPage />
+              </ProtectedModuleRoute>
+            }
+          />
+          <Route
+            path="/staff/:id"
+            element={
+              <ProtectedModuleRoute module="staff">
+                <StaffDetailPage />
+              </ProtectedModuleRoute>
+            }
+          />
+          <Route
+            path="/targets"
+            element={
+              <ProtectedModuleRoute module="targets">
+                <TargetsPage />
+              </ProtectedModuleRoute>
+            }
+          />
+          <Route
+            path="/loyalty"
+            element={
+              <ProtectedModuleRoute module="loyalty" minPlan="growth">
+                <LoyaltyPage />
+              </ProtectedModuleRoute>
+            }
+          />
+          <Route
+            path="/reports"
+            element={
+              <ProtectedModuleRoute module="reports">
+                <ReportsPage />
+              </ProtectedModuleRoute>
+            }
+          />
+          <Route
+            path="/reports/closing"
+            element={
+              <ProtectedModuleRoute module="reports">
+                <ReconciliationReportsPage />
+              </ProtectedModuleRoute>
+            }
+          />
+          <Route
+            path="/closing-reports"
+            element={
+              <ProtectedModuleRoute module="reports">
+                <ReconciliationReportsPage />
+              </ProtectedModuleRoute>
+            }
+          />
           <Route path="/notifications" element={<NotificationsPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedModuleRoute module="settings">
+                <SettingsPage />
+              </ProtectedModuleRoute>
+            }
+          />
         </Route>
 
         {/* 404 Catch-All */}

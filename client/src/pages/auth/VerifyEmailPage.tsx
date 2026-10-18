@@ -13,7 +13,7 @@ export default function VerifyEmailPage() {
       <div className="space-y-2">
         <h1 className="text-2xl font-black tracking-tight text-slate-900">Verify your email</h1>
         <p className="text-xs text-slate-500 max-w-sm mx-auto">
-          We sent a verification link to your registered email address. Please confirm your email to activate your full SME OS account.
+          We sent a verification link to your registered email address. Please confirm your email to activate your full StockGrid account.
         </p>
       </div>
 

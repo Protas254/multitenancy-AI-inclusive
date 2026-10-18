@@ -7,7 +7,7 @@ import { SEO } from "@/components/common/SEO";
 export default function NotFoundPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-slate-50 text-center">
-      <SEO title="Page Not Found | SME OS" description="The requested page could not be found." />
+      <SEO title="Page Not Found | StockGrid" description="The requested page could not be found." />
       <div className="h-16 w-16 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center mb-6">
         <Store className="h-8 w-8" />
       </div>

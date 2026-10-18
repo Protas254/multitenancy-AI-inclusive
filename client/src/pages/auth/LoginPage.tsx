@@ -38,12 +38,7 @@ export default function LoginPage() {
     }
   };
 
-  const setDemoAccount = (demoEmail: string) => {
-    setEmail(demoEmail);
-    setPassword("password123");
-    setError(null);
-    setPendingActivation(false);
-  };
+
 
   return (
     <div className="space-y-6">
@@ -126,29 +121,7 @@ export default function LoginPage() {
         </Button>
       </form>
 
-      <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-        <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider text-center">
-          Quick Demo Accounts (Password: <span className="text-slate-800 font-mono">password123</span>)
-        </div>
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          <button
-            type="button"
-            onClick={() => setDemoAccount("john.kamau@business.co.ke")}
-            className="p-2 text-left rounded-lg border border-slate-200 bg-white hover:border-blue-400 hover:bg-blue-50/50 transition-all text-[11px]"
-          >
-            <span className="font-bold text-slate-800 block truncate">John Kamau</span>
-            <span className="text-slate-500 text-[10px] block truncate">Business Owner</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setDemoAccount("protasjunior254@gmail.com")}
-            className="p-2 text-left rounded-lg border border-slate-200 bg-white hover:border-blue-400 hover:bg-blue-50/50 transition-all text-[11px]"
-          >
-            <span className="font-bold text-slate-800 block truncate">Protas Junior</span>
-            <span className="text-slate-500 text-[10px] block truncate">Superadmin (All Tenants)</span>
-          </button>
-        </div>
-      </div>
+
 
       <div className="text-center text-xs text-slate-500">
         Don&apos;t have an account yet?{" "}

@@ -10,13 +10,13 @@ interface SEOProps {
 }
 
 export const SEO: React.FC<SEOProps> = ({
-  title = "SME Business Operating System | Multi-Tenant Platform",
-  description = "Complete daily business management platform for modern retail and SMEs",
-  keywords = "SME, POS, Inventory, Multi-Tenant, Kenya, Retail, SaaS, ERP, M-Pesa",
+  title = "StockGrid | Retail Business Cloud & Multi-Tenant POS",
+  description = "Complete daily retail business management platform and multi-store point-of-sale",
+  keywords = "StockGrid, POS, Inventory, Multi-Tenant, Retail, SaaS, ERP, M-Pesa",
   image = "/og-image.png",
-  url = "https://sme-os.local",
+  url = "https://stockgrid.local",
 }) => {
-  const fullTitle = title.includes("SME") ? title : `${title} | SME OS`;
+  const fullTitle = title.includes("StockGrid") ? title : `${title} | StockGrid`;
 
   return (
     <Helmet>

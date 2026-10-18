@@ -80,8 +80,9 @@ export default function RegisterPage() {
     currency: "KES",
     taxRate: 16,
     products: [{ name: "", buyingPrice: 0, sellingPrice: 0, stock: 10 }],
-    staff: [{ name: "", role: "Cashier", phone: "" }],
+    staff: [{ name: "", role: "Staff", phone: "" }],
     monthlyTarget: 100000,
+    plan: "professional", // "starter" | "professional" | "enterprise"
   });
 
   const next = () => setStep((s) => Math.min(5, s + 1));
@@ -94,7 +95,7 @@ export default function RegisterPage() {
     setFormData((p) => ({ ...p, products: p.products.filter((_, idx) => idx !== i) }));
 
   const addStaffRow = () =>
-    setFormData((p) => ({ ...p, staff: [...p.staff, { name: "", role: "Cashier", phone: "" }] }));
+    setFormData((p) => ({ ...p, staff: [...p.staff, { name: "", role: "Staff", phone: "" }] }));
 
   const handleFinishSetup = async () => {
     setIsLoading(true);
@@ -106,6 +107,7 @@ export default function RegisterPage() {
         password: formData.password,
         businessName: formData.businessName,
         businessCategory: formData.businessCategory,
+        plan: formData.plan,
         products: formData.products.filter((p) => p.name.trim().length > 0),
       });
       if (res?.pendingActivation) {
@@ -363,11 +365,8 @@ export default function RegisterPage() {
                   }}
                   className="flex h-9 w-full rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs"
                 >
-                  <option value="Cashier">Cashier</option>
-                  <option value="Salesperson">Salesperson</option>
-                  <option value="Storekeeper">Storekeeper</option>
-                  <option value="Manager">Store Manager</option>
-                  <option value="Accountant">Accountant</option>
+                  <option value="Staff">Staff (Counter &amp; POS)</option>
+                  <option value="Owner">Co-Owner</option>
                 </select>
               </div>
             ))}
@@ -382,26 +381,93 @@ export default function RegisterPage() {
         </div>
       )}
 
-      {/* STEP 5 ─ Sales Target + Submit */}
+      {/* STEP 5 ─ Subscription Package & Sales Target */}
       {step === 5 && (
         <div className="space-y-4">
           <div>
-            <h2 className="text-xl font-black text-slate-900">Set Monthly Sales Target</h2>
-            <p className="text-xs text-slate-500 mt-1">Give your team a milestone to work towards this month.</p>
+            <h2 className="text-xl font-black text-slate-900">Select Package &amp; Sales Target</h2>
+            <p className="text-xs text-slate-500 mt-1">Choose the plan that fits your business scale, and set your monthly milestone.</p>
           </div>
-          <div className="space-y-3">
+
+          {/* Package Selection Cards */}
+          <div className="space-y-2">
+            <label className="text-xs font-bold uppercase tracking-wider text-slate-700">Choose Your Subscription Tier</label>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              {/* Starter Retail */}
+              <div
+                onClick={() => setFormData({ ...formData, plan: "starter" })}
+                className={`p-3.5 rounded-xl border cursor-pointer transition-all flex flex-col justify-between ${
+                  formData.plan === "starter"
+                    ? "border-blue-600 bg-blue-50/50 ring-2 ring-blue-600/30 shadow-xs"
+                    : "border-slate-200 bg-white hover:bg-slate-50"
+                }`}
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-900">Starter Retail</span>
+                    {formData.plan === "starter" && <CheckCircle2 className="h-4 w-4 text-blue-600" />}
+                  </div>
+                  <p className="text-sm font-black font-mono text-slate-900">KES 1,000<span className="text-[10px] font-normal text-slate-500">/mo</span></p>
+                  <p className="text-[10px] text-slate-500 leading-tight">1 Shop, 2 Staff, core POS, basic inventory up to 500 SKUs.</p>
+                </div>
+              </div>
+
+              {/* Growth Pro */}
+              <div
+                onClick={() => setFormData({ ...formData, plan: "professional" })}
+                className={`p-3.5 rounded-xl border cursor-pointer transition-all flex flex-col justify-between relative ${
+                  formData.plan === "professional"
+                    ? "border-blue-600 bg-blue-50/50 ring-2 ring-blue-600/30 shadow-xs"
+                    : "border-slate-200 bg-white hover:bg-slate-50"
+                }`}
+              >
+                <span className="absolute -top-2 right-2 bg-blue-600 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-full">
+                  Recommended
+                </span>
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-900">Growth Pro</span>
+                    {formData.plan === "professional" && <CheckCircle2 className="h-4 w-4 text-blue-600" />}
+                  </div>
+                  <p className="text-sm font-black font-mono text-slate-900">KES 2,000<span className="text-[10px] font-normal text-slate-500">/mo</span></p>
+                  <p className="text-[10px] text-slate-500 leading-tight">Up to 3 branches, 10 staff, Manager PIN protection, Loyalty, Expenses &amp; B2B Credit.</p>
+                </div>
+              </div>
+
+              {/* Enterprise Chain */}
+              <div
+                onClick={() => setFormData({ ...formData, plan: "enterprise" })}
+                className={`p-3.5 rounded-xl border cursor-pointer transition-all flex flex-col justify-between ${
+                  formData.plan === "enterprise"
+                    ? "border-blue-600 bg-blue-50/50 ring-2 ring-blue-600/30 shadow-xs"
+                    : "border-slate-200 bg-white hover:bg-slate-50"
+                }`}
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-900">Enterprise Chain</span>
+                    {formData.plan === "enterprise" && <CheckCircle2 className="h-4 w-4 text-blue-600" />}
+                  </div>
+                  <p className="text-sm font-black font-mono text-slate-900">KES 3,000<span className="text-[10px] font-normal text-slate-500">/mo</span></p>
+                  <p className="text-[10px] text-slate-500 leading-tight">Unlimited stores &amp; warehouses, inter-branch stock transfers, consolidated HQ reports &amp; AI.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-3 pt-2">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-700">Monthly Target Amount ({formData.currency})</label>
+              <label className="text-xs font-semibold text-slate-700">Monthly Sales Target Amount ({formData.currency})</label>
               <Input
                 type="number"
                 value={formData.monthlyTarget}
                 onChange={(e) => setFormData({ ...formData, monthlyTarget: Number(e.target.value) })}
               />
             </div>
-            <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl text-xs text-blue-900 space-y-1">
-              <p className="font-bold">Target Insight:</p>
+            <div className="p-3 bg-blue-50 border border-blue-100 rounded-xl text-xs text-blue-900 space-y-1">
+              <p className="font-bold">Daily Milestone Target:</p>
               <p>
-                To achieve this target, your business will need approximately{" "}
+                To achieve this target, your store needs approximately{" "}
                 <strong>{formData.currency} {Math.round(formData.monthlyTarget / 30).toLocaleString("en-KE")}</strong> in daily sales.
               </p>
             </div>
@@ -410,7 +476,7 @@ export default function RegisterPage() {
           <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 flex items-start gap-2">
             <Clock className="h-4 w-4 shrink-0 mt-0.5 text-amber-600" />
             <span>
-              After submitting, your business will be <strong>pending activation</strong>. The super admin will review and activate your account before you can log in.
+              After submitting, your business account will be <strong>pending activation</strong>. The super administrator will verify your chosen package ({formData.plan === "starter" ? "Starter Retail @ KES 1,000" : formData.plan === "enterprise" ? "Enterprise Chain @ KES 3,000" : "Growth Pro @ KES 2,000"}) and activate access.
             </span>
           </div>
 

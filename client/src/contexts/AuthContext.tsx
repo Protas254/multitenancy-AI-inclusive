@@ -9,7 +9,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (data: { email: string; password: string; fullName: string; phone?: string; businessName?: string; businessCategory?: string; [key: string]: any }) => Promise<void>;
+  register: (data: { email: string; password: string; fullName: string; phone?: string; businessName?: string; businessCategory?: string; [key: string]: any }) => Promise<any>;
   logout: () => Promise<void>;
   switchSimulatedRole: (role: UserRole) => void;
   hasPermission: (module: PermissionModule, action?: PermissionAction) => boolean;
@@ -95,6 +95,15 @@ const ROLE_PERMISSIONS: Record<UserRole, Partial<Record<PermissionModule, Permis
     credit: ["view", "create", "edit", "export"],
     payroll: ["view", "create", "edit", "export"],
     reports: ["view", "export"],
+    notifications: ["view"],
+  },
+  staff: {
+    dashboard: ["view"],
+    pos: ["view", "create"],
+    sales: ["view", "create"],
+    products: ["view"],
+    customers: ["view", "create"],
+    inventory: ["view"],
     notifications: ["view"],
   },
   admin: {
@@ -190,7 +199,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       // Legacy: if token returned (e.g. super-admin path)
       if (res.token) {
-        setUser(res.user);
+        setUser(res.user || null);
         const userMemberships = res.memberships || [];
         if (userMemberships.length > 0) {
           setMemberships(userMemberships);
@@ -220,7 +229,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const hasPermission = (module: PermissionModule, action: PermissionAction = "view"): boolean => {
-    const permissionsForRole = ROLE_PERMISSIONS[currentRole] || {};
+    const roleKey = (currentRole === "owner" || currentRole === "admin") ? "owner" : (ROLE_PERMISSIONS[currentRole] ? currentRole : "staff");
+    const permissionsForRole = ROLE_PERMISSIONS[roleKey] || ROLE_PERMISSIONS.staff;
     const moduleActions = permissionsForRole[module];
     if (!moduleActions) return false;
     return moduleActions.includes(action);

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Link from "@/components/ui/link";
 import { useRouter } from "@/lib/navigation";
 import { useTenant } from "@/contexts/TenantContext";
+import { useSecurity } from "@/contexts/SecurityContext";
 import { productsApi } from "@/lib/api/products";
 import { suppliersApi } from "@/lib/api/suppliers";
 import { Product, Category, Supplier } from "@/lib/types";
@@ -11,7 +12,9 @@ import { StatusBadge } from "@/components/business/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Eye, Edit2, Package, Tag, AlertTriangle, Boxes, Settings2, Trash2, Check, X, Pencil } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Plus, Eye, Edit2, Package, Tag, AlertTriangle, Boxes, Settings2, Trash2, Check, X, Pencil, Lock, KeyRound } from "lucide-react";
+import { ManagerPasscodeModal } from "@/components/business/ManagerPasscodeModal";
 
 export default function ProductsPage() {
   const router = useRouter();
@@ -117,6 +120,14 @@ export default function ProductsPage() {
     }
   };
 
+  const { hasPermission } = useAuth();
+  const { isProtectionEnabled, isUnlocked } = useSecurity();
+  const [revealedWholesaleByPin, setRevealedWholesaleByPin] = useState(false);
+  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
+
+  // Wholesale cost prices protected by Owner Security PIN
+  const canViewWholesale = !isProtectionEnabled || isUnlocked || revealedWholesaleByPin;
+
   const columns: Column<Product>[] = [
     {
       header: "Product and SKU",
@@ -138,29 +149,37 @@ export default function ProductsPage() {
       sortable: true,
       cell: (p) => <span className="text-xs text-slate-600 font-medium">{p.categoryName}</span>,
     },
-    {
-      header: "Buying Price",
-      accessorKey: "buyingPrice",
-      sortable: true,
-      cell: (p) => <span className="font-mono text-xs text-slate-600">{formatKES(p.buyingPrice)}</span>,
-    },
+    ...(canViewWholesale
+      ? [
+          {
+            header: "Buying Price",
+            accessorKey: "buyingPrice" as keyof Product,
+            sortable: true,
+            cell: (p: Product) => <span className="font-mono text-xs text-slate-600">{formatKES(p.buyingPrice)}</span>,
+          },
+        ]
+      : []),
     {
       header: "Selling Price",
       accessorKey: "sellingPrice",
       sortable: true,
       cell: (p) => <span className="font-mono text-xs font-bold text-slate-900">{formatKES(p.sellingPrice)}</span>,
     },
-    {
-      header: "Margin",
-      cell: (p) => {
-        const margin = p.sellingPrice > 0 ? ((p.sellingPrice - p.buyingPrice) / p.sellingPrice) * 100 : 0;
-        return (
-          <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
-            {margin.toFixed(0)}%
-          </span>
-        );
-      },
-    },
+    ...(canViewWholesale
+      ? [
+          {
+            header: "Margin",
+            cell: (p: Product) => {
+              const margin = p.sellingPrice > 0 ? ((p.sellingPrice - p.buyingPrice) / p.sellingPrice) * 100 : 0;
+              return (
+                <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
+                  {margin.toFixed(0)}%
+                </span>
+              );
+            },
+          },
+        ]
+      : []),
     {
       header: "Stock Level",
       accessorKey: "currentStock",
@@ -225,6 +244,17 @@ export default function ProductsPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          {!canViewWholesale && (
+            <Button
+              onClick={() => setIsPinModalOpen(true)}
+              variant="outline"
+              size="sm"
+              className="gap-1.5 text-xs font-semibold text-amber-800 bg-amber-50 border-amber-300 hover:bg-amber-100"
+            >
+              <KeyRound className="h-4 w-4 text-amber-600" />
+              <span>Unlock Wholesale Costs</span>
+            </Button>
+          )}
           <Button
             onClick={() => setIsCatModalOpen(true)}
             variant="outline"
@@ -416,6 +446,15 @@ export default function ProductsPage() {
           </form>
         </DialogContent>
       </Dialog>
+      {/* Manager PIN Modal */}
+      <ManagerPasscodeModal
+        isOpen={isPinModalOpen}
+        onClose={() => setIsPinModalOpen(false)}
+        onSuccess={() => setRevealedWholesaleByPin(true)}
+        title="Unlock Wholesale Costs & Margins"
+        description="Enter the store manager or owner 4-digit PIN to display Buying Prices and profit margins on the floor."
+        actionName="Unlock Wholesale Prices"
+      />
     </div>
   );
 }

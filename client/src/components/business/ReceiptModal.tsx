@@ -145,7 +145,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
             {/* Footer Notice */}
             <div className="text-center text-[10px] text-slate-500 pt-1 space-y-0.5">
               <p className="whitespace-pre-line">{tenant.settings.receiptFooter}</p>
-              <p className="pt-2 font-mono text-[9px] text-slate-400">Powered by SME Business OS</p>
+              <p className="pt-2 font-mono text-[9px] text-slate-400">Powered by StockGrid Retail Cloud</p>
             </div>
           </div>
         </div>

@@ -11,9 +11,9 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "apple-touch-icon.png", "mask-icon.svg"],
       manifest: {
-        name: "SME Business Operating System",
-        short_name: "SME OS",
-        description: "Complete daily business management platform for modern retail and SMEs",
+        name: "StockGrid Retail Business Platform",
+        short_name: "StockGrid",
+        description: "Complete daily retail business management platform and cloud POS",
         theme_color: "#2563eb",
         background_color: "#0f172a",
         display: "standalone",

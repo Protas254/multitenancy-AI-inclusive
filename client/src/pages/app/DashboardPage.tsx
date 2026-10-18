@@ -14,6 +14,10 @@ import {
   Receipt,
   ArrowRight,
   Loader2,
+  Lock,
+  Eye,
+  KeyRound,
+  ShieldCheck,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -26,6 +30,8 @@ import {
 } from "recharts";
 import { formatKES } from "@/lib/utils";
 import { apiClient } from "@/lib/api/client";
+import { useSecurity } from "@/contexts/SecurityContext";
+import { ManagerPasscodeModal } from "@/components/business/ManagerPasscodeModal";
 
 interface DashboardStats {
   todaySales: number;
@@ -46,9 +52,15 @@ interface DashboardStats {
 export default function DashboardPage() {
   const { user } = useAuth();
   const { currentTenant } = useTenant();
+  const { isProtectionEnabled, isUnlocked, lock } = useSecurity();
   const [chartPeriod, setChartPeriod] = useState<"7d" | "30d" | "3m">("7d");
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [revealedByPin, setRevealedByPin] = useState(false);
+  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
+
+  // Financial metrics (Profit & Loss, Expenses) require PIN when protection is enabled
+  const canViewFinancials = !isProtectionEnabled || isUnlocked || revealedByPin;
 
   useEffect(() => {
     let isMounted = true;
@@ -95,10 +107,30 @@ export default function DashboardPage() {
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
             Here is how <strong className="text-slate-800">{currentTenant?.name || "Store"}</strong> is performing today.
+            {!canViewFinancials && (
+              <span className="ml-2 inline-flex items-center gap-1 text-[11px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                <Lock className="h-3 w-3" /> Staff View (Profit &amp; Expenses Protected)
+              </span>
+            )}
           </p>
         </div>
 
         <div className="flex items-center gap-2.5">
+          {canViewFinancials && isProtectionEnabled && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setRevealedByPin(false);
+                lock();
+              }}
+              className="gap-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900 border-slate-200 shadow-2xs"
+            >
+              <Lock className="h-3.5 w-3.5 text-amber-600" />
+              <span>Lock Financials</span>
+            </Button>
+          )}
           <Link href="/pos">
             <Button size="sm" className="gap-1.5 text-xs font-bold bg-blue-600 hover:bg-blue-700 shadow-sm">
               <Receipt className="h-4 w-4" />
@@ -131,22 +163,64 @@ export default function DashboardPage() {
               icon={<ShoppingCart className="h-5 w-5" />}
               iconBg="bg-blue-50 text-blue-600"
             />
+
+            {/* Expenses Card - Protected from Employees */}
             <StatCard
               title="Today's Expenses"
-              value={formatKES(todayExpenses)}
+              value={
+                canViewFinancials ? (
+                  formatKES(todayExpenses)
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl font-bold tracking-tight text-slate-900">KES</span>
+                    <button
+                      type="button"
+                      onClick={() => setIsPinModalOpen(true)}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg cursor-pointer transition-all shadow-2xs"
+                    >
+                      <Eye className="h-3.5 w-3.5 text-amber-600" />
+                      <span>Unlock View</span>
+                    </button>
+                  </div>
+                )
+              }
               change={0}
-              periodText="Live total"
-              icon={<TrendingDown className="h-5 w-5" />}
-              iconBg="bg-rose-50 text-rose-600"
+              periodText={canViewFinancials ? "Live total" : "Protected with PIN · tap to unlock"}
+              icon={canViewFinancials ? <TrendingDown className="h-5 w-5" /> : <Lock className="h-5 w-5" />}
+              iconBg={canViewFinancials ? "bg-rose-50 text-rose-600" : "bg-slate-100 text-slate-400"}
             />
+
+            {/* Estimated Net Profit - Protected from Employees */}
             <StatCard
-              title="Estimated Net Profit"
-              value={formatKES(todayProfit)}
+              title="Net Profit"
+              badge={
+                <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-emerald-700 bg-emerald-100/70 border border-emerald-200/80 px-1.5 py-0.5 rounded-full">
+                  ✓ Net
+                </span>
+              }
+              value={
+                canViewFinancials ? (
+                  formatKES(todayProfit)
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl font-bold tracking-tight text-slate-900">KES</span>
+                    <button
+                      type="button"
+                      onClick={() => setIsPinModalOpen(true)}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg cursor-pointer transition-all shadow-2xs"
+                    >
+                      <Eye className="h-3.5 w-3.5 text-amber-600" />
+                      <span>Unlock View</span>
+                    </button>
+                  </div>
+                )
+              }
               change={0}
-              periodText={`margin: ${profitMargin}%`}
-              icon={<TrendingUp className="h-5 w-5" />}
-              iconBg="bg-emerald-50 text-emerald-600"
+              periodText={canViewFinancials ? `margin: ${profitMargin}%` : "Gross profit minus expenses"}
+              icon={canViewFinancials ? <TrendingUp className="h-5 w-5" /> : <Lock className="h-5 w-5" />}
+              iconBg={canViewFinancials ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-400"}
             />
+
             <StatCard
               title="Total Orders Completed"
               value={String(todayOrders)}
@@ -157,8 +231,43 @@ export default function DashboardPage() {
             />
           </div>
 
-          {/* Daily Multi-Business Reconciliations */}
-          <DailyReconciliationCard />
+          {/* Daily Multi-Business Reconciliations (Only visible if authorized) */}
+          {canViewFinancials ? (
+            <DailyReconciliationCard />
+          ) : (
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold">
+                  <ShieldCheck className="h-5 w-5" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900">Cashier POS Active &bull; Shift Logged In</h4>
+                  <p className="text-[11px] text-slate-500">
+                    Your register is actively logging transactions. Store financial totals are protected by Store Policy.
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsPinModalOpen(true)}
+                className="text-xs font-bold gap-1.5 bg-white border-blue-200 text-blue-700"
+              >
+                <KeyRound className="h-3.5 w-3.5" />
+                <span>Manager Reveal</span>
+              </Button>
+            </div>
+          )}
+
+          {/* Manager PIN Modal */}
+          <ManagerPasscodeModal
+            isOpen={isPinModalOpen}
+            onClose={() => setIsPinModalOpen(false)}
+            onSuccess={() => setRevealedByPin(true)}
+            title="Reveal Financial KPIs"
+            description="Enter the store manager or owner 4-digit PIN to reveal today's expenses and net profit margins."
+            actionName="Reveal Financials"
+          />
 
           {/* Main Charts and Targets Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

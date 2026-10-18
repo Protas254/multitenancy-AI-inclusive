@@ -4,6 +4,7 @@
 
 export type UserRole =
   | "owner"
+  | "staff"
   | "manager"
   | "cashier"
   | "salesperson"
@@ -509,6 +510,7 @@ export interface NotificationItem {
 
 export interface SaaSPlan {
   id: "starter" | "professional" | "enterprise";
+  slug?: string;
   name: string;
   price: number;
   billingPeriod: "monthly" | "annually";
@@ -518,6 +520,7 @@ export interface SaaSPlan {
   maxProducts: number;
   maxInvoicesPerMonth: number;
   isPopular?: boolean;
+  isActive?: boolean;
 }
 
 export interface PlatformTenantOverview {

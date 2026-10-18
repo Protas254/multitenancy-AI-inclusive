@@ -4,6 +4,7 @@ import { HelmetProvider } from "react-helmet-async";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { TenantProvider } from "@/contexts/TenantContext";
+import { SecurityProvider } from "@/contexts/SecurityContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
@@ -27,12 +28,14 @@ export const AppProviders: React.FC<{ children: React.ReactNode }> = ({ children
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
             <TenantProvider>
-              <CartProvider>
-                <TooltipProvider>
-                  {children}
-                  <Toaster position="top-right" richColors />
-                </TooltipProvider>
-              </CartProvider>
+              <SecurityProvider>
+                <CartProvider>
+                  <TooltipProvider>
+                    {children}
+                    <Toaster position="top-right" richColors />
+                  </TooltipProvider>
+                </CartProvider>
+              </SecurityProvider>
             </TenantProvider>
           </AuthProvider>
         </QueryClientProvider>

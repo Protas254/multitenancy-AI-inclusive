@@ -69,7 +69,7 @@ export default function StaffPage() {
       setIsAddOpen(false);
       setNewStaff({
         name: "",
-        role: "cashier",
+        role: "staff",
         email: "",
         phone: "",
         basicSalary: 35000,
@@ -96,7 +96,9 @@ export default function StaffPage() {
           </div>
           <div>
             <span className="font-semibold text-slate-900 block">{member.name}</span>
-            <span className="text-xs text-slate-400 capitalize">{member.role}</span>
+            <span className="text-xs text-slate-500 font-medium capitalize">
+              {member.role === "owner" ? "Owner" : "Staff"}
+            </span>
           </div>
         </div>
       ),
@@ -158,7 +160,7 @@ export default function StaffPage() {
 
   return (
     <div className="space-y-6">
-      <SEO title="Staff Management | SME OS" description="Manage team members, roles, sales quotas, and payroll details" />
+      <SEO title="Staff Management | StockGrid" description="Manage team members, roles, sales quotas, and payroll details" />
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -243,11 +245,8 @@ export default function StaffPage() {
                   value={newStaff.role}
                   onChange={(e) => setNewStaff({ ...newStaff, role: e.target.value })}
                 >
-                  <option value="cashier">Cashier</option>
-                  <option value="salesperson">Salesperson</option>
-                  <option value="manager">Manager</option>
-                  <option value="storekeeper">Storekeeper</option>
-                  <option value="accountant">Accountant</option>
+                  <option value="staff">Staff (Floor &amp; POS)</option>
+                  <option value="owner">Co-Owner (Full Admin)</option>
                 </select>
               </div>
               <div className="space-y-1">

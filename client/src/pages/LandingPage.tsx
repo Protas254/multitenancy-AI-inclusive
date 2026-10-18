@@ -24,13 +24,82 @@ import { SaaSPlan } from "@/lib/types";
 import { formatKES } from "@/lib/utils";
 import heroBg from "@/assets/hero-bg.jpg";
 
+const DEFAULT_PLANS: SaaSPlan[] = [
+  {
+    id: "starter",
+    slug: "starter",
+    name: "Starter Retail",
+    price: 1000,
+    billingPeriod: "monthly",
+    description: "Perfect for single-shop retailers and sole proprietors starting out.",
+    features: [
+      "1 Branch Location",
+      "Up to 2 Staff Accounts (Owner + Cashier)",
+      "Core POS & Barcode Scanner",
+      "Up to 500 Inventory SKUs",
+      "Daily Sales Receipts",
+      "Standard Email Support",
+    ],
+    maxStaff: 2,
+    maxProducts: 500,
+    maxInvoicesPerMonth: 50,
+    isPopular: false,
+    isActive: true,
+  },
+  {
+    id: "professional",
+    slug: "professional",
+    name: "Growth Pro",
+    price: 2000,
+    billingPeriod: "monthly",
+    description: "Ideal for growing retail stores, supermarkets, and boutiques requiring staff control.",
+    features: [
+      "Up to 3 Branch Locations",
+      "Up to 10 Staff Roles (Manager PIN Protection)",
+      "Protected Financials (Hidden P&L, Wholesale & Payroll)",
+      "Customer CRM & Loyalty Program",
+      "Expense Tracking & Profit/Loss Analytics",
+      "B2B Invoicing & Customer Credit Accounts",
+      "Supplier Purchase Orders & Restocking",
+      "Priority WhatsApp Support",
+    ],
+    maxStaff: 10,
+    maxProducts: 10000,
+    maxInvoicesPerMonth: 500,
+    isPopular: true,
+    isActive: true,
+  },
+  {
+    id: "enterprise",
+    slug: "enterprise",
+    name: "Enterprise Chain",
+    price: 3000,
+    billingPeriod: "monthly",
+    description: "For retail chains, supermarkets, franchises, and central warehouse operations.",
+    features: [
+      "Unlimited Branch Locations & Central Warehouses",
+      "Unlimited Staff Accounts & Custom Role Builder",
+      "Inter-Branch Stock Transfers & Transit Tracking",
+      "Consolidated Head-Office Financial Reports",
+      "Multi-Branch Tax & Automated Reconciliations",
+      "AI Predictive Restocking & Demand Forecasting",
+      "Dedicated Account Manager & 24/7 SLA",
+    ],
+    maxStaff: 999,
+    maxProducts: 99999,
+    maxInvoicesPerMonth: 99999,
+    isPopular: false,
+    isActive: true,
+  },
+];
+
 export default function LandingPage() {
-  const [plans, setPlans] = useState<SaaSPlan[]>([]);
+  const [plans, setPlans] = useState<SaaSPlan[]>(DEFAULT_PLANS);
   const [contactSubmitted, setContactSubmitted] = useState(false);
 
   useEffect(() => {
     adminApi.getPlans().then((data) => {
-      if (Array.isArray(data)) {
+      if (Array.isArray(data) && data.length > 0) {
         setPlans(data);
       }
     }).catch(console.error);
@@ -59,7 +128,7 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <SEO title="StockGrid | Business Operating System" description="Complete daily business management platform for modern retail and SMEs" />
+      <SEO title="StockGrid | Retail Business Platform" description="Complete daily business management platform for modern retail stores and multi-branch chains" />
       {/* Top Navigation */}
       <header className="sticky top-0 z-50 border-b border-slate-100 bg-white/90 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
@@ -146,7 +215,7 @@ export default function LandingPage() {
               Everything your business needs to grow
             </p>
             <p className="text-sm text-slate-600">
-              Designed specifically for everyday SME operators who value speed, accuracy, and ease-of-use.
+              Designed specifically for everyday business operators who value speed, accuracy, and ease-of-use.
             </p>
           </div>
 
@@ -307,7 +376,7 @@ export default function LandingPage() {
                     </div>
                     <div>
                       <p className="text-xs text-slate-500 font-medium">Email Inquiries</p>
-                      <p className="text-sm font-semibold text-slate-900">support@smeos.africa</p>
+                      <p className="text-sm font-semibold text-slate-900">support@stockgrid.africa</p>
                     </div>
                   </div>
 
@@ -343,7 +412,7 @@ export default function LandingPage() {
                   </div>
                   <h4 className="text-lg font-bold text-slate-900">Message Received</h4>
                   <p className="text-sm text-slate-600 max-w-md mx-auto">
-                    Thank you! An SME OS onboarding specialist will reach out to you within 2 hours.
+                    Thank you! A StockGrid onboarding specialist will reach out to you within 2 hours.
                   </p>
                   <Button
                     variant="outline"

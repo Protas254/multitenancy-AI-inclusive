@@ -5,7 +5,8 @@ import { cn } from "@/lib/utils";
 
 interface StatCardProps {
   title: string;
-  value: string | number;
+  badge?: React.ReactNode;
+  value: string | number | React.ReactNode;
   change?: number; // e.g. 12.5 or -4.2
   periodText?: string; // e.g. "vs yesterday" or "vs last month"
   icon?: React.ReactNode;
@@ -15,6 +16,7 @@ interface StatCardProps {
 
 export const StatCard: React.FC<StatCardProps> = ({
   title,
+  badge,
   value,
   change,
   periodText = "vs yesterday",
@@ -29,7 +31,10 @@ export const StatCard: React.FC<StatCardProps> = ({
     <Card className={cn("hover:border-slate-300 transition-all shadow-xs", className)}>
       <CardContent className="p-5">
         <div className="flex items-center justify-between">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">{title}</p>
+          <div className="flex items-center gap-1.5">
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">{title}</p>
+            {badge}
+          </div>
           {icon && (
             <div className={cn("flex h-9 w-9 items-center justify-center rounded-xl", iconBg)}>
               {icon}

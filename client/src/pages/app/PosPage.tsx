@@ -24,7 +24,12 @@ import {
   Smartphone,
   Tag,
   AlertCircle,
+  Lock,
+  KeyRound,
+  ShieldAlert,
 } from "lucide-react";
+import { ManagerPasscodeModal } from "@/components/business/ManagerPasscodeModal";
+import { BlindCloseoutModal } from "@/components/business/BlindCloseoutModal";
 
 export default function PosPage() {
   const { currentTenant, currentBranch } = useTenant();
@@ -65,11 +70,19 @@ export default function PosPage() {
     }
   }, [currentTenant.id]);
 
+  const { currentRole } = useAuth();
+  const isStaffRole = currentRole === "cashier" || currentRole === "salesperson";
+
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [completedSale, setCompletedSale] = useState<Sale | null>(null);
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // Manager Authorization State
+  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
+  const [pinConfig, setPinConfig] = useState<{ title: string; desc: string; onApproved: () => void } | null>(null);
+  const [isBlindCloseoutOpen, setIsBlindCloseoutOpen] = useState(false);
 
   // Filter products by search and category
   const filteredProducts = useMemo(() => {
@@ -83,10 +96,8 @@ export default function PosPage() {
     });
   }, [products, searchQuery, selectedCategory]);
 
-  const handleCompleteSale = async () => {
-    if (cart.length === 0) return;
+  const executeSale = async () => {
     setIsProcessing(true);
-
     try {
       const sale = await salesApi.recordSale({
         tenantId: currentTenant.id,
@@ -117,6 +128,49 @@ export default function PosPage() {
     }
   };
 
+  const handleCompleteSale = () => {
+    if (cart.length === 0) return;
+
+    // Check 1: If credit sale, staff requires Manager PIN approval
+    if (isCreditSale && isStaffRole) {
+      setPinConfig({
+        title: "Authorize Credit Sale",
+        desc: `Issuing merchandise on Credit / Pay Later (KES ${totalAmount}) requires store manager authorization.`,
+        onApproved: () => executeSale(),
+      });
+      setIsPinModalOpen(true);
+      return;
+    }
+
+    // Check 2: If custom discounts applied, staff requires Manager PIN approval
+    if (discountTotal > 0 && isStaffRole) {
+      setPinConfig({
+        title: "Authorize Discount",
+        desc: `Total discount of ${formatKES(discountTotal)} requires store manager approval before finalizing receipt.`,
+        onApproved: () => executeSale(),
+      });
+      setIsPinModalOpen(true);
+      return;
+    }
+
+    // Otherwise proceed directly
+    executeSale();
+  };
+
+  const handleRequestClearCart = () => {
+    if (cart.length === 0) return;
+    if (isStaffRole) {
+      setPinConfig({
+        title: "Authorize Void / Clear Cart",
+        desc: "Voiding an active transaction and clearing items requires Manager PIN approval to prevent off-book sales.",
+        onApproved: () => clearCart(),
+      });
+      setIsPinModalOpen(true);
+    } else {
+      clearCart();
+    }
+  };
+
   return (
     <div className="h-[calc(100vh-6.5rem)] flex flex-col lg:flex-row gap-4">
       {/* LEFT PANEL: Products Catalog and Search */}
@@ -140,6 +194,16 @@ export default function PosPage() {
             >
               <ScanLine className="h-4 w-4 text-blue-600" />
               <span className="hidden sm:inline">Scanner Active</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsBlindCloseoutOpen(true)}
+              className="h-10 px-3 shrink-0 gap-1.5 text-xs text-amber-800 bg-amber-50/60 border-amber-200 hover:bg-amber-100"
+              title="Perform Shift Closeout"
+            >
+              <Banknote className="h-4 w-4 text-amber-600" />
+              <span className="hidden sm:inline">Till Closeout</span>
             </Button>
           </div>
 
@@ -288,10 +352,13 @@ export default function PosPage() {
             <span className="text-xs font-bold text-slate-900">Current Sale Slip</span>
             {cart.length > 0 && (
               <button
-                onClick={clearCart}
-                className="text-[11px] text-red-600 hover:underline font-medium"
+                type="button"
+                onClick={handleRequestClearCart}
+                className="text-[11px] text-red-600 hover:underline font-medium flex items-center gap-1"
+                title={isStaffRole ? "Requires Manager PIN" : "Clear All Items"}
               >
-                Clear Cart
+                {isStaffRole && <Lock className="h-3 w-3" />}
+                <span>Clear Cart</span>
               </button>
             )}
           </div>
@@ -464,14 +531,21 @@ export default function PosPage() {
           </div>
 
           {/* Credit Sale Toggle */}
-          <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer pt-1">
-            <input
-              type="checkbox"
-              checked={isCreditSale}
-              onChange={(e) => setIsCreditSale(e.target.checked)}
-              className="h-4 w-4 text-blue-600 rounded border-slate-300"
-            />
-            <span className="font-semibold text-rose-700">Record as Credit Sale (Pay Later)</span>
+          <label className="flex items-center justify-between text-xs text-slate-700 cursor-pointer pt-1">
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={isCreditSale}
+                onChange={(e) => setIsCreditSale(e.target.checked)}
+                className="h-4 w-4 text-blue-600 rounded border-slate-300"
+              />
+              <span className="font-semibold text-rose-700">Record as Credit Sale (Pay Later)</span>
+            </div>
+            {isStaffRole && (
+              <span className="text-[10px] font-semibold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 flex items-center gap-1">
+                <Lock className="h-2.5 w-2.5" /> PIN Required
+              </span>
+            )}
           </label>
 
           {/* Complete Sale Button */}
@@ -492,6 +566,31 @@ export default function PosPage() {
         onClose={() => setIsReceiptOpen(false)}
         sale={completedSale}
         tenant={currentTenant}
+      />
+
+      {/* Manager Passcode / PIN Authorization Modal */}
+      {pinConfig && (
+        <ManagerPasscodeModal
+          isOpen={isPinModalOpen}
+          onClose={() => {
+            setIsPinModalOpen(false);
+            setPinConfig(null);
+          }}
+          onSuccess={() => {
+            pinConfig.onApproved();
+            setPinConfig(null);
+          }}
+          title={pinConfig.title}
+          description={pinConfig.desc}
+          actionName="Approve &amp; Proceed"
+        />
+      )}
+
+      {/* Blind Closeout Till Modal */}
+      <BlindCloseoutModal
+        isOpen={isBlindCloseoutOpen}
+        onClose={() => setIsBlindCloseoutOpen(false)}
+        expectedAmount={subtotal || 24500}
       />
     </div>
   );
