@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { salesApi } from "@/lib/api/sales";
 import { productsApi } from "@/lib/api/products";
 import { customersApi } from "@/lib/api/customers";
+import { notificationsApi } from "@/lib/api/notifications";
 import { Product, Category, Customer, PaymentMethod, Sale } from "@/lib/types";
 import { formatKES } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -181,7 +182,10 @@ export default function PosPage() {
       setPinConfig({
         title: "Authorize Credit Sale",
         desc: `Issuing merchandise on Credit / Pay Later (KES ${totalAmount}) requires store manager authorization.`,
-        onApproved: () => executeSale(),
+        onApproved: () => {
+          notificationsApi.recordManagerOverride("Credit Sale Authorization", `Approved credit sale of KES ${totalAmount} for ${selectedCustomer?.name || 'Walk-in Customer'}`);
+          executeSale();
+        },
       });
       setIsPinModalOpen(true);
       return;
@@ -192,7 +196,10 @@ export default function PosPage() {
       setPinConfig({
         title: "Authorize Discount",
         desc: `Total discount of ${formatKES(discountTotal)} requires store manager approval before finalizing receipt.`,
-        onApproved: () => executeSale(),
+        onApproved: () => {
+          notificationsApi.recordManagerOverride("Custom Discount Authorization", `Approved cart discount of ${formatKES(discountTotal)}`);
+          executeSale();
+        },
       });
       setIsPinModalOpen(true);
       return;
@@ -208,7 +215,10 @@ export default function PosPage() {
       setPinConfig({
         title: "Authorize Void / Clear Cart",
         desc: "Voiding an active transaction and clearing items requires Manager PIN approval to prevent off-book sales.",
-        onApproved: () => clearCart(),
+        onApproved: () => {
+          notificationsApi.recordManagerOverride("Cart Void & Clear", `Voided cart with ${cart.length} item(s) valued at ${formatKES(totalAmount)}`);
+          clearCart();
+        },
       });
       setIsPinModalOpen(true);
     } else {

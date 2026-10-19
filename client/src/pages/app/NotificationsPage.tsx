@@ -14,6 +14,11 @@ import {
   Target,
   CreditCard,
   Check,
+  Sparkles,
+  ShieldAlert,
+  Clock,
+  Wallet,
+  RefreshCw,
   ArrowRight,
 } from "lucide-react";
 
@@ -21,6 +26,7 @@ export default function NotificationsPage() {
   const { currentTenant } = useTenant();
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isChecking, setIsChecking] = useState(false);
   const [filter, setFilter] = useState<"all" | "unread">("all");
 
   const loadData = async () => {
@@ -47,6 +53,16 @@ export default function NotificationsPage() {
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)));
   };
 
+  const handleRunChecks = async () => {
+    setIsChecking(true);
+    try {
+      await notificationsApi.runBackgroundChecks(currentTenant.id);
+      await loadData();
+    } finally {
+      setIsChecking(false);
+    }
+  };
+
   const filtered = filter === "unread" ? notifications.filter((n) => !n.isRead) : notifications;
 
   const getIcon = (type: string) => {
@@ -54,11 +70,20 @@ export default function NotificationsPage() {
       case "low_stock":
         return <AlertTriangle className="h-4 w-4 text-amber-600" />;
       case "credit_payment_due":
+      case "credit":
         return <CreditCard className="h-4 w-4 text-red-600" />;
       case "new_sale":
         return <ShoppingCart className="h-4 w-4 text-emerald-600" />;
+      case "high_value_sale":
+        return <Sparkles className="h-4 w-4 text-emerald-600" />;
+      case "security_override":
+        return <ShieldAlert className="h-4 w-4 text-red-600" />;
       case "target_achieved":
         return <Target className="h-4 w-4 text-blue-600" />;
+      case "reconciliation":
+        return <Clock className="h-4 w-4 text-indigo-600" />;
+      case "payroll":
+        return <Wallet className="h-4 w-4 text-purple-600" />;
       default:
         return <Bell className="h-4 w-4 text-slate-500" />;
     }
@@ -75,6 +100,16 @@ export default function NotificationsPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRunChecks}
+            disabled={isChecking}
+            className="gap-1.5 text-xs font-semibold"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${isChecking ? "animate-spin" : ""}`} />
+            <span>{isChecking ? "Checking..." : "Run Checks"}</span>
+          </Button>
           <Button variant="outline" size="sm" onClick={handleMarkAllRead} className="gap-1.5 text-xs font-semibold">
             <Check className="h-3.5 w-3.5" />
             <span>Mark All as Read</span>

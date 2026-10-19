@@ -19,16 +19,19 @@ export const NotificationDropdown: React.FC = () => {
   const { currentTenant } = useTenant();
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
 
+  const fetchAlerts = async () => {
+    if (!currentTenant.id) return;
+    try {
+      const data = await notificationsApi.getNotifications(currentTenant.id);
+      setNotifications(data);
+      checkAndDispatchNewAlerts(data);
+    } catch {}
+  };
+
   useEffect(() => {
-    if (currentTenant.id) {
-      notificationsApi
-        .getNotifications(currentTenant.id)
-        .then((data) => {
-          setNotifications(data);
-          checkAndDispatchNewAlerts(data);
-        })
-        .catch(() => {});
-    }
+    fetchAlerts();
+    const interval = setInterval(fetchAlerts, 25000); // 25s background polling
+    return () => clearInterval(interval);
   }, [currentTenant.id]);
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
@@ -42,12 +45,18 @@ export const NotificationDropdown: React.FC = () => {
     switch (type) {
       case "low_stock":
         return <AlertTriangle className="h-4 w-4 text-amber-600" />;
+      case "warning":
+      case "credit":
       case "credit_payment_due":
-        return <CreditCard className="h-4 w-4 text-red-600" />;
-      case "new_sale":
+        return <CreditCard className="h-4 w-4 text-rose-600" />;
+      case "high_value_sale":
         return <ShoppingCart className="h-4 w-4 text-emerald-600" />;
+      case "security_override":
+        return <AlertTriangle className="h-4 w-4 text-rose-600" />;
       case "target_achieved":
         return <Target className="h-4 w-4 text-blue-600" />;
+      case "reconciliation":
+        return <Check className="h-4 w-4 text-amber-600" />;
       default:
         return <Bell className="h-4 w-4 text-slate-500" />;
     }

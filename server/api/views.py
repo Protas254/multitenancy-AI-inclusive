@@ -179,12 +179,27 @@ class SaleViewSet(TenantScopedViewSet):
                 trigger_low_stock_notification(product)
 
         # Automated checks on quota achievement and credit limits
-        from .notifications import trigger_quota_achievement_notification, trigger_credit_limit_notification
+        from .notifications import (
+            trigger_quota_achievement_notification,
+            trigger_credit_limit_notification,
+            trigger_high_value_sale_notification
+        )
         if customer:
             trigger_credit_limit_notification(customer, tenant)
         cashier = StaffMember.objects.filter(tenant=tenant, name__iexact=sale.cashier_name).first()
         if cashier:
             trigger_quota_achievement_notification(cashier, tenant)
+
+        # High-value sale trigger (e.g. >= KES 50,000)
+        trigger_high_value_sale_notification(sale)
+
+        # Digital sales receipt email if customer has email address
+        if customer and customer.email:
+            try:
+                from .emails import send_digital_sales_receipt_email
+                send_digital_sales_receipt_email(sale)
+            except Exception:
+                pass
 
         serializer = self.get_serializer(sale)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -253,6 +268,13 @@ class StaffMemberViewSet(TenantScopedViewSet):
             staff.email = email
             staff.save()
 
+        # Send staff login welcome & activation email
+        try:
+            from .emails import send_staff_welcome_activation_email
+            send_staff_welcome_activation_email(staff, password, role, tenant)
+        except Exception:
+            pass
+
         return Response({
             "detail": f"Login account created for {staff.name}. They can now log in with {email}.",
             "userId": user.id,
@@ -263,6 +285,21 @@ class StaffMemberViewSet(TenantScopedViewSet):
 class PayrollRecordViewSet(TenantScopedViewSet):
     queryset = PayrollRecord.objects.all()
     serializer_class = PayrollRecordSerializer
+
+    def perform_create(self, serializer):
+        tenant_id = self.get_tenant_id()
+        if not tenant_id:
+            raise exceptions.ValidationError({"detail": "Active tenant ID is required."})
+        tenant = get_object_or_404(Tenant, id=tenant_id)
+        pr = serializer.save(tenant=tenant)
+
+        # Send monthly payslip email to staff
+        if pr.staff and pr.staff.email:
+            try:
+                from .emails import send_monthly_payslip_email
+                send_monthly_payslip_email(pr)
+            except Exception:
+                pass
 
 class TargetViewSet(TenantScopedViewSet):
     queryset = Target.objects.all()
@@ -281,6 +318,33 @@ class NotificationViewSet(TenantScopedViewSet):
                 run_all_background_checks(tenant)
         return super().list(request, *args, **kwargs)
 
+    @action(detail=False, methods=["post"], url_path="run-checks")
+    def run_checks(self, request):
+        tenant_id = self.get_tenant_id()
+        tenant = get_object_or_404(Tenant, id=tenant_id)
+        from .notifications import run_all_background_checks
+        alerts = run_all_background_checks(tenant)
+        return Response({
+            "detail": f"Ran all scheduled and event triggers. Generated {len(alerts)} alert(s).",
+            "count": len(alerts)
+        })
+
+    @action(detail=False, methods=["post"], url_path="manager-override")
+    def record_manager_override(self, request):
+        tenant_id = self.get_tenant_id()
+        tenant = get_object_or_404(Tenant, id=tenant_id)
+        data = request.data
+        action_title = data.get("actionTitle", "Manager Override")
+        manager_name = data.get("managerName", request.user.name or request.user.username or "Store Manager")
+        reason = data.get("reason", "Manager PIN authorization")
+
+        from .notifications import trigger_manager_pin_void_notification
+        notif = trigger_manager_pin_void_notification(tenant, action_title, manager_name, reason)
+        return Response({
+            "detail": "Manager PIN override recorded and flagged.",
+            "notificationId": notif.id if notif else None
+        })
+
 class DailyReconciliationViewSet(TenantScopedViewSet):
     queryset = DailyReconciliation.objects.all()
     serializer_class = DailyReconciliationSerializer
@@ -290,7 +354,11 @@ class DailyReconciliationViewSet(TenantScopedViewSet):
         if not tenant_id:
             raise exceptions.ValidationError({"detail": "Active tenant ID is required to create resources."})
         tenant = get_object_or_404(Tenant, id=tenant_id)
-        serializer.save(tenant=tenant)
+        rec = serializer.save(tenant=tenant)
+
+        # Trigger Daily Reconciliation Sign-off notification & daily closeout digest email
+        from .notifications import trigger_daily_reconciliation_signoff
+        trigger_daily_reconciliation_signoff(rec)
 
 
 class CreditAccountViewSet(TenantScopedViewSet):
@@ -346,6 +414,16 @@ class CreditPaymentViewSet(TenantScopedViewSet):
             recorded_by=data.get("recordedBy", request.user.name or request.user.username),
             notes=data.get("notes", "")
         )
+
+        # Send credit payment confirmation email if customer
+        if account.entity_type == "customer":
+            customer = Customer.objects.filter(tenant=tenant, id=account.entity_id).first()
+            if customer and customer.email:
+                try:
+                    from .emails import send_credit_payment_confirmation_email
+                    send_credit_payment_confirmation_email(customer, amount, account.balance_due, tenant)
+                except Exception:
+                    pass
 
         serializer = self.get_serializer(payment)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -461,6 +539,14 @@ class InvoiceViewSet(TenantScopedViewSet):
                 amount=item.get("amount", 0)
             )
 
+        # Send formal B2B tax invoice email if recipient email available
+        if invoice.customer_email or (customer and customer.email):
+            try:
+                from .emails import send_formal_b2b_tax_invoice_email
+                send_formal_b2b_tax_invoice_email(invoice)
+            except Exception:
+                pass
+
         serializer = self.get_serializer(invoice)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -531,6 +617,14 @@ class PurchaseViewSet(TenantScopedViewSet):
                 unit_cost=unit_cost,
                 total=item.get("total", float(qty) * float(unit_cost))
             )
+
+        # Send supplier purchase order email
+        if supplier and supplier.email:
+            try:
+                from .emails import send_supplier_po_email
+                send_supplier_po_email(purchase)
+            except Exception:
+                pass
 
         serializer = self.get_serializer(purchase)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -708,6 +802,13 @@ def register_view(request):
 
     # Create Owner Membership
     Membership.objects.create(user=user, tenant=tenant, role="owner", designation="Business Owner")
+
+    # Send Welcome & Store Setup Email to new merchant
+    try:
+        from .emails import send_welcome_store_setup_email
+        send_welcome_store_setup_email(user, tenant, temp_password=password)
+    except Exception:
+        pass
 
     return Response({
         "message": "Registration successful. Your business account is pending activation by the administrator.",

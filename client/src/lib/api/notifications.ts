@@ -30,4 +30,24 @@ export const notificationsApi = {
       return false;
     }
   },
+
+  async recordManagerOverride(actionTitle: string, reason?: string, managerName?: string): Promise<void> {
+    try {
+      await apiClient.post("/notifications/manager-override/", {
+        actionTitle,
+        reason,
+        managerName,
+      });
+    } catch (err) {
+      console.warn("Failed to record manager override:", err);
+    }
+  },
+
+  async runBackgroundChecks(_tenantId?: string): Promise<void> {
+    try {
+      await apiClient.post("/notifications/run-checks/", {});
+    } catch (err) {
+      console.warn("Failed to trigger background checks:", err);
+    }
+  },
 };

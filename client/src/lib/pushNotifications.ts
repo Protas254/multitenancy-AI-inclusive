@@ -113,8 +113,12 @@ export const checkAndDispatchNewAlerts = async (
   for (const alert of unreadAlerts) {
     let targetUrl = "/notifications";
     if (alert.type === "low_stock") targetUrl = "/inventory";
-    if (alert.type === "reconciliation") targetUrl = "/reports";
-    if (alert.type === "target_achieved") targetUrl = "/targets";
+    else if (alert.type === "reconciliation") targetUrl = "/reports";
+    else if (alert.type === "target_achieved") targetUrl = "/targets";
+    else if (alert.type === "warning" || alert.type === "credit") targetUrl = "/credit";
+    else if (alert.type === "high_value_sale") targetUrl = "/sales";
+    else if (alert.type === "security_override") targetUrl = "/sales";
+    else if (alert.type === "payroll") targetUrl = "/payroll";
 
     await showPushAlert({
       id: alert.id,
