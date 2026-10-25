@@ -160,7 +160,7 @@ export default function App() {
           <Route
             path="/payroll"
             element={
-              <ProtectedModuleRoute module="payroll">
+              <ProtectedModuleRoute module="payroll" minPlan="enterprise">
                 <PayrollPage />
               </ProtectedModuleRoute>
             }

@@ -54,25 +54,47 @@ class Tenant(models.Model):
     email = models.EmailField(blank=True)
     address = models.TextField(blank=True)
     vat_rate = models.DecimalField(max_digits=5, decimal_places=2, default=16.0)
-    plan = models.CharField(max_length=50, default="pro")
+    plan = models.CharField(max_length=50, default="trial")
     currency = models.CharField(max_length=10, default="KES")
-    status = models.CharField(max_length=20, default="active")
+    status = models.CharField(max_length=20, default="trial")
     is_active = models.BooleanField(default=True)
+    trial_ends_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
+        import datetime
+        from django.utils import timezone
         if not self.id:
             self.id = gen_tenant_id()
         if not self.slug:
             from django.utils.text import slugify
             base_slug = slugify(self.name) or "business"
             self.slug = f"{base_slug}-{uuid.uuid4().hex[:6]}"
+        if (self.plan == "trial" or self.status == "trial") and not self.trial_ends_at:
+            self.trial_ends_at = timezone.now() + datetime.timedelta(days=14)
         # Keep status and is_active synchronized
-        if self.status == "active":
+        if self.status in ("active", "trial"):
             self.is_active = True
-        elif self.status in ("pending", "inactive", "suspended"):
+        elif self.status in ("pending", "inactive", "suspended", "expired"):
             self.is_active = False
         super().save(*args, **kwargs)
+
+    @property
+    def is_trial_expired(self):
+        from django.utils import timezone
+        if (self.status == "trial" or self.plan == "trial") and self.trial_ends_at:
+            return self.trial_ends_at < timezone.now()
+        return False
+
+    @property
+    def days_remaining_in_trial(self):
+        from django.utils import timezone
+        if self.trial_ends_at:
+            diff = (self.trial_ends_at - timezone.now()).total_seconds()
+            if diff <= 0:
+                return 0
+            return int(diff // 86400) + 1
+        return None
 
     def __str__(self):
         return f"{self.name} ({self.id})"
@@ -597,6 +619,7 @@ class SaaSPlan(models.Model):
     max_staff = models.IntegerField(default=5)
     max_products = models.IntegerField(default=500)
     max_invoices_per_month = models.IntegerField(default=100)
+    max_branches = models.IntegerField(default=1)
     is_popular = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
 

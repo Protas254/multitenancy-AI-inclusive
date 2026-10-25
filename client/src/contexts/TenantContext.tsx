@@ -26,8 +26,8 @@ const DEFAULT_EMPTY_TENANT: Tenant = {
   address: "",
   location: "",
   website: "",
-  plan: "professional",
-  planStatus: "active",
+  plan: "trial",
+  planStatus: "trial",
   nextBillingDate: "",
   createdAt: new Date().toISOString(),
   settings: {

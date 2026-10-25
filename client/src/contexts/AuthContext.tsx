@@ -192,11 +192,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     try {
       const res = await authApi.register(data);
-      // If pending activation, do not set user state — caller handles the redirect
-      if (res.pendingActivation) {
-        return res;
-      }
-      // Legacy: if token returned (e.g. super-admin path)
+      // New trial path: API returns token immediately, auto-login the user
       if (res.token) {
         setUser(res.user || null);
         const userMemberships = res.memberships || [];

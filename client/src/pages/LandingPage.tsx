@@ -32,68 +32,80 @@ import heroBg from "@/assets/hero-bg.jpg";
 
 const DEFAULT_PLANS: SaaSPlan[] = [
   {
-    id: "starter",
-    slug: "starter",
-    name: "Starter Retail",
-    price: 1000,
-    billingPeriod: "monthly",
-    description: "Perfect for single-shop retailers and sole proprietors starting out.",
+    id: "trial",
+    slug: "trial",
+    name: "14-Day Free Trial",
+    price: 0,
+    billingPeriod: "14_days",
+    description: "Full unrestricted access to all StockGrid enterprise features for 14 days. No credit card required.",
     features: [
-      "1 Branch Location",
-      "Up to 2 Staff Accounts (Owner + Cashier)",
-      "Core POS & Barcode Scanner",
-      "Up to 500 Inventory SKUs",
-      "Daily Sales Receipts",
-      "Standard Email Support",
+      "Full Enterprise Access for 14 Days",
+      "Up to 3 Branch Locations",
+      "Up to 10 Staff Accounts (Manager PIN Protection)",
+      "Core POS, Barcode Scanner & Digital Receipts",
+      "Customer Credit Accounts & B2B Invoicing",
+      "Customer CRM & Loyalty Program",
+      "Inter-Branch Stock Transfers",
+      "Staff Payroll, Commissions & Payslips",
+      "Consolidated Multi-Branch Financial Reports",
     ],
-    maxStaff: 2,
-    maxProducts: 500,
-    maxInvoicesPerMonth: 50,
+    maxStaff: 10,
+    maxProducts: 2500,
+    maxInvoicesPerMonth: 200,
+    maxBranches: 3,
     isPopular: false,
     isActive: true,
   },
   {
-    id: "professional",
-    slug: "professional",
-    name: "Growth Pro",
-    price: 2000,
+    id: "growth",
+    slug: "growth",
+    name: "Growth Plan",
+    price: 2500,
     billingPeriod: "monthly",
-    description: "Ideal for growing retail stores, supermarkets, and boutiques requiring staff control.",
+    description: "Ideal for growing retail stores, supermarkets, and boutiques requiring staff control & credit management.",
     features: [
-      "Up to 3 Branch Locations",
-      "Up to 10 Staff Roles (Manager PIN Protection)",
-      "Protected Financials (Hidden P&L, Wholesale & Payroll)",
+      "Up to 2 Branch Locations",
+      "Up to 8 Staff Accounts (Manager PIN Protection)",
+      "Core POS, Barcode Scanner & Digital Receipts",
+      "Up to 5,000 Inventory SKUs",
+      "Customer Credit Accounts & Debt Tracking",
       "Customer CRM & Loyalty Program",
+      "Daily Blind Cash Reconciliation",
       "Expense Tracking & Profit/Loss Analytics",
-      "B2B Invoicing & Customer Credit Accounts",
-      "Supplier Purchase Orders & Restocking",
+      "B2B Invoicing (Up to 300/month)",
+      "Staff Sales Targets",
       "Priority WhatsApp Support",
     ],
-    maxStaff: 10,
-    maxProducts: 10000,
-    maxInvoicesPerMonth: 500,
+    maxStaff: 8,
+    maxProducts: 5000,
+    maxInvoicesPerMonth: 300,
+    maxBranches: 2,
     isPopular: true,
     isActive: true,
   },
   {
     id: "enterprise",
     slug: "enterprise",
-    name: "Enterprise Chain",
-    price: 3000,
+    name: "Enterprise Plan",
+    price: 6500,
     billingPeriod: "monthly",
-    description: "For retail chains, supermarkets, franchises, and central warehouse operations.",
+    description: "For multi-branch retail chains, supermarkets, central warehouses, and franchise networks.",
     features: [
       "Unlimited Branch Locations & Central Warehouses",
       "Unlimited Staff Accounts & Custom Role Builder",
+      "Unlimited Inventory SKUs & Product Variations",
+      "Unlimited Monthly Invoices & Transactions",
       "Inter-Branch Stock Transfers & Transit Tracking",
+      "Staff Payroll, Commissions & Automated Payslips",
       "Consolidated Head-Office Financial Reports",
       "Multi-Branch Tax & Automated Reconciliations",
-      "AI Predictive Restocking & Demand Forecasting",
+      "Bulk Data Exports & Accounting Integrations",
       "Dedicated Account Manager & 24/7 SLA",
     ],
-    maxStaff: 999,
-    maxProducts: 99999,
-    maxInvoicesPerMonth: 99999,
+    maxStaff: 9999,
+    maxProducts: 999999,
+    maxInvoicesPerMonth: 999999,
+    maxBranches: 999,
     isPopular: false,
     isActive: true,
   },
@@ -325,9 +337,11 @@ export default function LandingPage() {
 
                   <div className="flex items-baseline gap-1">
                     <span className="text-3xl font-black text-slate-950 font-mono">
-                      {formatKES(plan.price)}
+                      {plan.price === 0 ? "KES 0" : formatKES(plan.price)}
                     </span>
-                    <span className="text-xs text-slate-500">/ month</span>
+                    <span className="text-xs text-slate-500">
+                      {plan.price === 0 ? "/ 14 days" : "/ month"}
+                    </span>
                   </div>
 
                   <div className="space-y-2.5 pt-4 border-t border-slate-100">
@@ -346,7 +360,7 @@ export default function LandingPage() {
                       variant={plan.isPopular ? "default" : "outline"}
                       className="w-full text-xs font-bold"
                     >
-                      Get Started
+                      {plan.price === 0 ? "Start 14-Day Free Trial" : "Choose " + plan.name}
                     </Button>
                   </Link>
                 </div>

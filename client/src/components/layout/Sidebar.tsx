@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Link from "@/components/ui/link";
 import { usePathname } from "@/lib/navigation";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTenant } from "@/contexts/TenantContext";
 import { TenantSwitcher } from "./TenantSwitcher";
 import {
   LayoutDashboard,
@@ -45,6 +46,7 @@ interface NavSection {
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
   const { hasPermission } = useAuth();
+  const { currentTenant } = useTenant();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
 
@@ -87,7 +89,13 @@ export const Sidebar: React.FC = () => {
         { label: "Suppliers", href: "/suppliers", icon: <Building className="h-4 w-4" />, module: "suppliers" },
         { label: "Loyalty", href: "/loyalty", icon: <Award className="h-4 w-4" />, module: "loyalty" },
         { label: "Staff", href: "/staff", icon: <UserCheck className="h-4 w-4" />, module: "staff" },
-        { label: "Payroll", href: "/payroll", icon: <Banknote className="h-4 w-4" />, module: "payroll" },
+        {
+          label: "Payroll",
+          href: "/payroll",
+          icon: <Banknote className="h-4 w-4" />,
+          module: "payroll",
+          badge: currentTenant.plan === "growth" || currentTenant.plan === "starter" ? "Enterprise" : undefined,
+        },
         { label: "Targets", href: "/targets", icon: <Target className="h-4 w-4" />, module: "targets" },
       ],
     },

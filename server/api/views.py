@@ -95,6 +95,13 @@ class TenantViewSet(viewsets.ModelViewSet):
             defaults={"id": f"cat-{uuid.uuid4().hex[:8]}", "description": "Default Category"}
         )
 
+    def perform_update(self, serializer):
+        tenant = serializer.save()
+        if tenant.plan in ("growth", "enterprise", "pro", "professional") and tenant.status in ("trial", "expired", "pending"):
+            tenant.status = "active"
+            tenant.is_active = True
+            tenant.save()
+
 class CategoryViewSet(TenantScopedViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
@@ -716,6 +723,8 @@ def login_view(request):
         # Super admins can always log in
         if not user.is_superuser:
             memberships = user.memberships.select_related("tenant").all()
+            # Block only accounts stuck in "pending" (not yet verified by admin)
+            # Trial, active, expired tenants can all log in
             if memberships.exists() and all(m.tenant.status == "pending" for m in memberships):
                 return Response(
                     {"detail": "Your business account is pending activation by the administrator. You will be notified once it is approved.", "pendingActivation": True},
@@ -761,6 +770,9 @@ def register_view(request):
     tenant_id = f"tenant-{uuid.uuid4().hex[:8]}"
     slug = f"{slugify(business_name)}-{uuid.uuid4().hex[:4]}"
 
+    import datetime
+    from django.utils import timezone
+
     tenant = Tenant.objects.create(
         id=tenant_id,
         name=business_name,
@@ -770,10 +782,11 @@ def register_view(request):
         email=data.get("businessEmail") or email,
         address=data.get("address") or data.get("location") or "Nairobi, Kenya",
         vat_rate=data.get("taxRate", 16.0),
-        plan=data.get("plan", "pro"),
+        plan="trial",
         currency=data.get("currency", "KES"),
-        status="pending",
-        is_active=False,
+        status="trial",
+        is_active=True,
+        trial_ends_at=timezone.now() + datetime.timedelta(days=14),
     )
 
     # Seed default category for new tenant
@@ -810,9 +823,18 @@ def register_view(request):
     except Exception:
         pass
 
+    refresh = RefreshToken.for_user(user)
+    user_data = UserSerializer(user).data
+    memberships_data = MembershipSerializer(user.memberships.select_related("tenant").all(), many=True).data
+
     return Response({
-        "message": "Registration successful. Your business account is pending activation by the administrator.",
-        "pendingActivation": True,
+        "message": "Welcome to StockGrid! Your 14-day full access free trial has started.",
+        "pendingActivation": False,
+        "token": str(refresh.access_token),
+        "refreshToken": str(refresh),
+        "user": user_data,
+        "memberships": memberships_data,
+        "activeTenantId": tenant.id,
         "businessName": business_name,
         "email": email,
     }, status=status.HTTP_201_CREATED)
@@ -885,8 +907,8 @@ def admin_platform_stats(request):
     total_tenants = Tenant.objects.count()
     active_tenants = Tenant.objects.filter(status="active").count()
 
-    plan_prices = {"starter": 2500, "professional": 6500, "pro": 6500, "enterprise": 15000}
-    mrr = sum(plan_prices.get(t.plan.lower(), 2500) for t in Tenant.objects.filter(status="active"))
+    plan_prices = {"growth": 2500, "enterprise": 6500}
+    mrr = sum(plan_prices.get(t.plan.lower(), 0) for t in Tenant.objects.filter(status="active"))
 
     total_sales_volume = float(Sale.objects.aggregate(Sum("total_amount"))["total_amount__sum"] or 0)
     now = timezone.now()
@@ -905,53 +927,98 @@ def admin_platform_stats(request):
 @api_view(["GET"])
 @permission_classes([permissions.AllowAny])
 def saas_plans_view(request):
-    plans = SaaSPlan.objects.filter(is_active=True)
-    if not plans.exists():
-        defaults = [
-            {
-                "id": "starter",
-                "slug": "starter",
-                "name": "Starter Retail",
-                "price": 1000,
-                "billing_period": "monthly",
-                "description": "Perfect for single-shop retailers and sole proprietors starting out.",
-                "features": ["1 Branch Location", "Up to 2 Staff Accounts (Owner + Cashier)", "Core POS & Barcode Scanner", "Up to 500 Inventory SKUs", "Daily Sales Receipts", "Standard Email Support"],
-                "max_staff": 2,
-                "max_products": 500,
-                "max_invoices_per_month": 50,
-                "is_popular": False,
-            },
-            {
-                "id": "professional",
-                "slug": "professional",
-                "name": "Growth Pro",
-                "price": 2000,
-                "billing_period": "monthly",
-                "description": "Ideal for growing retail stores, supermarkets, and boutiques requiring staff control.",
-                "features": ["Up to 3 Branch Locations", "Up to 10 Staff Roles (Manager PIN Protection)", "Protected Financials (Hidden P&L, Wholesale & Payroll)", "Customer CRM & Loyalty Program", "Expense Tracking & Profit/Loss Analytics", "B2B Invoicing & Customer Credit Accounts", "Supplier Purchase Orders & Restocking", "Priority WhatsApp Support"],
-                "max_staff": 10,
-                "max_products": 10000,
-                "max_invoices_per_month": 500,
-                "is_popular": True,
-            },
-            {
-                "id": "enterprise",
-                "slug": "enterprise",
-                "name": "Enterprise Chain",
-                "price": 3000,
-                "billing_period": "monthly",
-                "description": "For retail chains, supermarkets, franchises, and central warehouse operations.",
-                "features": ["Unlimited Branch Locations & Central Warehouses", "Unlimited Staff Accounts & Custom Role Builder", "Inter-Branch Stock Transfers & Transit Tracking", "Consolidated Head-Office Financial Reports", "Multi-Branch Tax & Automated Reconciliations", "AI Predictive Restocking & Demand Forecasting", "Dedicated Account Manager & 24/7 SLA"],
-                "max_staff": 999,
-                "max_products": 99999,
-                "max_invoices_per_month": 99999,
-                "is_popular": False,
-            },
-        ]
-        for p in defaults:
-            SaaSPlan.objects.create(**p)
-        plans = SaaSPlan.objects.filter(is_active=True)
+    canonical_plans = [
+        {
+            "id": "trial",
+            "slug": "trial",
+            "name": "14-Day Free Trial",
+            "price": 0,
+            "billing_period": "14_days",
+            "description": "Full unrestricted access to all StockGrid features for 14 days. No credit card required.",
+            "features": [
+                "Full Enterprise Access for 14 Days",
+                "Up to 3 Branch Locations",
+                "Up to 10 Staff Accounts (Manager PIN Protection)",
+                "Core POS, Barcode Scanner & Digital Receipts",
+                "Customer Credit Accounts & B2B Invoicing",
+                "Customer CRM & Loyalty Rewards",
+                "Staff Sales Targets & Tracking",
+                "Inter-Branch Stock Transfers & Transit Tracking",
+                "Employee Payroll, Commissions & Payslips",
+                "Consolidated Multi-Branch Financial Reports",
+                "Daily Cash Reconciliation (Blind Closeout)",
+            ],
+            "max_staff": 10,
+            "max_products": 2500,
+            "max_invoices_per_month": 200,
+            "max_branches": 3,
+            "is_popular": False,
+            "is_active": True,
+        },
+        {
+            "id": "growth",
+            "slug": "growth",
+            "name": "Growth Plan",
+            "price": 2500,
+            "billing_period": "monthly",
+            "description": "Built for growing retail shops, supermarkets, and boutiques requiring staff control & credit management.",
+            "features": [
+                "Up to 2 Branch Locations",
+                "Up to 8 Staff Accounts (Manager PIN Protection)",
+                "Core POS, Barcode Scanner & Digital Receipts",
+                "Up to 5,000 Inventory SKUs",
+                "Customer Credit Accounts & Debt Tracking",
+                "Customer CRM & Loyalty Program",
+                "Daily Blind Cash Reconciliation",
+                "Expense Tracking & Profit/Loss Analytics",
+                "B2B Invoicing (Up to 300/month)",
+                "Staff Sales Targets",
+                "Priority WhatsApp Support",
+            ],
+            "max_staff": 8,
+            "max_products": 5000,
+            "max_invoices_per_month": 300,
+            "max_branches": 2,
+            "is_popular": True,
+            "is_active": True,
+        },
+        {
+            "id": "enterprise",
+            "slug": "enterprise",
+            "name": "Enterprise Plan",
+            "price": 6500,
+            "billing_period": "monthly",
+            "description": "For multi-branch retail chains, supermarkets, central warehouses, and franchise networks.",
+            "features": [
+                "Unlimited Branch Locations & Central Warehouses",
+                "Unlimited Staff Accounts & Custom Role Builder",
+                "Unlimited Inventory SKUs & Product Variations",
+                "Unlimited Monthly Invoices & Transactions",
+                "Inter-Branch Stock Transfers & Transit Tracking",
+                "Staff Payroll, Commissions & Automated Payslips",
+                "Consolidated Head-Office Financial Reports",
+                "Multi-Branch Tax & Automated Reconciliations",
+                "Bulk Data Exports & Accounting Integrations",
+                "Dedicated Account Manager & 24/7 SLA",
+            ],
+            "max_staff": 9999,
+            "max_products": 999999,
+            "max_invoices_per_month": 999999,
+            "max_branches": 999,
+            "is_popular": False,
+            "is_active": True,
+        },
+    ]
 
+    for p in canonical_plans:
+        SaaSPlan.objects.update_or_create(
+            slug=p["slug"],
+            defaults=p
+        )
+    # Deactivate or clean up legacy non-standard plans
+    SaaSPlan.objects.filter(slug__in=["starter", "professional", "pro"]).exclude(slug__in=["trial", "growth", "enterprise"]).delete()
+
+    plans = SaaSPlan.objects.filter(is_active=True).order_by("price")
     return Response(SaaSPlanSerializer(plans, many=True).data)
 
 

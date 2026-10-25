@@ -32,68 +32,80 @@ import {
 
 const DEFAULT_PLANS: SaaSPlan[] = [
   {
-    id: "starter",
-    slug: "starter",
-    name: "Starter Retail",
-    price: 1000,
-    billingPeriod: "monthly",
-    description: "Perfect for single-shop retailers and sole proprietors starting out.",
+    id: "trial",
+    slug: "trial",
+    name: "14-Day Free Trial",
+    price: 0,
+    billingPeriod: "14_days",
+    description: "Full unrestricted access to all StockGrid features for 14 days. No credit card required.",
     features: [
-      "1 Branch Location",
-      "Up to 2 Staff Accounts (Owner + Cashier)",
-      "Core POS & Barcode Scanner",
-      "Up to 500 Inventory SKUs",
-      "Daily Sales Receipts",
-      "Standard Email Support",
+      "Full Enterprise Access for 14 Days",
+      "Up to 3 Branch Locations",
+      "Up to 10 Staff Accounts (Manager PIN Protection)",
+      "Core POS, Barcode Scanner & Digital Receipts",
+      "Customer Credit Accounts & B2B Invoicing",
+      "Customer CRM & Loyalty Program",
+      "Inter-Branch Stock Transfers",
+      "Employee Payroll, Commissions & Payslips",
+      "Consolidated Multi-Branch Financial Reports",
     ],
-    maxStaff: 2,
-    maxProducts: 500,
-    maxInvoicesPerMonth: 50,
+    maxStaff: 10,
+    maxProducts: 2500,
+    maxInvoicesPerMonth: 200,
+    maxBranches: 3,
     isPopular: false,
     isActive: true,
   },
   {
-    id: "professional",
-    slug: "professional",
-    name: "Growth Pro",
-    price: 2000,
+    id: "growth",
+    slug: "growth",
+    name: "Growth Plan",
+    price: 2500,
     billingPeriod: "monthly",
-    description: "Ideal for growing retail stores, supermarkets, and boutiques requiring staff control.",
+    description: "Ideal for growing retail stores, supermarkets, and boutiques requiring staff control & credit management.",
     features: [
-      "Up to 3 Branch Locations",
-      "Up to 10 Staff Roles (Manager PIN Protection)",
-      "Protected Financials (Hidden P&L, Wholesale & Payroll)",
+      "Up to 2 Branch Locations",
+      "Up to 8 Staff Accounts (Manager PIN Protection)",
+      "Core POS, Barcode Scanner & Digital Receipts",
+      "Up to 5,000 Inventory SKUs",
+      "Customer Credit Accounts & Debt Tracking",
       "Customer CRM & Loyalty Program",
+      "Daily Blind Cash Reconciliation",
       "Expense Tracking & Profit/Loss Analytics",
-      "B2B Invoicing & Customer Credit Accounts",
-      "Supplier Purchase Orders & Restocking",
+      "B2B Invoicing (Up to 300/month)",
+      "Staff Sales Targets",
       "Priority WhatsApp Support",
     ],
-    maxStaff: 10,
-    maxProducts: 10000,
-    maxInvoicesPerMonth: 500,
+    maxStaff: 8,
+    maxProducts: 5000,
+    maxInvoicesPerMonth: 300,
+    maxBranches: 2,
     isPopular: true,
     isActive: true,
   },
   {
     id: "enterprise",
     slug: "enterprise",
-    name: "Enterprise Chain",
-    price: 3000,
+    name: "Enterprise Plan",
+    price: 6500,
     billingPeriod: "monthly",
-    description: "For retail chains, supermarkets, franchises, and central warehouse operations.",
+    description: "For multi-branch retail chains, supermarkets, central warehouses, and franchise networks.",
     features: [
       "Unlimited Branch Locations & Central Warehouses",
       "Unlimited Staff Accounts & Custom Role Builder",
+      "Unlimited Inventory SKUs & Product Variations",
+      "Unlimited Monthly Invoices & Transactions",
       "Inter-Branch Stock Transfers & Transit Tracking",
+      "Staff Payroll, Commissions & Automated Payslips",
       "Consolidated Head-Office Financial Reports",
       "Multi-Branch Tax & Automated Reconciliations",
-      "AI Predictive Restocking & Demand Forecasting",
+      "Bulk Data Exports & Accounting Integrations",
       "Dedicated Account Manager & 24/7 SLA",
     ],
-    maxStaff: 999,
-    maxProducts: 99999,
-    maxInvoicesPerMonth: 99999,
+    maxStaff: 9999,
+    maxProducts: 999999,
+    maxInvoicesPerMonth: 999999,
+    maxBranches: 999,
     isPopular: false,
     isActive: true,
   },
@@ -185,7 +197,8 @@ export default function SettingsPage() {
       await apiClient.patch(`/tenants/${currentTenant.id}/`, {
         plan: targetPlan.id,
       });
-      currentTenant.plan = targetPlan.id;
+      currentTenant.plan = targetPlan.id as any;
+      currentTenant.planStatus = targetPlan.id === "trial" ? "trial" : "active";
       setSaveMessage(`Successfully activated ${targetPlan.name} package!`);
       setIsSaved(true);
       setTimeout(() => setIsSaved(false), 3000);
@@ -685,17 +698,29 @@ export default function SettingsPage() {
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold uppercase tracking-wider text-blue-400">Current Subscription</span>
-                  <span className="text-xs font-bold bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full capitalize">
-                    {currentTenant.planStatus}
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full capitalize ${
+                    currentTenant.planStatus === 'trial' || currentTenant.plan === 'trial'
+                      ? 'bg-blue-500/30 text-blue-200'
+                      : currentTenant.planStatus === 'expired'
+                      ? 'bg-red-500/30 text-red-300'
+                      : 'bg-emerald-500/20 text-emerald-400'
+                  }`}>
+                    {currentTenant.planStatus === 'trial' || currentTenant.plan === 'trial'
+                      ? `14-Day Trial (${currentTenant.daysRemainingInTrial ?? 14} days left)`
+                      : currentTenant.planStatus}
                   </span>
                 </div>
-                <h3 className="text-2xl font-black uppercase tracking-tight">{currentTenant.plan} Plan</h3>
-                <p className="text-xs text-slate-400">Next renewal billing date: {currentTenant.nextBillingDate}</p>
+                <h3 className="text-2xl font-black uppercase tracking-tight">
+                  {currentTenant.plan === 'trial' ? '14-Day Free Trial (Enterprise Access)' : `${currentTenant.plan} Plan`}
+                </h3>
+                {currentTenant.plan === 'trial' || currentTenant.planStatus === 'trial' ? (
+                  <p className="text-xs text-blue-300">
+                    You have complete unrestricted Enterprise access to all StockGrid modules during your evaluation.
+                  </p>
+                ) : (
+                  <p className="text-xs text-slate-400">Next renewal billing date: {currentTenant.nextBillingDate || 'Auto-renews monthly'}</p>
+                )}
               </div>
-
-              <Button className="bg-blue-600 hover:bg-blue-700 font-bold text-xs">
-                Manage Plan / Upgrade
-              </Button>
             </div>
 
             {/* Usage Meters */}
@@ -744,7 +769,9 @@ export default function SettingsPage() {
                       </span>
                     )}
                   </div>
-                  <p className="text-2xl font-black font-mono text-slate-950">{formatKES(plan.price)}/mo</p>
+                  <p className="text-2xl font-black font-mono text-slate-950">
+                    {plan.price === 0 ? "KES 0 (Free)" : `${formatKES(plan.price)}/mo`}
+                  </p>
                   <p className="text-xs text-slate-500">{plan.description}</p>
                   <div className="space-y-1.5 pt-2 text-xs text-slate-600">
                     {plan.features.map((f, i) => (
@@ -760,10 +787,14 @@ export default function SettingsPage() {
                   <Button
                     onClick={() => handleSwitchPlan(plan)}
                     variant={plan.id === currentTenant.plan ? "secondary" : "default"}
-                    disabled={plan.id === currentTenant.plan || isSwitchingPlan}
+                    disabled={plan.id === currentTenant.plan || isSwitchingPlan || (plan.id === "trial" && currentTenant.plan !== "trial")}
                     className="w-full text-xs font-bold"
                   >
-                    {plan.id === currentTenant.plan ? "Current Active Plan" : "Switch to " + plan.name}
+                    {plan.id === currentTenant.plan
+                      ? "Current Active Plan"
+                      : plan.id === "trial"
+                      ? "Trial (One-time)"
+                      : "Activate " + plan.name}
                   </Button>
                 </div>
               </Card>

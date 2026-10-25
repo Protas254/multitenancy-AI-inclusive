@@ -23,6 +23,9 @@ class TenantSerializer(serializers.ModelSerializer):
     totalSalesVolume = serializers.SerializerMethodField()
     ownerName = serializers.SerializerMethodField()
     ownerEmail = serializers.SerializerMethodField()
+    trialEndsAt = serializers.DateTimeField(source="trial_ends_at", read_only=True, allow_null=True)
+    daysRemainingInTrial = serializers.SerializerMethodField()
+    isTrialExpired = serializers.SerializerMethodField()
 
     class Meta:
         model = Tenant
@@ -30,14 +33,25 @@ class TenantSerializer(serializers.ModelSerializer):
             "id", "name", "slug", "domain", "businessType", "phone", "email",
             "address", "location", "vatRate", "plan", "planStatus", "currency",
             "status", "settings", "branches", "staffCount", "productsCount",
-            "monthlyRevenue", "totalSalesVolume", "ownerName", "ownerEmail", "createdAt"
+            "monthlyRevenue", "totalSalesVolume", "ownerName", "ownerEmail",
+            "trialEndsAt", "daysRemainingInTrial", "isTrialExpired", "createdAt"
         ]
         read_only_fields = ["id", "createdAt"]
+
+    def get_daysRemainingInTrial(self, obj):
+        return obj.days_remaining_in_trial
+
+    def get_isTrialExpired(self, obj):
+        return obj.is_trial_expired
 
     def get_location(self, obj):
         return obj.address or "Main Location"
 
     def get_planStatus(self, obj):
+        if getattr(obj, "is_trial_expired", False):
+            return "expired"
+        if obj.plan == "trial" or obj.status == "trial":
+            return "trial"
         return obj.status or "active"
 
     def get_settings(self, obj):
@@ -542,6 +556,7 @@ class SaaSPlanSerializer(serializers.ModelSerializer):
     maxStaff = serializers.IntegerField(source="max_staff", default=5)
     maxProducts = serializers.IntegerField(source="max_products", default=500)
     maxInvoicesPerMonth = serializers.IntegerField(source="max_invoices_per_month", default=100)
+    maxBranches = serializers.IntegerField(source="max_branches", default=1)
     isPopular = serializers.BooleanField(source="is_popular", default=False)
     isActive = serializers.BooleanField(source="is_active", default=True)
 
@@ -549,6 +564,6 @@ class SaaSPlanSerializer(serializers.ModelSerializer):
         model = SaaSPlan
         fields = [
             "id", "slug", "name", "price", "billingPeriod", "description",
-            "features", "maxStaff", "maxProducts", "maxInvoicesPerMonth", "isPopular", "isActive"
+            "features", "maxStaff", "maxProducts", "maxInvoicesPerMonth", "maxBranches", "isPopular", "isActive"
         ]
 

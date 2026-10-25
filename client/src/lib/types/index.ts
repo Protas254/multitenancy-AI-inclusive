@@ -80,9 +80,12 @@ export interface Tenant {
   website?: string;
   branches: Branch[];
   settings: TenantSettings;
-  plan: "starter" | "professional" | "enterprise";
-  planStatus: "active" | "trial" | "past_due" | "canceled";
-  nextBillingDate: string;
+  plan: "trial" | "growth" | "enterprise" | "starter" | "professional";
+  planStatus: "active" | "trial" | "expired" | "past_due" | "canceled";
+  trialEndsAt?: string;
+  daysRemainingInTrial?: number;
+  isTrialExpired?: boolean;
+  nextBillingDate?: string;
   createdAt: string;
 }
 
@@ -509,16 +512,17 @@ export interface NotificationItem {
 }
 
 export interface SaaSPlan {
-  id: "starter" | "professional" | "enterprise";
+  id: "trial" | "growth" | "enterprise" | "starter" | "professional" | string;
   slug?: string;
   name: string;
   price: number;
-  billingPeriod: "monthly" | "annually";
+  billingPeriod: "monthly" | "annually" | "14_days" | string;
   description: string;
   features: string[];
   maxStaff: number;
   maxProducts: number;
   maxInvoicesPerMonth: number;
+  maxBranches?: number;
   isPopular?: boolean;
   isActive?: boolean;
 }
@@ -529,8 +533,8 @@ export interface PlatformTenantOverview {
   ownerName: string;
   ownerEmail: string;
   businessType: string;
-  plan: "starter" | "professional" | "enterprise";
-  status: "active" | "trial" | "past_due" | "canceled";
+  plan: "trial" | "growth" | "enterprise" | "starter" | "professional";
+  status: "active" | "trial" | "expired" | "past_due" | "canceled";
   staffCount: number;
   productsCount: number;
   monthlyRevenue: number;

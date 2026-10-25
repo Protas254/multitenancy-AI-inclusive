@@ -32,16 +32,25 @@ export const ProtectedModuleRoute: React.FC<ProtectedModuleRouteProps> = ({
   // Check role permission
   const allowedByRole = hasPermission(module, action) || isUnlockedByPin;
 
-  // Check plan tier eligibility if defined
+  // Check trial expiration
+  const isTrialExpired =
+    currentTenant.planStatus === "expired" || Boolean(currentTenant.isTrialExpired);
+
+  // Check plan tier eligibility: Trial gives full Enterprise access (weight 3) for 14 days!
+  const isTrialActive =
+    (currentTenant.plan === "trial" || currentTenant.planStatus === "trial") && !isTrialExpired;
+
   const planWeights: Record<string, number> = {
-    starter: 1,
+    trial: 3, // Free Trial grants full access to all features!
     growth: 2,
-    professional: 2, // alias
+    starter: 2,
+    professional: 2,
+    pro: 2,
     enterprise: 3,
   };
 
-  const currentPlanSlug = (currentTenant.plan || "professional").toLowerCase();
-  const currentWeight = planWeights[currentPlanSlug] || 2;
+  const currentPlanSlug = (currentTenant.plan || "growth").toLowerCase();
+  const currentWeight = isTrialActive ? 3 : planWeights[currentPlanSlug] || 2;
   const requiredWeight = minPlan ? planWeights[minPlan] || 1 : 1;
   const allowedByPlan = currentWeight >= requiredWeight;
 
@@ -130,14 +139,44 @@ export const ProtectedModuleRoute: React.FC<ProtectedModuleRouteProps> = ({
     );
   }
 
+  // If trial has expired, prompt to choose a plan
+  if (isTrialExpired) {
+    return (
+      <div className="min-h-[70vh] flex flex-col items-center justify-center p-6 text-center">
+        <div className="max-w-md w-full bg-white rounded-3xl border border-amber-300 p-8 shadow-xl space-y-6">
+          <div className="h-16 w-16 mx-auto rounded-3xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center">
+            <Lock className="h-8 w-8" />
+          </div>
+
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-[11px] font-bold uppercase tracking-wider">
+              <span>Trial Period Concluded</span>
+            </div>
+            <h2 className="text-xl font-black text-slate-900 tracking-tight">Your 14-Day Free Trial Has Ended</h2>
+            <p className="text-xs text-slate-500 leading-relaxed max-w-sm mx-auto">
+              Your store data is completely safe! Select either the <strong>Growth Plan</strong> or <strong>Enterprise Plan</strong> to continue business operations.
+            </p>
+          </div>
+
+          <div className="space-y-2.5 pt-2">
+            <Link href="/settings" className="block w-full">
+              <Button className="w-full gap-2 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-md h-10">
+                <Sparkles className="h-4 w-4" />
+                <span>Select a Subscription Plan</span>
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // If user has role permission but the current subscription tier lacks this feature
   if (!allowedByPlan && minPlan) {
     const requiredPlanName =
       minPlan === "enterprise"
-        ? "Enterprise Chain"
-        : minPlan === "growth"
-        ? "Growth Pro"
-        : "Starter Retail";
+        ? "Enterprise Plan"
+        : "Growth Plan";
 
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center p-6 text-center">

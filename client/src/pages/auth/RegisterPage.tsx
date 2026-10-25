@@ -16,6 +16,7 @@ import {
   Trash2,
   Clock,
   Mail,
+  Sparkles,
 } from "lucide-react";
 
 const STEPS = [
@@ -83,7 +84,7 @@ export default function RegisterPage() {
     products: [{ name: "", buyingPrice: 0, sellingPrice: 0, stock: 10 }],
     staff: [{ name: "", role: "Staff", phone: "" }],
     monthlyTarget: 100000,
-    plan: "professional", // "starter" | "professional" | "enterprise"
+    plan: "trial", // "trial" | "growth" | "enterprise"
   });
 
   const next = () => setStep((s) => Math.min(5, s + 1));
@@ -111,7 +112,10 @@ export default function RegisterPage() {
         plan: formData.plan,
         products: formData.products.filter((p) => p.name.trim().length > 0),
       });
-      if (res?.pendingActivation) {
+      // New trial flow: API auto-issues a token, go straight to dashboard
+      if (res?.token) {
+        router.push("/dashboard");
+      } else if (res?.pendingActivation) {
         setRegistered({ businessName: res.businessName || formData.businessName, email: res.email || formData.email });
       } else {
         router.push("/dashboard");
@@ -403,15 +407,15 @@ export default function RegisterPage() {
 
           {/* Package Selection */}
           <div className="space-y-2">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-700">Choose Your Subscription Tier</label>
+            <label className="text-xs font-bold uppercase tracking-wider text-slate-700">Choose Your Subscription Package</label>
             <select
               value={formData.plan}
               onChange={(e) => setFormData({ ...formData, plan: e.target.value })}
               className="flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
             >
-              <option value="starter">Starter Retail — KES 1,000/mo</option>
-              <option value="professional">Growth Pro — KES 2,000/mo</option>
-              <option value="enterprise">Enterprise Chain — KES 3,000/mo</option>
+              <option value="trial">14-Day Free Trial — KES 0 (Full Enterprise Access)</option>
+              <option value="growth">Growth Plan — KES 2,500/mo (Includes 14-day trial)</option>
+              <option value="enterprise">Enterprise Plan — KES 6,500/mo (Includes 14-day trial)</option>
             </select>
           </div>
 
@@ -433,17 +437,17 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 flex items-start gap-2">
-            <Clock className="h-4 w-4 shrink-0 mt-0.5 text-amber-600" />
+          <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-900 flex items-start gap-2">
+            <Sparkles className="h-4 w-4 shrink-0 mt-0.5 text-emerald-600" />
             <span>
-              After submitting, your business account will be <strong>pending activation</strong>. The super administrator will verify your chosen package ({formData.plan === "starter" ? "Starter Retail @ KES 1,000" : formData.plan === "enterprise" ? "Enterprise Chain @ KES 3,000" : "Growth Pro @ KES 2,000"}) and activate access.
+              All new businesses start with an <strong>instant 14-Day Free Trial</strong> with unrestricted access to all modules (POS, Inventory, Customer Credit, Loyalty, Payroll, Multi-Branch). No credit card required upfront.
             </span>
           </div>
 
           <div className="pt-2 flex justify-between items-center">
             <Button variant="outline" size="sm" onClick={prev} className="text-xs">Back</Button>
-            <Button onClick={handleFinishSetup} isLoading={isLoading} className="text-xs font-bold">
-              Submit for Activation
+            <Button onClick={handleFinishSetup} isLoading={isLoading} className="text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white">
+              Start 14-Day Free Trial
             </Button>
           </div>
         </div>
