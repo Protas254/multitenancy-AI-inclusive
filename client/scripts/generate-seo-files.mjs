@@ -10,8 +10,18 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
 const publicDir = path.resolve(rootDir, "public");
 
-// Read site URL from environment or .env.local or fallback
+// Read site URL from environment or .env.production or .env.local or fallback
 let siteUrl = process.env.VITE_SITE_URL || process.env.NEXT_PUBLIC_SITE_URL;
+if (!siteUrl) {
+  const envProdPath = path.resolve(rootDir, ".env.production");
+  if (fs.existsSync(envProdPath)) {
+    const content = fs.readFileSync(envProdPath, "utf-8");
+    const match = content.match(/(?:VITE_SITE_URL|NEXT_PUBLIC_SITE_URL)=(https?:\/\/[^\s]+)/);
+    if (match) {
+      siteUrl = match[1];
+    }
+  }
+}
 if (!siteUrl) {
   const envLocalPath = path.resolve(rootDir, ".env.local");
   if (fs.existsSync(envLocalPath)) {
@@ -24,7 +34,7 @@ if (!siteUrl) {
 }
 
 if (!siteUrl) {
-  siteUrl = "https://stockgrid.africa";
+  siteUrl = "https://storegrid.co.ke";
 }
 siteUrl = siteUrl.replace(/\/+$/, "");
 
@@ -67,6 +77,7 @@ Allow: /favicon.ico
 Allow: /favicon.svg
 Allow: /apple-touch-icon.png
 Allow: /og-image.png
+Allow: /storegrid-logo.png
 Allow: /stockgrid-logo.png
 Allow: /hero-bg.jpg
 Allow: /assets/

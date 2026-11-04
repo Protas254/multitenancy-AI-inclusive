@@ -1,19 +1,19 @@
-// StockGrid Web Push Notification Worker
+// StoreGrid Web Push Notification Worker
 self.addEventListener("push", function (event) {
   let data = {};
   if (event.data) {
     try {
       data = event.data.json();
     } catch (e) {
-      data = { title: "StockGrid Notification", message: event.data.text() };
+      data = { title: "StoreGrid Notification", message: event.data.text() };
     }
   }
 
-  const title = data.title || "StockGrid Retail Alert";
+  const title = data.title || "StoreGrid Retail Alert";
   const options = {
-    body: data.message || data.body || "New business update from StockGrid.",
-    icon: "/stockgrid-logo.png",
-    badge: "/stockgrid-logo.png",
+    body: data.message || data.body || "New business update from StoreGrid.",
+    icon: "/storegrid-logo.png",
+    badge: "/storegrid-logo.png",
     vibrate: [200, 100, 200, 100, 200],
     data: {
       url: data.url || "/notifications",
@@ -24,7 +24,7 @@ self.addEventListener("push", function (event) {
       { action: "view", title: "View Details" },
       { action: "dismiss", title: "Dismiss" },
     ],
-    tag: data.tag || "stockgrid-alert",
+    tag: data.tag || "storegrid-alert",
     renotify: true,
   };
 

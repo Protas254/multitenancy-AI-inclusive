@@ -4,15 +4,15 @@ from django.conf import settings
 from django.utils import timezone
 from django.db.models import Sum
 
-logger = logging.getLogger("stockgrid.emails")
+logger = logging.getLogger("storegrid.emails")
 
 def _send_html_email(subject, recipient_email, text_content, html_content):
     """Safely dispatches an HTML email with text fallback without breaking caller on network failure."""
     if not recipient_email or "@" not in recipient_email:
-        logger.warning(f"[StockGrid Email] Skipping email '{subject}' - invalid recipient: {recipient_email}")
+        logger.warning(f"[StoreGrid Email] Skipping email '{subject}' - invalid recipient: {recipient_email}")
         return False
 
-    from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "StockGrid Cloud <stockgridke@gmail.com>")
+    from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "StoreGrid Cloud <storegridke@gmail.com>")
     try:
         msg = EmailMultiAlternatives(
             subject=subject,
@@ -22,15 +22,15 @@ def _send_html_email(subject, recipient_email, text_content, html_content):
         )
         msg.attach_alternative(html_content, "text/html")
         msg.send(fail_silently=False)
-        logger.info(f"[StockGrid Email] Successfully sent '{subject}' to {recipient_email}")
+        logger.info(f"[StoreGrid Email] Successfully sent '{subject}' to {recipient_email}")
         return True
     except Exception as e:
-        logger.error(f"[StockGrid Email] Error sending '{subject}' to {recipient_email}: {e}")
+        logger.error(f"[StoreGrid Email] Error sending '{subject}' to {recipient_email}: {e}")
         return False
 
 
-def _get_base_template(title, preheader, body_html, footer_note="StockGrid Multi-Tenant Retail Cloud • 24/7 Support: 0743849304"):
-    """Returns a responsive HTML email layout with StockGrid styling."""
+def _get_base_template(title, preheader, body_html, footer_note="StoreGrid Multi-Tenant Retail Cloud • 24/7 Support: 0743849304"):
+    """Returns a responsive HTML email layout with StoreGrid styling."""
     return f"""<!DOCTYPE html>
 <html>
 <head>
@@ -74,7 +74,7 @@ def _get_base_template(title, preheader, body_html, footer_note="StockGrid Multi
     </div>
     <div class="footer">
       <p style="margin: 0 0 6px 0;">{footer_note}</p>
-      <p style="margin: 0; color: #94a3b8;">Nairobi, Kenya • Email: stockgridke@gmail.com • Hours: 24/7</p>
+      <p style="margin: 0; color: #94a3b8;">Nairobi, Kenya • Email: storegridke@gmail.com • Hours: 24/7</p>
     </div>
   </div>
 </body>
@@ -87,14 +87,14 @@ def _get_base_template(title, preheader, body_html, footer_note="StockGrid Multi
 
 def send_welcome_store_setup_email(user, tenant, temp_password=None):
     """Sent upon registration with store URL, admin login credentials, and onboarding checklist."""
-    subject = f"🎉 Welcome to StockGrid: {tenant.name} is Ready!"
+    subject = f"🎉 Welcome to StoreGrid: {tenant.name} is Ready!"
     recipient = user.email or tenant.email
     pwd_info = f"<p><strong>Initial Password:</strong> <code>{temp_password}</code></p>" if temp_password else ""
 
     body = f"""
       <span class="badge badge-success">Account Provisioned</span>
-      <h2 style="margin-top: 4px; color: #0f172a;">Welcome to StockGrid, {user.name}!</h2>
-      <p>Your multi-tenant store <strong>{tenant.name}</strong> is now live and configured on StockGrid Retail Cloud.</p>
+      <h2 style="margin-top: 4px; color: #0f172a;">Welcome to StoreGrid, {user.name}!</h2>
+      <p>Your multi-tenant store <strong>{tenant.name}</strong> is now live and configured on StoreGrid Retail Cloud.</p>
 
       <div class="stat-card">
         <p style="margin: 0 0 8px 0;"><strong>Store ID:</strong> <code>{tenant.id}</code></p>
@@ -113,7 +113,7 @@ def send_welcome_store_setup_email(user, tenant, temp_password=None):
 
       <a href="http://localhost:3000/dashboard" class="btn">Launch Business Dashboard &rarr;</a>
     """
-    text = f"Welcome to StockGrid! Your store {tenant.name} is ready. Login at http://localhost:3000/login using {user.email}."
+    text = f"Welcome to StoreGrid! Your store {tenant.name} is ready. Login at http://localhost:3000/login using {user.email}."
     return _send_html_email(subject, recipient, text, _get_base_template(subject, "Your store workspace is ready", body))
 
 
@@ -224,13 +224,13 @@ def send_weekly_performance_report_email(tenant):
 def send_subscription_receipt_email(tenant, plan_name, amount, mpesa_ref=None):
     """Reminder or payment confirmation receipt with invoice details."""
     ref_str = mpesa_ref or f"MPESA-{timezone.now().strftime('%Y%m%d%H%M')}"
-    subject = f"🧾 StockGrid Subscription Receipt: {plan_name} (KES {amount:,.2f})"
+    subject = f"🧾 StoreGrid Subscription Receipt: {plan_name} (KES {amount:,.2f})"
     recipient = tenant.email or (tenant.memberships.filter(role="owner").first().user.email if tenant.memberships.filter(role="owner").exists() else None)
 
     body = f"""
       <span class="badge badge-success">Payment Received</span>
       <h2 style="margin-top: 4px; color: #0f172a;">Subscription Renewed Successfully</h2>
-      <p>Thank you for subscribing to StockGrid Retail Cloud for <strong>{tenant.name}</strong>.</p>
+      <p>Thank you for subscribing to StoreGrid Retail Cloud for <strong>{tenant.name}</strong>.</p>
 
       <table class="data-table">
         <tr><th>Description</th><th>Details</th></tr>
@@ -243,7 +243,7 @@ def send_subscription_receipt_email(tenant, plan_name, amount, mpesa_ref=None):
       <p style="font-size: 12px; color: #64748b;">Your multi-tenant store license is active with full 24/7 cloud backup and support.</p>
       <a href="http://localhost:3000/dashboard" class="btn">Open App Workspace &rarr;</a>
     """
-    text = f"StockGrid subscription receipt for {tenant.name}: {plan_name} - KES {amount:,.2f}. Ref: {ref_str}."
+    text = f"StoreGrid subscription receipt for {tenant.name}: {plan_name} - KES {amount:,.2f}. Ref: {ref_str}."
     return _send_html_email(subject, recipient, text, _get_base_template(subject, f"Payment Receipt: KES {amount:,.2f}", body))
 
 
@@ -281,7 +281,7 @@ def send_staff_welcome_activation_email(staff_member, temp_password, role, tenan
     body = f"""
       <span class="badge badge-info">Staff Account Created</span>
       <h2 style="margin-top: 4px; color: #0f172a;">Welcome to the Team, {staff_member.name}!</h2>
-      <p>An employee account has been created for you at <strong>{tenant.name}</strong> on StockGrid.</p>
+      <p>An employee account has been created for you at <strong>{tenant.name}</strong> on StoreGrid.</p>
 
       <div class="stat-card">
         <p style="margin: 0 0 6px 0;"><strong>Username / Email:</strong> {staff_member.email}</p>

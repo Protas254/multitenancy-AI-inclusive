@@ -1,19 +1,19 @@
 /**
- * Centralized SEO & Structured Data Configuration for StockGrid.
+ * Centralized SEO & Structured Data Configuration for StoreGrid.
  */
 
 export const SEO_CONFIG = {
-  siteName: "StockGrid",
-  siteTitleDefault: "StockGrid | Retail Business Platform & Cloud POS",
-  siteTitleTemplate: "%s | StockGrid",
+  siteName: "StoreGrid",
+  siteTitleDefault: "StoreGrid | Retail Business Platform & Cloud POS",
+  siteTitleTemplate: "%s | StoreGrid",
   siteDescriptionDefault:
     "Complete daily business management platform for modern retail stores and multi-branch chains. Streamline POS checkout, real-time inventory, customer credit, M-Pesa verification, staff payroll, and financial reports.",
   siteKeywordsDefault:
-    "StockGrid, POS, Point of Sale, Retail Cloud, Inventory Management, Multi-Tenant SaaS, M-Pesa POS, Cash Reconciliation, Debt Ledger, Kenya SME Software, Retail ERP",
+    "StoreGrid, POS, Point of Sale, Retail Cloud, Inventory Management, Multi-Tenant SaaS, M-Pesa POS, Cash Reconciliation, Debt Ledger, Kenya SME Software, Retail ERP",
   defaultOgImage: "/og-image.png",
-  twitterHandle: "@stockgrid",
+  twitterHandle: "@storegrid",
   themeColor: "#2563eb",
-  productionDomain: "https://stockgrid.africa",
+  productionDomain: "https://storegrid.co.ke",
 };
 
 /**
@@ -57,19 +57,19 @@ export function getOrganizationSchema() {
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: "StockGrid",
+    name: "StoreGrid",
     url: siteUrl,
-    logo: `${siteUrl}/stockgrid-logo.png`,
+    logo: `${siteUrl}/storegrid-logo.png`,
     description: SEO_CONFIG.siteDescriptionDefault,
     sameAs: [
-      "https://twitter.com/stockgrid",
-      "https://www.linkedin.com/company/stockgrid",
+      "https://twitter.com/storegrid",
+      "https://www.linkedin.com/company/storegrid",
     ],
     contactPoint: [
       {
         "@type": "ContactPoint",
         telephone: "+254743849304",
-        email: "stockgridke@gmail.com",
+        email: "storegridke@gmail.com",
         contactType: "customer service",
         areaServed: ["KE", "UG", "TZ", "RW"],
         availableLanguage: ["English", "Swahili"],
@@ -94,15 +94,15 @@ export function getWebSiteSchema() {
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "StockGrid",
+    name: "StoreGrid",
     url: siteUrl,
     description: SEO_CONFIG.siteDescriptionDefault,
     publisher: {
       "@type": "Organization",
-      name: "StockGrid",
+      name: "StoreGrid",
       logo: {
         "@type": "ImageObject",
-        url: `${siteUrl}/stockgrid-logo.png`,
+        url: `${siteUrl}/storegrid-logo.png`,
       },
     },
   };
@@ -116,7 +116,7 @@ export function getSoftwareApplicationSchema() {
   return {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    name: "StockGrid Retail Business Platform",
+    name: "StoreGrid Retail Business Platform",
     operatingSystem: "Web Browser, iOS, Android, Windows, macOS",
     applicationCategory: "BusinessApplication",
     offers: [

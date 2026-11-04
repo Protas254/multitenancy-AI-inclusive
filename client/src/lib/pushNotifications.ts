@@ -1,5 +1,5 @@
 /**
- * StockGrid Web Push Notification Service
+ * StoreGrid Web Push Notification Service
  * Handles native browser pop-ups, PWA Service Worker push, and vibration on Android/iOS/Desktop.
  */
 
@@ -25,8 +25,8 @@ export const requestNotificationPermission = async (): Promise<NotificationPermi
     throw new Error("Notifications are not supported by this browser.");
   }
   const permission = await Notification.requestPermission();
-  localStorage.setItem("stockgrid_push_permission", permission);
-  localStorage.setItem("stockgrid_push_prompted", "true");
+  localStorage.setItem("storegrid_push_permission", permission);
+  localStorage.setItem("storegrid_push_prompted", "true");
 
   if (permission === "granted") {
     await registerServiceWorkerPush();
@@ -53,7 +53,7 @@ export const showPushAlert = async (payload: PushAlertPayload): Promise<boolean>
     return false;
   }
 
-  const { title, message, url = "/notifications", tag = "stockgrid-alert" } = payload;
+  const { title, message, url = "/notifications", tag = "storegrid-alert" } = payload;
 
   try {
     // 1. Try displaying via Service Worker registration (handles lockscreen and background on mobile)
@@ -62,8 +62,8 @@ export const showPushAlert = async (payload: PushAlertPayload): Promise<boolean>
       if (reg && "showNotification" in reg) {
         await (reg as any).showNotification(title, {
           body: message,
-          icon: "/stockgrid-logo.png",
-          badge: "/stockgrid-logo.png",
+          icon: "/storegrid-logo.png",
+          badge: "/storegrid-logo.png",
           vibrate: [200, 100, 200, 100, 200],
           tag,
           renotify: true,
@@ -76,7 +76,7 @@ export const showPushAlert = async (payload: PushAlertPayload): Promise<boolean>
     // 2. Fallback to Window Notification API
     const notification = new Notification(title, {
       body: message,
-      icon: "/stockgrid-logo.png",
+      icon: "/storegrid-logo.png",
       tag,
     });
 
@@ -104,7 +104,7 @@ export const checkAndDispatchNewAlerts = async (
     return;
   }
 
-  const storedNotified = JSON.parse(localStorage.getItem("stockgrid_notified_alert_ids") || "[]");
+  const storedNotified = JSON.parse(localStorage.getItem("storegrid_notified_alert_ids") || "[]");
   const unreadAlerts = notifications.filter((n) => !n.isRead && !storedNotified.includes(n.id));
 
   if (unreadAlerts.length === 0) return;
@@ -132,7 +132,7 @@ export const checkAndDispatchNewAlerts = async (
   }
 
   localStorage.setItem(
-    "stockgrid_notified_alert_ids",
+    "storegrid_notified_alert_ids",
     JSON.stringify([...storedNotified, ...newIds].slice(-100))
   );
 };

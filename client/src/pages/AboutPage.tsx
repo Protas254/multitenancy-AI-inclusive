@@ -52,8 +52,8 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-white">
       <SEO
-        title="About Us | StockGrid Retail Business Cloud"
-        description="Learn about StockGrid — the modern multi-tenant operating system built for retail merchants and growing enterprises across Africa."
+        title="About Us | StoreGrid Retail Business Cloud"
+        description="Learn about StoreGrid — the modern multi-tenant operating system built for retail merchants and growing enterprises across Africa."
         pathname="/about"
         image="/og-image.png"
         jsonLd={[
@@ -65,10 +65,10 @@ export default function AboutPage() {
           {
             "@context": "https://schema.org",
             "@type": "AboutPage",
-            name: "About StockGrid Retail Business Cloud",
+            name: "About StoreGrid Retail Business Cloud",
             url: getCanonicalUrl("/about"),
             description:
-              "Learn about StockGrid — the modern multi-tenant operating system built for retail merchants and growing enterprises across Africa.",
+              "Learn about StoreGrid — the modern multi-tenant operating system built for retail merchants and growing enterprises across Africa.",
           },
         ]}
       />
@@ -82,7 +82,7 @@ export default function AboutPage() {
             </div>
             <div className="flex flex-col">
               <span className="text-base font-black tracking-tight text-slate-950 leading-none">
-                StockGrid
+                StoreGrid
               </span>
               <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">
                 Business Cloud
@@ -137,7 +137,7 @@ export default function AboutPage() {
           </h1>
 
           <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
-            StockGrid is purpose-built to help retail stores, supermarkets, pharmacies, and wholesale distributors replace chaotic paper books and disjointed spreadsheets with a single connected operating system.
+            StoreGrid is purpose-built to help retail stores, supermarkets, pharmacies, and wholesale distributors replace chaotic paper books and disjointed spreadsheets with a single connected operating system.
           </p>
         </div>
       </section>
@@ -146,7 +146,7 @@ export default function AboutPage() {
       <section className="py-20 bg-white">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div className="space-y-5">
-            <span className="text-xs font-bold uppercase tracking-widest text-blue-600">WHY WE BUILT STOCKGRID</span>
+            <span className="text-xs font-bold uppercase tracking-widest text-blue-600">WHY WE BUILT STOREGRID</span>
             <h2 className="text-3xl font-black text-slate-950 tracking-tight leading-snug">
               Retailers shouldn't need a team of accountants to know their daily profit.
             </h2>
@@ -154,7 +154,7 @@ export default function AboutPage() {
               In everyday commerce across Africa, store owners face three major friction points: stock going missing without audit trails, cash drawers not matching POS receipts, and customer credit books becoming overdue without notification.
             </p>
             <p className="text-sm text-slate-600 leading-relaxed">
-              We engineered StockGrid as a multi-tenant cloud platform that automates sales, inventories, M-Pesa reconcilements, supplier debt, and staff commissions — giving entrepreneurs instant clarity over their true numbers every single day.
+              We engineered StoreGrid as a multi-tenant cloud platform that automates sales, inventories, M-Pesa reconcilements, supplier debt, and staff commissions — giving entrepreneurs instant clarity over their true numbers every single day.
             </p>
             <div className="pt-2 flex flex-col gap-2.5">
               <div className="flex items-center gap-2 text-xs font-semibold text-slate-800">
@@ -279,9 +279,9 @@ export default function AboutPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2">
             <Store className="h-5 w-5 text-blue-500" />
-            <span className="text-sm font-bold text-white">StockGrid Retail Business Platform</span>
+            <span className="text-sm font-bold text-white">StoreGrid Retail Business Platform</span>
           </div>
-          <p>© 2026 StockGrid Platform. Multi-tenant Architecture.</p>
+          <p>© 2026 StoreGrid Platform. Multi-tenant Architecture.</p>
           <div className="flex items-center gap-6">
             <Link href="/" className="hover:text-white">Home</Link>
             <Link href="/about" className="hover:text-white text-blue-400 font-semibold">About</Link>

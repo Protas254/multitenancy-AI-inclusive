@@ -19,8 +19,8 @@ export const SecurityProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const { currentTenant } = useTenant();
   const tenantId = currentTenant?.id || "default";
 
-  const pinStorageKey = `stockgrid_pin_${tenantId}`;
-  const enabledStorageKey = `stockgrid_protection_enabled_${tenantId}`;
+  const pinStorageKey = `storegrid_pin_${tenantId}`;
+  const enabledStorageKey = `storegrid_protection_enabled_${tenantId}`;
 
   // Read stored values with sensible defaults
   const [securityPin, setSecurityPin] = useState<string>(() => {

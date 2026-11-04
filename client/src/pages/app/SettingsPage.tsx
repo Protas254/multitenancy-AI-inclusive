@@ -37,7 +37,7 @@ const DEFAULT_PLANS: SaaSPlan[] = [
     name: "14-Day Free Trial",
     price: 0,
     billingPeriod: "14_days",
-    description: "Full unrestricted access to all StockGrid features for 14 days. No credit card required.",
+    description: "Full unrestricted access to all StoreGrid features for 14 days. No credit card required.",
     features: [
       "Full Enterprise Access for 14 Days",
       "Up to 3 Branch Locations",
@@ -463,7 +463,7 @@ export default function SettingsPage() {
                   <CardTitle className="text-sm font-bold">Owner Security &amp; Master PIN Protection</CardTitle>
                 </div>
                 <p className="text-xs text-slate-500 max-w-xl">
-                  StockGrid enforces a clean two-tier security model (Owner vs Staff). Configure the 4-digit master PIN required on the sales floor to authorize restricted staff actions and reveal protected financial records.
+                  StoreGrid enforces a clean two-tier security model (Owner vs Staff). Configure the 4-digit master PIN required on the sales floor to authorize restricted staff actions and reveal protected financial records.
                 </p>
               </div>
             </div>
@@ -643,7 +643,7 @@ export default function SettingsPage() {
                 <div>
                   <CardTitle className="text-sm font-bold">Two-Tier Access Control (Owner &amp; Staff)</CardTitle>
                   <p className="text-xs text-slate-500">
-                    Operational permissions and security restrictions enforced across all StockGrid business modules.
+                    Operational permissions and security restrictions enforced across all StoreGrid business modules.
                   </p>
                 </div>
                 <span className="text-[10px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full w-fit">
@@ -715,7 +715,7 @@ export default function SettingsPage() {
                 </h3>
                 {currentTenant.plan === 'trial' || currentTenant.planStatus === 'trial' ? (
                   <p className="text-xs text-blue-300">
-                    You have complete unrestricted Enterprise access to all StockGrid modules during your evaluation.
+                    You have complete unrestricted Enterprise access to all StoreGrid modules during your evaluation.
                   </p>
                 ) : (
                   <p className="text-xs text-slate-400">Next renewal billing date: {currentTenant.nextBillingDate || 'Auto-renews monthly'}</p>

@@ -7,7 +7,7 @@ interface FloatingWhatsAppProps {
 
 export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
   phoneNumber = "254743849304",
-  defaultMessage = "Hello StockGrid Support, I would like to make an inquiry about StockGrid POS & Retail Platform.",
+  defaultMessage = "Hello StoreGrid Support, I would like to make an inquiry about StoreGrid POS & Retail Platform.",
 }) => {
   const [isHovered, setIsHovered] = useState(false);
 

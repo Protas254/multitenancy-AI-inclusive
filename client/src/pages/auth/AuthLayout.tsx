@@ -16,7 +16,7 @@ export default function AuthLayout({ children }: { children?: React.ReactNode })
               <Store className="h-5 w-5" />
             </div>
             <span className="text-base font-black tracking-tight text-slate-900">
-              StockGrid
+              StoreGrid
             </span>
           </Link>
         </div>
@@ -26,7 +26,7 @@ export default function AuthLayout({ children }: { children?: React.ReactNode })
         </div>
 
         <div className="text-xs text-slate-400 text-center sm:text-left">
-          © 2026 StockGrid Retail Platform. All rights reserved.
+          © 2026 StoreGrid Retail Platform. All rights reserved.
         </div>
       </div>
 
@@ -61,7 +61,7 @@ export default function AuthLayout({ children }: { children?: React.ReactNode })
 
         <div className="p-4 rounded-xl bg-slate-800/80 border border-slate-700/80 text-xs text-slate-300 z-10 flex items-center justify-between">
           <span>Active Businesses Managed</span>
-          <span className="font-bold text-white font-mono">1,250+ StockGrid Retail Stores</span>
+          <span className="font-bold text-white font-mono">1,250+ StoreGrid Retail Stores</span>
         </div>
       </div>
     </div>

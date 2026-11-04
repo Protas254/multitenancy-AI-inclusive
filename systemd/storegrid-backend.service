@@ -1,0 +1,21 @@
+[Unit]
+Description=StoreGrid Gunicorn Django Backend
+After=network.target
+
+[Service]
+User=junior
+Group=junior
+WorkingDirectory=/var/www/storegrid/server
+EnvironmentFile=/var/www/storegrid/.env.production
+ExecStart=/var/www/storegrid/server/venv/bin/gunicorn \
+    --workers 3 \
+    --bind 127.0.0.1:8000 \
+    --access-logfile /var/log/gunicorn/storegrid_access.log \
+    --error-logfile /var/log/gunicorn/storegrid_error.log \
+    config.wsgi:application
+
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

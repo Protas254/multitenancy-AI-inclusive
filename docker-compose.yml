@@ -1,0 +1,71 @@
+# ============================================================
+# StoreGrid — Docker Compose (Production)
+# Services: backend (Django+Gunicorn), frontend (Vite+Nginx)
+# Domain:   storegrid.co.ke
+# Backend:  api.storegrid.co.ke/admin  |  /api/v1/
+# ============================================================
+
+services:
+
+  # ── Django Backend ─────────────────────────────────────
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: storegrid_backend
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings
+    volumes:
+      # Persist uploaded media files (logos, receipts, etc.)
+      - media_data:/app/media
+      # Persist SQLite DB (replace with Postgres volume in scale-up)
+      - sqlite_data:/app
+    expose:
+      - "8000"
+    networks:
+      - storegrid_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+
+  # ── Vite SPA + Nginx ───────────────────────────────────
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: storegrid_frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # SSL certs (managed by Certbot on host, mounted read-only)
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      # Certbot webroot for ACME challenge renewal
+      - certbot_webroot:/var/www/certbot:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - storegrid_net
+
+# ── Named Volumes ──────────────────────────────────────────
+volumes:
+  media_data:
+    name: storegrid_media
+  sqlite_data:
+    name: storegrid_sqlite
+  certbot_webroot:
+    name: storegrid_certbot
+
+# ── Internal Network ───────────────────────────────────────
+networks:
+  storegrid_net:
+    name: storegrid_network
+    driver: bridge

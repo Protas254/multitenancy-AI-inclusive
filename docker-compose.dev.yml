@@ -1,0 +1,49 @@
+# ============================================================
+# StoreGrid — Docker Compose (Local Development)
+# Hot-reload Django + Vite dev server
+# ============================================================
+
+services:
+
+  # ── Django Dev Server ──────────────────────────────────
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: storegrid_backend_dev
+    restart: unless-stopped
+    command: python manage.py runserver 0.0.0.0:8000
+    env_file:
+      - .env.example
+    environment:
+      DJANGO_DEBUG: "True"
+      DJANGO_SETTINGS_MODULE: config.settings
+    volumes:
+      - ./server:/app
+    ports:
+      - "8000:8000"
+    networks:
+      - storegrid_dev_net
+
+  # ── Vite Dev Server ────────────────────────────────────
+  frontend:
+    image: node:20-alpine
+    container_name: storegrid_frontend_dev
+    working_dir: /app
+    command: npm run dev
+    env_file:
+      - ./client/.env.local
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - storegrid_dev_net
+
+networks:
+  storegrid_dev_net:
+    name: storegrid_dev_network
+    driver: bridge

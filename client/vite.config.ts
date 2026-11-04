@@ -12,8 +12,8 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "apple-touch-icon.png", "mask-icon.svg"],
       manifest: {
-        name: "StockGrid Retail Business Platform",
-        short_name: "StockGrid",
+        name: "StoreGrid Retail Business Platform",
+        short_name: "StoreGrid",
         description: "Complete daily retail business management platform and cloud POS",
         theme_color: "#2563eb",
         background_color: "#0f172a",

@@ -4,11 +4,31 @@ from corsheaders.defaults import default_headers
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-multitenancy-sme-saas-secret-key-protas'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-multitenancy-sme-saas-secret-key-protas')
 
-DEBUG = True
+DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() in ('true', '1')
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    h.strip()
+    for h in os.environ.get(
+        'DJANGO_ALLOWED_HOSTS',
+        'localhost,127.0.0.1,storegrid.co.ke,www.storegrid.co.ke,api.storegrid.co.ke,*'
+    ).split(',')
+    if h.strip()
+]
+
+# CSRF trusted origins for secure cookies / HTTPS headers on storegrid.co.ke
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get(
+        'CSRF_TRUSTED_ORIGINS',
+        'https://storegrid.co.ke,https://www.storegrid.co.ke,https://api.storegrid.co.ke,http://localhost:3000,http://127.0.0.1:3000'
+    ).split(',')
+    if origin.strip()
+]
+
+# Honor the 'X-Forwarded-Proto' header for request.is_secure() behind Nginx/Cloudflare
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -86,10 +106,23 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = os.environ.get('CORS_ALLOW_ALL_ORIGINS', 'True').lower() in ('true', '1')
+CORS_ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get(
+        'CORS_ALLOWED_ORIGINS',
+        'https://storegrid.co.ke,https://www.storegrid.co.ke,https://api.storegrid.co.ke,http://localhost:3000,http://127.0.0.1:3000'
+    ).split(',')
+    if origin.strip()
+]
 CORS_ALLOW_HEADERS = list(default_headers) + [
     'x-tenant-id',
 ]
@@ -114,5 +147,5 @@ REST_FRAMEWORK = {
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-DEFAULT_FROM_EMAIL = 'StockGrid Cloud <stockgridke@gmail.com>'
-SERVER_EMAIL = 'StockGrid Cloud <stockgridke@gmail.com>'
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'StoreGrid Cloud <storegridke@gmail.com>')
+SERVER_EMAIL = os.environ.get('SERVER_EMAIL', 'StoreGrid Cloud <storegridke@gmail.com>')

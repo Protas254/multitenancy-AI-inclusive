@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Verdant — Start all dev servers
+# StoreGrid — Start all dev servers
 # Run: bash start.sh  (from /home/junior/Desktop/multitenancy)
 
 set -e
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 
-echo "🌿 Verdant Dev Startup"
+echo "🌿 StoreGrid Dev Startup"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 echo "🔪 Killing stale servers..."

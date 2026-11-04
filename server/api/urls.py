@@ -1,5 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
+from django.http import JsonResponse
 from .views import (
     TenantViewSet, CategoryViewSet, SupplierViewSet, ProductViewSet,
     CustomerViewSet, SaleViewSet, ExpenseViewSet, StaffMemberViewSet,
@@ -10,6 +11,9 @@ from .views import (
     login_view, register_view, current_user_view, monthly_reconciliation_report,
     admin_platform_stats, saas_plans_view, dashboard_stats_view
 )
+
+def health_check(request):
+    return JsonResponse({"status": "ok", "service": "storegrid-api"})
 
 router = DefaultRouter()
 router.register(r"tenants", TenantViewSet, basename="tenant")
@@ -34,6 +38,7 @@ router.register(r"loyalty-transactions", LoyaltyTransactionViewSet, basename="lo
 router.register(r"plans-admin", SaaSPlanViewSet, basename="saas-plan-admin")
 
 urlpatterns = [
+    path("health/", health_check, name="health_check"),
     path("auth/login/", login_view, name="auth_login"),
     path("auth/register/", register_view, name="auth_register"),
     path("auth/me/", current_user_view, name="auth_me"),

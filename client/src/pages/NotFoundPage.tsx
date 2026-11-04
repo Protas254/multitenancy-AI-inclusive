@@ -8,7 +8,7 @@ export default function NotFoundPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-slate-50 text-center">
       <SEO
-        title="Page Not Found | StockGrid"
+        title="Page Not Found | StoreGrid"
         description="The requested page could not be found."
         noindex={true}
         nofollow={true}

@@ -244,7 +244,7 @@ export default function StaffPage() {
   return (
     <div className="space-y-6">
       <SEO
-        title="Staff Management | StockGrid"
+        title="Staff Management | StoreGrid"
         description="Manage team members, roles, sales quotas, and payroll details"
         noindex={true}
         nofollow={true}

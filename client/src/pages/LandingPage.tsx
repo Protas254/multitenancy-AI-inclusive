@@ -21,7 +21,7 @@ import {
   Send,
 } from "lucide-react";
 import { FloatingWhatsApp } from "@/components/common/FloatingWhatsApp";
-import stockgridLogo from "@/assets/stockgrid-logo.png";
+import storegridLogo from "@/assets/storegrid-logo.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -37,7 +37,7 @@ const DEFAULT_PLANS: SaaSPlan[] = [
     name: "14-Day Free Trial",
     price: 0,
     billingPeriod: "14_days",
-    description: "Full unrestricted access to all StockGrid enterprise features for 14 days. No credit card required.",
+    description: "Full unrestricted access to all StoreGrid enterprise features for 14 days. No credit card required.",
     features: [
       "Full Enterprise Access for 14 Days",
       "Up to 3 Branch Locations",
@@ -147,7 +147,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-white">
       <SEO
-        title="StockGrid | Retail Business Platform & Cloud POS"
+        title="StoreGrid | Retail Business Platform & Cloud POS"
         description="Complete daily business management platform for modern retail stores and multi-branch chains. Streamline POS checkout, real-time inventory, customer credit, M-Pesa verification, staff payroll, and financial reports."
         pathname="/"
         image="/og-image.png"
@@ -161,10 +161,10 @@ export default function LandingPage() {
       <header className="sticky top-0 z-50 border-b border-slate-100 bg-white/90 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <img src={stockgridLogo} alt="StockGrid Logo" className="h-10 w-10 object-contain" />
+            <img src={storegridLogo} alt="StoreGrid Logo" className="h-10 w-10 object-contain" />
             <div className="flex flex-col">
               <span className="text-base font-black tracking-tight text-slate-900 leading-none">
-                StockGrid
+                StoreGrid
               </span>
               <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">
                 Business Cloud
@@ -221,7 +221,7 @@ export default function LandingPage() {
 
           <div className="flex items-center justify-center pt-4">
             <a
-              href="https://wa.me/254743849304?text=Hello%20StockGrid%2C%20I%20would%20like%20to%20request%20a%20live%20demo%20of%20the%20business%20system."
+              href="https://wa.me/254743849304?text=Hello%20StoreGrid%2C%20I%20would%20like%20to%20request%20a%20live%20demo%20of%20the%20business%20system."
               target="_blank"
               rel="noopener noreferrer"
               className="w-full sm:w-auto"
@@ -408,8 +408,8 @@ export default function LandingPage() {
                     </div>
                     <div>
                       <p className="text-xs text-slate-500 font-medium">Email Inquiries</p>
-                      <a href="mailto:stockgridke@gmail.com" className="text-sm font-semibold text-slate-900 hover:text-blue-600 transition-colors">
-                        stockgridke@gmail.com
+                      <a href="mailto:storegridke@gmail.com" className="text-sm font-semibold text-slate-900 hover:text-blue-600 transition-colors">
+                        storegridke@gmail.com
                       </a>
                     </div>
                   </div>
@@ -449,7 +449,7 @@ export default function LandingPage() {
                   </div>
                   <h4 className="text-lg font-bold text-slate-900">Message Received</h4>
                   <p className="text-sm text-slate-600 max-w-md mx-auto">
-                    Thank you! A StockGrid onboarding specialist will reach out to you within 2 hours.
+                    Thank you! A StoreGrid onboarding specialist will reach out to you within 2 hours.
                   </p>
                   <Button
                     variant="outline"
@@ -534,10 +534,10 @@ export default function LandingPage() {
       <footer className="bg-slate-950 text-slate-400 py-12 border-t border-slate-800 text-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2">
-            <img src={stockgridLogo} alt="StockGrid Logo" className="h-7 w-7 object-contain" />
-            <span className="text-sm font-bold text-white">StockGrid</span>
+            <img src={storegridLogo} alt="StoreGrid Logo" className="h-7 w-7 object-contain" />
+            <span className="text-sm font-bold text-white">StoreGrid</span>
           </div>
-          <p>© 2026 StockGrid. Multi-tenant Architecture.</p>
+          <p>© 2026 StoreGrid. Multi-tenant Architecture.</p>
           <div className="flex items-center gap-6">
             <Link href="/" className="hover:text-white">Home</Link>
             <Link href="/about" className="hover:text-white">About</Link>

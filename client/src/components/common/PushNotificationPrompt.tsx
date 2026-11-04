@@ -17,7 +17,7 @@ export const PushNotificationPrompt: React.FC = () => {
     if (!isNotificationSupported()) return;
 
     const permission = getNotificationPermission();
-    const hasPrompted = localStorage.getItem("stockgrid_push_prompted");
+    const hasPrompted = localStorage.getItem("storegrid_push_prompted");
 
     // Show prompt on first login if permission has not been granted or permanently denied yet
     if (permission === "default" && !hasPrompted) {
@@ -36,7 +36,7 @@ export const PushNotificationPrompt: React.FC = () => {
         setIsSuccess(true);
         // Show test welcome notification immediately
         await showPushAlert({
-          title: "🔔 StockGrid Notifications Active",
+          title: "🔔 StoreGrid Notifications Active",
           message: "You will now receive instant pop-ups for low stock, sales milestones, and drawer closing reminders.",
           url: "/notifications",
         });
@@ -56,7 +56,7 @@ export const PushNotificationPrompt: React.FC = () => {
   };
 
   const handleDismiss = () => {
-    localStorage.setItem("stockgrid_push_prompted", "true");
+    localStorage.setItem("storegrid_push_prompted", "true");
     setIsVisible(false);
   };
 
@@ -100,13 +100,13 @@ export const PushNotificationPrompt: React.FC = () => {
               </div>
               <div className="pr-4">
                 <h4 className="text-xs font-bold tracking-tight text-white flex items-center gap-1.5">
-                  <span>StockGrid Real-time Alerts</span>
+                  <span>StoreGrid Real-time Alerts</span>
                   <span className="px-1.5 py-0.5 text-[9px] font-mono bg-blue-500/20 text-blue-300 rounded border border-blue-500/30">
                     24/7
                   </span>
                 </h4>
                 <p className="text-[11px] text-slate-300 mt-1 leading-relaxed">
-                  StockGrid wants to send you notifications for low stock, sales quota achievements, and daily drawer reconciliation.
+                  StoreGrid wants to send you notifications for low stock, sales quota achievements, and daily drawer reconciliation.
                 </p>
               </div>
             </div>

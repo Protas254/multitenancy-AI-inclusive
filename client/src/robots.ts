@@ -30,6 +30,7 @@ export default function robots(): RobotsOutput {
         "/favicon.svg",
         "/apple-touch-icon.png",
         "/og-image.png",
+        "/storegrid-logo.png",
         "/stockgrid-logo.png",
         "/hero-bg.jpg",
         "/assets/",
