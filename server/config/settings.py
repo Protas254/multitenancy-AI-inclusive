@@ -31,6 +31,7 @@ CSRF_TRUSTED_ORIGINS = [
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -156,3 +157,85 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'storegridkenya@gmail.com')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'StoreGrid Cloud <storegridkenya@gmail.com>')
 SERVER_EMAIL = os.environ.get('SERVER_EMAIL', 'StoreGrid Cloud <storegridkenya@gmail.com>')
+
+# =============================================================
+#  JAZZMIN ADMIN THEME CONFIGURATION
+# =============================================================
+JAZZMIN_SETTINGS = {
+    "site_title": "StoreGrid Admin",
+    "site_header": "StoreGrid",
+    "site_brand": "StoreGrid",
+    "site_logo_classes": "img-circle",
+    "welcome_sign": "Welcome to StoreGrid Admin",
+    "copyright": "StoreGrid Cloud Ltd",
+    "search_model": ["auth.User", "api.Tenant"],
+    "user_avatar": None,
+
+    # Top Menu
+    "topmenu_links": [
+        {"name": "Home", "url": "admin:index", "permissions": ["auth.view_user"]},
+        {"name": "Website", "url": "https://storegrid.co.ke", "new_window": True},
+        {"name": "API", "url": "https://api.storegrid.co.ke/api/v1/health/", "new_window": True},
+    ],
+
+    # Navigation menu
+    "show_sidebar": True,
+    "navigation_expanded": True,
+    "hide_apps": [],
+    "hide_models": [],
+
+    # Custom Icons (FontAwesome)
+    "icons": {
+        "auth": "fas fa-users-cog",
+        "auth.user": "fas fa-user",
+        "auth.Group": "fas fa-users",
+        "api.Tenant": "fas fa-store",
+        "api.Product": "fas fa-boxes",
+        "api.Sale": "fas fa-cash-register",
+        "api.Customer": "fas fa-user-friends",
+        "api.Inventory": "fas fa-warehouse",
+    },
+    "default_icon_parents": "fas fa-chevron-circle-right",
+    "default_icon_children": "fas fa-circle",
+
+    # UI Customizer & Layout
+    "related_modal_active": False,
+    "custom_css": None,
+    "custom_js": None,
+    "use_google_fonts_cdn": True,
+    "show_ui_builder": False,
+    "changeform_format": "horizontal_tabs",
+}
+
+JAZZMIN_UI_TWEAKS = {
+    "navbar_small_text": False,
+    "footer_small_text": False,
+    "body_small_text": False,
+    "brand_small_text": False,
+    "brand_colour": "navbar-dark",
+    "accent": "accent-primary",
+    "navbar": "navbar-dark",
+    "no_navbar_border": False,
+    "navbar_fixed": False,
+    "layout_boxed": False,
+    "footer_fixed": False,
+    "sidebar_fixed": False,
+    "sidebar": "sidebar-dark-primary",
+    "sidebar_nav_small_text": False,
+    "sidebar_disable_expand": False,
+    "sidebar_nav_child_indent": False,
+    "sidebar_nav_compact_style": False,
+    "sidebar_nav_legacy_style": False,
+    "sidebar_nav_flat_style": False,
+    "theme": "default",
+    "dark_mode_theme": None,
+    "button_classes": {
+        "primary": "btn-primary",
+        "secondary": "btn-outline-secondary",
+        "info": "btn-info",
+        "warning": "btn-warning",
+        "danger": "btn-danger",
+        "success": "btn-success"
+    }
+}
+
