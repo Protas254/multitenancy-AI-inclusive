@@ -11,3 +11,4 @@ typing_extensions==4.16.0
 
 # Production server
 gunicorn==23.0.0
+whitenoise==6.8.2
