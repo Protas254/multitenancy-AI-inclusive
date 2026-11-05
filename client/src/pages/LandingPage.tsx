@@ -19,6 +19,7 @@ import {
   MapPin,
   Clock,
   Send,
+  HelpCircle,
 } from "lucide-react";
 import { FloatingWhatsApp } from "@/components/common/FloatingWhatsApp";
 import storegridLogo from "@/assets/storegrid-logo.png";
@@ -28,7 +29,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { adminApi } from "@/lib/api/admin";
 import { SaaSPlan } from "@/lib/types";
 import { formatKES } from "@/lib/utils";
-import heroBg from "@/assets/hero-bg.jpg";
+import heroBg from "@/assets/hero-bg.webp";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { getFAQSchema, getProductSchema, FAQItem } from "@/lib/seo";
 
 const DEFAULT_PLANS: SaaSPlan[] = [
   {
@@ -144,6 +152,34 @@ export default function LandingPage() {
     { title: "Financial and P&L Reports", icon: <BarChart3 className="h-5 w-5 text-purple-600" />, desc: "Gross margins, net profits, category breakdowns, and exportable CSV/PDF reports." },
   ];
 
+  const landingFaqs: FAQItem[] = [
+    {
+      question: "What is StoreGrid and how does it work for African retail businesses?",
+      answer:
+        "StoreGrid is an all-in-one multi-tenant cloud retail management platform and POS. It synchronizes point-of-sale checkout, live multi-branch inventory tracking, customer debt ledgers, M-Pesa mobile money reconciliations, and staff payroll into a unified dashboard accessible on any computer or mobile browser.",
+    },
+    {
+      question: "How does StoreGrid handle Safaricom Lipa Na M-Pesa payments at checkout?",
+      answer:
+        "StoreGrid validates M-Pesa transaction reference codes directly on the POS screen, matching customer payments with the exact bill amount. This eliminates fraudulent screenshots and automates end-of-day drawer and Paybill/Till reconciliation.",
+    },
+    {
+      question: "Can StoreGrid track customer debts and credit terms?",
+      answer:
+        "Yes. StoreGrid includes a dedicated Customer Credit Ledger with debt aging brackets (0-30, 31-60, 60+ days), credit limits, overdue balance alerts, and partial settlement workflows.",
+    },
+    {
+      question: "Does StoreGrid support multiple branches and stock transfers?",
+      answer:
+        "Yes. Retailers can manage central warehouses and multiple branch locations from a single owner account, initiate stock transfer orders with transit tracking, and view consolidated branch performance.",
+    },
+    {
+      question: "Is my business data secure and kept separate from other stores?",
+      answer:
+        "Yes. StoreGrid uses an isolated multi-tenant architecture with strict tenant scoping. Each merchant's customer records, pricing, profit margins, and financial reports are securely quarantined and encrypted.",
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-white">
       <SEO
@@ -155,6 +191,8 @@ export default function LandingPage() {
           getOrganizationSchema(),
           getWebSiteSchema(),
           getSoftwareApplicationSchema(),
+          getProductSchema(),
+          getFAQSchema(landingFaqs),
         ]}
       />
       {/* Top Navigation */}
@@ -172,12 +210,15 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <div className="hidden md:flex items-center gap-8 text-xs font-semibold text-slate-600">
+          <div className="hidden md:flex items-center gap-7 text-xs font-semibold text-slate-600">
             <Link href="/" className="hover:text-blue-600 transition-colors">Home</Link>
-            <a href="#features" className="hover:text-blue-600 transition-colors">Features</a>
-            <a href="#pricing" className="hover:text-blue-600 transition-colors">Pricing</a>
+            <Link href="/features" className="hover:text-blue-600 transition-colors">Features</Link>
+            <Link href="/industries" className="hover:text-blue-600 transition-colors">Industries</Link>
+            <Link href="/pricing" className="hover:text-blue-600 transition-colors">Pricing</Link>
+            <Link href="/how-it-works" className="hover:text-blue-600 transition-colors">How It Works</Link>
+            <Link href="/resources" className="hover:text-blue-600 transition-colors">Resources</Link>
             <Link href="/about" className="hover:text-blue-600 transition-colors">About</Link>
-            <a href="#contact" className="hover:text-blue-600 transition-colors">Contact</a>
+            <Link href="/contact" className="hover:text-blue-600 transition-colors">Contact</Link>
           </div>
 
           <div className="flex items-center gap-3">
@@ -202,6 +243,10 @@ export default function LandingPage() {
           <img
             src={heroBg}
             alt="Retail Store and POS Supermarket Background"
+            width={1920}
+            height={1080}
+            fetchPriority="high"
+            loading="eager"
             className="w-full h-full object-cover object-center scale-105"
           />
           {/* Enhanced background visibility while keeping crisp contrast and readability */}
@@ -530,6 +575,41 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Answer Engine & AEO FAQ Section */}
+      <section id="faqs" className="py-20 bg-slate-50 border-t border-slate-200">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+          <div className="text-center space-y-3 mb-12">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold">
+              <HelpCircle className="h-3.5 w-3.5" />
+              <span>Answers & Insights</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-950">
+              Frequently Asked Questions & Platform Insights
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600 max-w-xl mx-auto">
+              Clear answers about StoreGrid features, Lipa Na M-Pesa POS automation, inventory synchronization, and enterprise security.
+            </p>
+          </div>
+
+          <Accordion type="single" collapsible className="w-full space-y-3">
+            {landingFaqs.map((faq, index) => (
+              <AccordionItem
+                key={index}
+                value={`faq-${index}`}
+                className="border border-slate-200 rounded-xl px-4 py-1 bg-white shadow-xs"
+              >
+                <AccordionTrigger className="text-left font-semibold text-slate-900 text-sm hover:no-underline py-3">
+                  {faq.question}
+                </AccordionTrigger>
+                <AccordionContent className="text-xs text-slate-600 leading-relaxed pb-4 pt-1">
+                  {faq.answer}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="bg-slate-950 text-slate-400 py-12 border-t border-slate-800 text-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-6">
@@ -541,8 +621,9 @@ export default function LandingPage() {
           <div className="flex items-center gap-6">
             <Link href="/" className="hover:text-white">Home</Link>
             <Link href="/about" className="hover:text-white">About</Link>
+            <Link href="/pricing" className="hover:text-white">Pricing</Link>
             <a href="#features" className="hover:text-white">Features</a>
-            <a href="#pricing" className="hover:text-white">Pricing</a>
+            <a href="#faqs" className="hover:text-white">FAQs</a>
             <a href="#contact" className="hover:text-white">Contact</a>
           </div>
         </div>

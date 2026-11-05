@@ -1,5 +1,5 @@
 # =============================================================
-#  StockGrid Robots Directive Configuration
+#  StoreGrid Robots Directive Configuration
 #  Production Domain: https://storegrid.co.ke
 # =============================================================
 
@@ -7,12 +7,26 @@ User-agent: *
 # Allowed Public Marketing Content and Static Assets
 Allow: /
 Allow: /about
+Allow: /pricing
+Allow: /features
+Allow: /features/
+Allow: /industries
+Allow: /industries/
+Allow: /resources
+Allow: /resources/
+Allow: /how-it-works
+Allow: /security
+Allow: /privacy-policy
+Allow: /terms
+Allow: /book-demo
+Allow: /contact
 Allow: /favicon.ico
 Allow: /favicon.svg
 Allow: /apple-touch-icon.png
 Allow: /og-image.png
 Allow: /storegrid-logo.png
 Allow: /stockgrid-logo.png
+Allow: /hero-bg.webp
 Allow: /hero-bg.jpg
 Allow: /assets/
 

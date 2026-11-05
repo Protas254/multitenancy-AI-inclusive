@@ -32,6 +32,7 @@ export default function robots(): RobotsOutput {
         "/og-image.png",
         "/storegrid-logo.png",
         "/stockgrid-logo.png",
+        "/hero-bg.webp",
         "/hero-bg.jpg",
         "/assets/",
       ],

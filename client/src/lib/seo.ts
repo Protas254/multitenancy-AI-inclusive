@@ -4,12 +4,12 @@
 
 export const SEO_CONFIG = {
   siteName: "StoreGrid",
-  siteTitleDefault: "StoreGrid | Retail Business Platform & Cloud POS",
+  siteTitleDefault: "StoreGrid – Business Management Software for SMEs in Kenya",
   siteTitleTemplate: "%s | StoreGrid",
   siteDescriptionDefault:
-    "Complete daily business management platform for modern retail stores and multi-branch chains. Streamline POS checkout, real-time inventory, customer credit, M-Pesa verification, staff payroll, and financial reports.",
+    "StoreGrid helps small and growing businesses in Kenya manage sales, POS checkout, real-time stock, expenses, customer credit debts, M-PESA reconciliations, staff payroll, and reports in one system.",
   siteKeywordsDefault:
-    "StoreGrid, POS, Point of Sale, Retail Cloud, Inventory Management, Multi-Tenant SaaS, M-Pesa POS, Cash Reconciliation, Debt Ledger, Kenya SME Software, Retail ERP",
+    "StoreGrid, Business Management Software Kenya, Retail POS Software Kenya, Point of Sale Nairobi, SME Inventory Management Kenya, M-PESA POS Integration, Customer Debt Ledger, Cash Reconciliation, Retail ERP Kenya",
   defaultOgImage: "/og-image.png",
   twitterHandle: "@storegrid",
   themeColor: "#2563eb",
@@ -95,6 +95,7 @@ export function getWebSiteSchema() {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: "StoreGrid",
+    alternateName: "StoreGrid Business Management",
     url: siteUrl,
     description: SEO_CONFIG.siteDescriptionDefault,
     publisher: {
@@ -152,7 +153,85 @@ export function getSoftwareApplicationSchema() {
       "Strict Multi-Tenant Quarantined Architecture",
     ],
     url: siteUrl,
-    screenshot: `${siteUrl}/hero-bg.jpg`,
+    screenshot: `${siteUrl}/hero-bg.webp`,
+  };
+}
+
+export interface FAQItem {
+  question: string;
+  answer: string;
+}
+
+/**
+ * Generates Schema.org FAQPage structured data for rich SERP accordions
+ * and direct citation by AI Answer Engines (Perplexity, ChatGPT Search, Claude).
+ */
+export function getFAQSchema(items: FAQItem[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer,
+      },
+    })),
+  };
+}
+
+/**
+ * Generates Schema.org Product structured data for pricing and software editions.
+ */
+export function getProductSchema() {
+  const siteUrl = getSiteUrl();
+  return {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: "StockGrid Retail Cloud POS",
+    image: `${siteUrl}/hero-bg.webp`,
+    description: SEO_CONFIG.siteDescriptionDefault,
+    brand: {
+      "@type": "Brand",
+      name: SEO_CONFIG.siteName,
+    },
+    offers: {
+      "@type": "AggregateOffer",
+      priceCurrency: "KES",
+      lowPrice: "1000",
+      highPrice: "3000",
+      offerCount: "3",
+      offers: [
+        {
+          "@type": "Offer",
+          name: "Starter Retail",
+          price: "1000",
+          priceCurrency: "KES",
+          priceValidUntil: "2027-12-31",
+          availability: "https://schema.org/InStock",
+          url: `${siteUrl}/#pricing`,
+        },
+        {
+          "@type": "Offer",
+          name: "Growth Pro",
+          price: "2000",
+          priceCurrency: "KES",
+          priceValidUntil: "2027-12-31",
+          availability: "https://schema.org/InStock",
+          url: `${siteUrl}/#pricing`,
+        },
+        {
+          "@type": "Offer",
+          name: "Enterprise Chain",
+          price: "3000",
+          priceCurrency: "KES",
+          priceValidUntil: "2027-12-31",
+          availability: "https://schema.org/InStock",
+          url: `${siteUrl}/#pricing`,
+        },
+      ],
+    },
   };
 }
 

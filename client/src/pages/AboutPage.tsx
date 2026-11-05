@@ -17,6 +17,7 @@ import {
   Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { MarketingHeader, MarketingFooter } from "@/components/layout/MarketingLayout";
 
 export default function AboutPage() {
   const values = [
@@ -73,65 +74,12 @@ export default function AboutPage() {
         ]}
       />
 
-      {/* Top Navigation */}
-      <header className="sticky top-0 z-50 border-b border-slate-100 bg-white/90 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-xs">
-              <Store className="h-5 w-5" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-base font-black tracking-tight text-slate-950 leading-none">
-                StoreGrid
-              </span>
-              <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">
-                Business Cloud
-              </span>
-            </div>
-          </Link>
-
-          <div className="hidden md:flex items-center gap-8 text-xs font-semibold text-slate-600">
-            <Link href="/" className="hover:text-blue-600 transition-colors">
-              Home
-            </Link>
-            <a href="/#features" className="hover:text-blue-600 transition-colors">
-              Features
-            </a>
-            <a href="/#pricing" className="hover:text-blue-600 transition-colors">
-              Pricing
-            </a>
-            <Link href="/about" className="text-blue-600 font-bold border-b-2 border-blue-600 pb-0.5">
-              About
-            </Link>
-            <a href="/#contact" className="hover:text-blue-600 transition-colors">
-              Contact
-            </a>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Link href="/login">
-              <Button variant="ghost" size="sm" className="text-xs font-semibold">
-                Sign In
-              </Button>
-            </Link>
-            <Link href="/dashboard">
-              <Button size="sm" className="text-xs font-semibold gap-1.5 shadow-sm">
-                <span>Enter App</span>
-                <ArrowRight className="h-3.5 w-3.5" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </header>
+      {/* Static Marketing Header */}
+      <MarketingHeader activePath="/about" />
 
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-16 pb-20 md:pt-24 md:pb-24 bg-gradient-to-b from-blue-50/60 via-white to-white border-b border-slate-100">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center space-y-6">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-xs font-semibold">
-            <Award className="h-3.5 w-3.5 text-blue-600" />
-            <span>Our Mission and Story</span>
-          </div>
-
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-slate-950 tracking-tight leading-[1.15]">
             Empowering modern retail through <span className="text-blue-600">intelligent software.</span>
           </h1>
@@ -274,25 +222,8 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-slate-950 text-slate-400 py-12 border-t border-slate-800 text-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2">
-            <Store className="h-5 w-5 text-blue-500" />
-            <span className="text-sm font-bold text-white">StoreGrid Retail Business Platform</span>
-          </div>
-          <p>© 2026 StoreGrid Platform. Multi-tenant Architecture.</p>
-          <div className="flex items-center gap-6">
-            <Link href="/" className="hover:text-white">Home</Link>
-            <Link href="/about" className="hover:text-white text-blue-400 font-semibold">About</Link>
-            <a href="/#features" className="hover:text-white">Features</a>
-            <a href="/#pricing" className="hover:text-white">Pricing</a>
-            <a href="/#contact" className="hover:text-white">Contact</a>
-            <Link href="/dashboard" className="hover:text-white">Dashboard</Link>
-            <Link href="/pos" className="hover:text-white">POS</Link>
-          </div>
-        </div>
-      </footer>
+      {/* Marketing Footer */}
+      <MarketingFooter />
     </div>
   );
 }

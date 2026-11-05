@@ -8,7 +8,21 @@ import AuthLayout from "./pages/auth/AuthLayout";
 // Landing and General
 import LandingPage from "./pages/LandingPage";
 import AboutPage from "./pages/AboutPage";
+import PricingPage from "./pages/PricingPage";
 import NotFoundPage from "./pages/NotFoundPage";
+
+// Marketing & SEO Pages
+import FeaturesIndexPage from "./pages/features/FeaturesIndexPage";
+import FeatureDetailPage from "./pages/features/FeatureDetailPage";
+import IndustriesIndexPage from "./pages/industries/IndustriesIndexPage";
+import IndustryDetailPage from "./pages/industries/IndustryDetailPage";
+import ResourcesIndexPage from "./pages/resources/ResourcesIndexPage";
+import ResourceDetailPage from "./pages/resources/ResourceDetailPage";
+import HowItWorksPage from "./pages/marketing/HowItWorksPage";
+import SecurityPage from "./pages/marketing/SecurityPage";
+import LegalPage from "./pages/marketing/LegalPage";
+import BookDemoPage from "./pages/marketing/BookDemoPage";
+import ContactPage from "./pages/marketing/ContactPage";
 
 // Auth Pages
 import LoginPage from "./pages/auth/LoginPage";
@@ -54,9 +68,25 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public Landing and About */}
+        {/* Public Landing, Marketing, Feature & Industry Pages */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/about" element={<AboutPage />} />
+        <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/features" element={<FeaturesIndexPage />} />
+        <Route path="/features/:slug" element={<FeatureDetailPage />} />
+        <Route path="/industries" element={<IndustriesIndexPage />} />
+        <Route path="/industries/:slug" element={<IndustryDetailPage />} />
+        <Route path="/resources" element={<ResourcesIndexPage />} />
+        <Route path="/resources/:slug" element={<ResourceDetailPage />} />
+        <Route path="/how-it-works" element={<HowItWorksPage />} />
+        <Route path="/security" element={<SecurityPage />} />
+        <Route path="/privacy-policy" element={<LegalPage type="privacy" />} />
+        <Route path="/terms" element={<LegalPage type="terms" />} />
+        <Route path="/book-demo" element={<BookDemoPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/free-trial" element={<Navigate to="/register" replace />} />
+        <Route path="/integrations" element={<Navigate to="/features/mpesa" replace />} />
+        <Route path="/integrations/mpesa" element={<Navigate to="/features/mpesa" replace />} />
 
         {/* Admin Route - Redirect to Dashboard */}
         <Route path="/admin" element={<Navigate to="/dashboard" replace />} />
