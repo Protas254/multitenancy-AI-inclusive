@@ -69,7 +69,7 @@ export function getOrganizationSchema() {
       {
         "@type": "ContactPoint",
         telephone: "+254743849304",
-        email: "storegridke@gmail.com",
+        email: "storegridkenya@gmail.com",
         contactType: "customer service",
         areaServed: ["KE", "UG", "TZ", "RW"],
         availableLanguage: ["English", "Swahili"],

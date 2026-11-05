@@ -408,8 +408,8 @@ export default function LandingPage() {
                     </div>
                     <div>
                       <p className="text-xs text-slate-500 font-medium">Email Inquiries</p>
-                      <a href="mailto:storegridke@gmail.com" className="text-sm font-semibold text-slate-900 hover:text-blue-600 transition-colors">
-                        storegridke@gmail.com
+                      <a href="mailto:storegridkenya@gmail.com" className="text-sm font-semibold text-slate-900 hover:text-blue-600 transition-colors">
+                        storegridkenya@gmail.com
                       </a>
                     </div>
                   </div>

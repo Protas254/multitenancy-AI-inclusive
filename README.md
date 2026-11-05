@@ -4,79 +4,97 @@ Modern multi-tenant SaaS operating system built for retail stores, supermarkets,
 
 - **Main Website / Client App**: `https://storegrid.co.ke`
 - **Backend Admin & API**: `https://api.storegrid.co.ke/admin` (API Base: `https://api.storegrid.co.ke/api/v1/`)
+- **Official Contact Email**: `storegridkenya@gmail.com`
 
 ---
 
-## 🏗 System Architecture
+## 🏗 System Architecture & Multi-Project Isolation (Contabo VPS)
 
-- **Frontend**: React 18 + TypeScript + Vite + Tailwind CSS + Lucide Icons + PWA (served via Nginx)
-- **Backend**: Django 5 + Django REST Framework + SimpleJWT + SQLite/PostgreSQL (served via Gunicorn)
-- **Subdomains**:
-  - `storegrid.co.ke` / `www.storegrid.co.ke` → Public landing page, POS, and tenant dashboards
-  - `api.storegrid.co.ke` → Django Admin (`/admin/`) & REST APIs (`/api/v1/`)
+StoreGrid is configured to run as an **isolated third project** on your Contabo server without conflicting with any existing applications:
+
+| Isolation Boundary | Configuration | Why It's Safe |
+| :--- | :--- | :--- |
+| **Compose Project Name** | `name: storegrid` | Namespaces all Docker commands and resources |
+| **Frontend Container** | `storegrid_frontend` → `127.0.0.1:3003:80` | High-range dedicated localhost port; won't clash with ports 80/443 |
+| **Backend Container** | `storegrid_backend` → `127.0.0.1:8003:8000` | High-range dedicated localhost port; won't clash with port 8000 |
+| **Docker Network** | `storegrid_network` (Bridge) | Completely isolated from other project containers on the VPS |
+| **Docker Volumes** | `storegrid_media`, `storegrid_sqlite` | Namespaced persistent volumes |
+| **Host Web Server** | Host Nginx reverse proxy | Listens on 80/443 for `storegrid.co.ke` and `api.storegrid.co.ke` only |
 
 ---
 
-## 🐳 Production Deployment with Docker
+## 📧 Production Email Configuration (SMTP)
 
-### 1. Configure Production Environment
+Configured with Gmail SMTP and an App Password in [.env.production](file:///.env.production):
+- **Email**: `storegridkenya@gmail.com`
+- **SMTP Host**: `smtp.gmail.com:587` (TLS)
+- **Sender**: `StoreGrid Cloud <storegridkenya@gmail.com>`
 
-Review and adjust [.env.production](file:///.env.production):
-```ini
-VITE_SITE_URL=https://storegrid.co.ke
-NEXT_PUBLIC_SITE_URL=https://storegrid.co.ke
-VITE_API_URL=https://api.storegrid.co.ke/api/v1
-NEXT_PUBLIC_API_URL=https://api.storegrid.co.ke/api/v1
+---
 
-DJANGO_SECRET_KEY=generate-a-strong-random-key-here
-DJANGO_DEBUG=False
-DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,storegrid.co.ke,www.storegrid.co.ke,api.storegrid.co.ke
-CSRF_TRUSTED_ORIGINS=https://storegrid.co.ke,https://www.storegrid.co.ke,https://api.storegrid.co.ke
-CORS_ALLOWED_ORIGINS=https://storegrid.co.ke,https://www.storegrid.co.ke,https://api.storegrid.co.ke
-```
+## 🐳 Contabo Production Deployment Guide
 
-### 2. Build and Launch Containers
-
+### Step 1: Copy Project to Contabo Server
 ```bash
-# Build and run containers in detached mode
-docker compose up -d --build
-
-# View container logs
-docker compose logs -f
-
-# Check container health status
-docker compose ps
+# Recommended isolated directory:
+sudo mkdir -p /var/www/storegrid
+cd /var/www/storegrid
 ```
 
-### 3. Create Superadmin (First Time)
+### Step 2: Verify Production Environment Variables
+Inspect [.env.production](file:///.env.production):
+```bash
+nano .env.production
+```
 
+### Step 3: Launch Isolated Docker Containers
+```bash
+docker compose up -d --build
+```
+Verify health:
+```bash
+docker compose ps
+# Both storegrid_backend and storegrid_frontend should show "healthy" / "Up"
+```
+
+### Step 4: Configure Host Nginx on Contabo
+Copy the two reverse proxy configuration files to your Contabo host Nginx:
+```bash
+# 1. Main frontend app (storegrid.co.ke -> 127.0.0.1:3003)
+sudo cp nginx/storegrid.co.ke.conf /etc/nginx/sites-available/
+sudo ln -s /etc/nginx/sites-available/storegrid.co.ke.conf /etc/nginx/sites-enabled/
+
+# 2. Backend & Admin (api.storegrid.co.ke -> 127.0.0.1:8003)
+sudo cp nginx/api.storegrid.co.ke.conf /etc/nginx/sites-available/
+sudo ln -s /etc/nginx/sites-available/api.storegrid.co.ke.conf /etc/nginx/sites-enabled/
+
+# Test syntax (will not disturb your other 2 projects)
+sudo nginx -t
+
+# Reload Nginx
+sudo systemctl reload nginx
+```
+
+### Step 5: Issue SSL Certificates with Certbot
+```bash
+sudo certbot --nginx -d storegrid.co.ke -d www.storegrid.co.ke
+sudo certbot --nginx -d api.storegrid.co.ke
+```
+
+### Step 6: Create Initial Admin Account
 ```bash
 docker compose exec backend python manage.py createsuperuser
 ```
+You can then log in to the admin dashboard at `https://api.storegrid.co.ke/admin`.
 
 ---
 
-## 💻 Local Development
+## 🌐 DNS Records Required
 
-### Option A: Local Scripts (Without Docker)
-```bash
-# Start both Django (port 8000) and Vite (port 3000)
-bash start.sh
-```
+Configure these records in your domain registrar DNS manager:
 
-### Option B: Docker Compose Development
-```bash
-docker compose -f docker-compose.dev.yml up
-```
-
----
-
-## 🌐 DNS Configuration
-
-Configure these records in your `.co.ke` DNS manager:
-
-| Type | Name | Content / Value | Purpose |
+| Type | Name / Host | Value | Purpose |
 | :--- | :--- | :--- | :--- |
-| **A** | `@` | `<SERVER_IP>` | Root domain (`storegrid.co.ke`) |
-| **CNAME** | `www` | `storegrid.co.ke` | WWW redirect |
-| **A** | `api` | `<SERVER_IP>` | API & Admin (`api.storegrid.co.ke`) |
+| **A** | `@` | `<CONTABO_SERVER_IP>` | Root domain (`storegrid.co.ke`) |
+| **A** or **CNAME** | `www` | `<CONTABO_SERVER_IP>` | WWW subdomain |
+| **A** | `api` | `<CONTABO_SERVER_IP>` | Backend Admin & API (`api.storegrid.co.ke`) |

@@ -12,7 +12,7 @@ def _send_html_email(subject, recipient_email, text_content, html_content):
         logger.warning(f"[StoreGrid Email] Skipping email '{subject}' - invalid recipient: {recipient_email}")
         return False
 
-    from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "StoreGrid Cloud <storegridke@gmail.com>")
+    from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "StoreGrid Cloud <storegridkenya@gmail.com>")
     try:
         msg = EmailMultiAlternatives(
             subject=subject,
@@ -74,7 +74,7 @@ def _get_base_template(title, preheader, body_html, footer_note="StoreGrid Multi
     </div>
     <div class="footer">
       <p style="margin: 0 0 6px 0;">{footer_note}</p>
-      <p style="margin: 0; color: #94a3b8;">Nairobi, Kenya • Email: storegridke@gmail.com • Hours: 24/7</p>
+      <p style="margin: 0; color: #94a3b8;">Nairobi, Kenya • Email: storegridkenya@gmail.com • Hours: 24/7</p>
     </div>
   </div>
 </body>

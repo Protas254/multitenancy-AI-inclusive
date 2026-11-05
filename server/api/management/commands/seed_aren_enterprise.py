@@ -25,7 +25,7 @@ class Command(BaseCommand):
         tenant.status = "active"
         tenant.is_active = True
         tenant.phone = "+254 743 849 304"
-        tenant.email = "stockgridke@gmail.com"
+        tenant.email = "storegridkenya@gmail.com"
         tenant.address = "Westlands Commercial Tower, Ground Floor, Mpaka Road"
         tenant.city = "Nairobi"
         tenant.currency = "KES"

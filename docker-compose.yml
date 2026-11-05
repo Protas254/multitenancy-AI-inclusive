@@ -1,13 +1,14 @@
 # ============================================================
-# StoreGrid — Docker Compose (Production)
-# Services: backend (Django+Gunicorn), frontend (Vite+Nginx)
-# Domain:   storegrid.co.ke
-# Backend:  api.storegrid.co.ke/admin  |  /api/v1/
+# StoreGrid — Docker Compose (Production for Contabo VPS)
+# Project: StoreGrid (Multi-tenant Retail Business Cloud)
+# Isolated for multi-project VPS environments
 # ============================================================
+
+name: storegrid
 
 services:
 
-  # ── Django Backend ─────────────────────────────────────
+  # ── Django Backend (Port 8003) ─────────────────────────
   backend:
     build:
       context: ./server
@@ -19,12 +20,10 @@ services:
     environment:
       DJANGO_SETTINGS_MODULE: config.settings
     volumes:
-      # Persist uploaded media files (logos, receipts, etc.)
       - media_data:/app/media
-      # Persist SQLite DB (replace with Postgres volume in scale-up)
       - sqlite_data:/app
-    expose:
-      - "8000"
+    ports:
+      - "127.0.0.1:8003:8000"
     networks:
       - storegrid_net
     healthcheck:
@@ -34,7 +33,7 @@ services:
       retries: 5
       start_period: 20s
 
-  # ── Vite SPA + Nginx ───────────────────────────────────
+  # ── Vite SPA + Web Server (Port 3003) ──────────────────
   frontend:
     build:
       context: ./client
@@ -42,29 +41,21 @@ services:
     container_name: storegrid_frontend
     restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      # SSL certs (managed by Certbot on host, mounted read-only)
-      - /etc/letsencrypt:/etc/letsencrypt:ro
-      # Certbot webroot for ACME challenge renewal
-      - certbot_webroot:/var/www/certbot:ro
+      - "127.0.0.1:3003:80"
     depends_on:
       backend:
         condition: service_healthy
     networks:
       - storegrid_net
 
-# ── Named Volumes ──────────────────────────────────────────
+# ── Isolated Named Volumes ─────────────────────────────────
 volumes:
   media_data:
     name: storegrid_media
   sqlite_data:
     name: storegrid_sqlite
-  certbot_webroot:
-    name: storegrid_certbot
 
-# ── Internal Network ───────────────────────────────────────
+# ── Isolated Internal Network ──────────────────────────────
 networks:
   storegrid_net:
     name: storegrid_network
