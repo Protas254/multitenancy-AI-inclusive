@@ -21,7 +21,7 @@ services:
       DJANGO_SETTINGS_MODULE: config.settings
     volumes:
       - media_data:/app/media
-      - sqlite_data:/app
+      - sqlite_data:/app/db_data
     ports:
       - "127.0.0.1:8003:8000"
     networks:

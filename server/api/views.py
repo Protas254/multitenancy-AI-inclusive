@@ -715,10 +715,26 @@ class SaaSPlanViewSet(viewsets.ReadOnlyModelViewSet):
 @api_view(["POST"])
 @permission_classes([permissions.AllowAny])
 def login_view(request):
-    email = (request.data.get("email") or "").strip()
+    raw_credential = (
+        request.data.get("identifier") or
+        request.data.get("email") or
+        request.data.get("username") or
+        request.data.get("phone") or
+        ""
+    ).strip()
     password = request.data.get("password") or ""
 
-    user = User.objects.filter(email__iexact=email).first()
+    if not raw_credential or not password:
+        return Response({"detail": "Credentials and password are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    phone_clean = raw_credential.replace(" ", "").replace("-", "")
+
+    user = User.objects.filter(
+        Q(email__iexact=raw_credential) |
+        Q(username__iexact=raw_credential) |
+        Q(phone=raw_credential) |
+        Q(phone=phone_clean)
+    ).first()
     if user and user.check_password(password):
         # Super admins can always log in
         if not user.is_superuser:
@@ -744,7 +760,7 @@ def login_view(request):
             "activeTenantId": active_tenant_id,
         })
     
-    return Response({"detail": "Invalid email or password. Please try again."}, status=status.HTTP_401_UNAUTHORIZED)
+    return Response({"detail": "Invalid credentials or password. Please try again."}, status=status.HTTP_401_UNAUTHORIZED)
 
 @api_view(["POST"])
 @permission_classes([permissions.AllowAny])

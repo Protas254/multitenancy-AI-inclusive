@@ -4,15 +4,15 @@ import { useRouter } from "@/lib/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Mail, Lock, AlertCircle, Clock } from "lucide-react";
+import { User, Lock, AlertCircle, Clock } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
 
-  const [email, setEmail] = useState("john.kamau@business.co.ke");
-  const [password, setPassword] = useState("password123");
-  const [rememberMe, setRememberMe] = useState(true);
+  const [identifier, setIdentifier] = useState("");
+  const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pendingActivation, setPendingActivation] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -24,7 +24,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      await login(email, password);
+      await login(identifier, password);
       router.push("/dashboard");
     } catch (err: any) {
       const msg: string = err.message || "";
@@ -73,13 +73,14 @@ export default function LoginPage() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-slate-700">Email Address</label>
+          <label className="text-xs font-semibold text-slate-700">Email, Phone, or Username</label>
           <Input
-            type="email"
-            icon={<Mail className="h-4 w-4" />}
-            placeholder="name@business.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            type="text"
+            icon={<User className="h-4 w-4" />}
+            placeholder="Enter your credentials"
+            value={identifier}
+            onChange={(e) => setIdentifier(e.target.value)}
+            autoComplete="username"
             required
           />
         </div>

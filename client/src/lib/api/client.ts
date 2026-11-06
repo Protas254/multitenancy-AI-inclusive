@@ -2,7 +2,32 @@
  * Unified API Client for Django REST Framework Backend Integration.
  */
 
-const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || (typeof process !== "undefined" && (process as any).env?.NEXT_PUBLIC_API_URL) || "http://localhost:8000/api/v1";
+function resolveApiBaseUrl(): string {
+  // If running in browser, ensure production domains never attempt to call localhost
+  if (typeof window !== "undefined") {
+    const host = window.location.hostname;
+    if (host === "storegrid.co.ke" || host.endsWith(".storegrid.co.ke")) {
+      return "https://api.storegrid.co.ke/api/v1";
+    }
+  }
+
+  const envUrl =
+    (import.meta as any).env?.VITE_API_URL ||
+    (typeof process !== "undefined" && (process as any).env?.NEXT_PUBLIC_API_URL);
+
+  if (typeof window !== "undefined") {
+    const isLocalhost =
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1";
+    if (!isLocalhost && envUrl && envUrl.includes("localhost")) {
+      return "https://api.storegrid.co.ke/api/v1";
+    }
+  }
+
+  return envUrl || "http://localhost:8000/api/v1";
+}
+
+const API_BASE_URL = resolveApiBaseUrl();
 
 export interface ApiResponse<T> {
   data: T;

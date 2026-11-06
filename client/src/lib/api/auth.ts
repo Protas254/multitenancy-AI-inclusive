@@ -15,8 +15,14 @@ export const authApi = {
     return user.memberships || [];
   },
 
-  async login(email: string, password: string): Promise<{ user: User; token: string; refreshToken?: string; memberships: Membership[]; activeTenantId?: string }> {
-    const res = await apiClient.post<{ user: User; token: string; refreshToken?: string; memberships: Membership[]; activeTenantId?: string }>("/auth/login/", { email, password });
+  async login(identifier: string, password: string): Promise<{ user: User; token: string; refreshToken?: string; memberships: Membership[]; activeTenantId?: string }> {
+    const res = await apiClient.post<{ user: User; token: string; refreshToken?: string; memberships: Membership[]; activeTenantId?: string }>("/auth/login/", {
+      email: identifier,
+      identifier,
+      username: identifier,
+      phone: identifier,
+      password,
+    });
     if (typeof window !== "undefined") {
       localStorage.setItem("auth_token", res.token);
       if (res.refreshToken) {

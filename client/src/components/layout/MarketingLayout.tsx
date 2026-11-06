@@ -1,13 +1,27 @@
-import React from "react";
+import React, { useState } from "react";
 import Link from "@/components/ui/link";
 import storegridLogo from "@/assets/storegrid-logo.png";
 import { Button } from "@/components/ui/button";
+import { Menu, X } from "lucide-react";
 
 interface MarketingNavProps {
   activePath?: string;
 }
 
 export const MarketingHeader: React.FC<MarketingNavProps> = ({ activePath }) => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const navLinks = [
+    { name: "Home", href: "/" },
+    { name: "Features", href: "/features" },
+    { name: "Industries", href: "/industries" },
+    { name: "Pricing", href: "/pricing" },
+    { name: "How It Works", href: "/how-it-works" },
+    { name: "Resources", href: "/resources" },
+    { name: "About", href: "/about" },
+    { name: "Contact", href: "/contact" },
+  ];
+
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
@@ -23,70 +37,82 @@ export const MarketingHeader: React.FC<MarketingNavProps> = ({ activePath }) => 
           </div>
         </Link>
 
-        <div className="hidden lg:flex items-center gap-7 text-xs font-semibold text-slate-600">
-          <Link
-            href="/"
-            className={`hover:text-blue-600 transition-colors ${activePath === "/" ? "text-blue-600 font-bold" : ""}`}
-          >
-            Home
-          </Link>
-          <Link
-            href="/features"
-            className={`hover:text-blue-600 transition-colors ${activePath === "/features" ? "text-blue-600 font-bold" : ""}`}
-          >
-            Features
-          </Link>
-          <Link
-            href="/industries"
-            className={`hover:text-blue-600 transition-colors ${activePath === "/industries" ? "text-blue-600 font-bold" : ""}`}
-          >
-            Industries
-          </Link>
-          <Link
-            href="/pricing"
-            className={`hover:text-blue-600 transition-colors ${activePath === "/pricing" ? "text-blue-600 font-bold" : ""}`}
-          >
-            Pricing
-          </Link>
-          <Link
-            href="/how-it-works"
-            className={`hover:text-blue-600 transition-colors ${activePath === "/how-it-works" ? "text-blue-600 font-bold" : ""}`}
-          >
-            How It Works
-          </Link>
-          <Link
-            href="/resources"
-            className={`hover:text-blue-600 transition-colors ${activePath === "/resources" ? "text-blue-600 font-bold" : ""}`}
-          >
-            Resources
-          </Link>
-          <Link
-            href="/about"
-            className={`hover:text-blue-600 transition-colors ${activePath === "/about" ? "text-blue-600 font-bold" : ""}`}
-          >
-            About
-          </Link>
-          <Link
-            href="/contact"
-            className={`hover:text-blue-600 transition-colors ${activePath === "/contact" ? "text-blue-600 font-bold" : ""}`}
-          >
-            Contact
-          </Link>
-        </div>
+        {/* Desktop Navigation Links */}
+        <nav className="hidden lg:flex items-center gap-7 text-xs font-semibold text-slate-600">
+          {navLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`hover:text-blue-600 transition-colors ${
+                activePath === link.href ? "text-blue-600 font-bold" : ""
+              }`}
+            >
+              {link.name}
+            </Link>
+          ))}
+        </nav>
 
-        <div className="flex items-center gap-3">
-          <Link href="/login">
-            <Button variant="ghost" size="sm" className="text-xs font-semibold text-slate-700">
-              Sign In
-            </Button>
-          </Link>
-          <Link href="/register">
-            <Button size="sm" className="text-xs font-bold px-3.5 bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
-              Start Free Trial
-            </Button>
-          </Link>
+        {/* Actions + Mobile Hamburger Toggle */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="hidden sm:flex items-center gap-2 sm:gap-3">
+            <Link href="/login">
+              <Button variant="ghost" size="sm" className="text-xs font-semibold text-slate-700">
+                Sign In
+              </Button>
+            </Link>
+            <Link href="/register">
+              <Button size="sm" className="text-xs font-bold px-3.5 bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
+                Start Free Trial
+              </Button>
+            </Link>
+          </div>
+
+          {/* Mobile hamburger button */}
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen((prev) => !prev)}
+            className="lg:hidden p-2 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+            aria-label="Toggle navigation menu"
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
         </div>
       </div>
+
+      {/* Mobile Navigation Drawer / Dropdown */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden border-t border-slate-200 bg-white px-4 pt-3 pb-6 space-y-3 shadow-xl animate-in slide-in-from-top-2 duration-150">
+          <nav className="flex flex-col space-y-1">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setMobileMenuOpen(false)}
+                className={`px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                  activePath === link.href
+                    ? "bg-blue-50 text-blue-600 font-bold"
+                    : "text-slate-700 hover:bg-slate-50 hover:text-blue-600"
+                }`}
+              >
+                {link.name}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
+            <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="w-full">
+              <Button variant="outline" className="w-full text-xs font-semibold justify-center h-10">
+                Sign In
+              </Button>
+            </Link>
+            <Link href="/register" onClick={() => setMobileMenuOpen(false)} className="w-full">
+              <Button className="w-full text-xs font-bold justify-center h-10 bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
+                Start Free Trial
+              </Button>
+            </Link>
+          </div>
+        </div>
+      )}
     </header>
   );
 };

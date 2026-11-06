@@ -22,6 +22,7 @@ import {
   HelpCircle,
 } from "lucide-react";
 import { FloatingWhatsApp } from "@/components/common/FloatingWhatsApp";
+import { MarketingHeader } from "@/components/layout/MarketingLayout";
 import storegridLogo from "@/assets/storegrid-logo.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -196,45 +197,7 @@ export default function LandingPage() {
         ]}
       />
       {/* Top Navigation */}
-      <header className="sticky top-0 z-50 border-b border-slate-100 bg-white/90 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <img src={storegridLogo} alt="StoreGrid Logo" className="h-10 w-10 object-contain" />
-            <div className="flex flex-col">
-              <span className="text-base font-black tracking-tight text-slate-900 leading-none">
-                StoreGrid
-              </span>
-              <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">
-                Business Cloud
-              </span>
-            </div>
-          </div>
-
-          <div className="hidden md:flex items-center gap-7 text-xs font-semibold text-slate-600">
-            <Link href="/" className="hover:text-blue-600 transition-colors">Home</Link>
-            <Link href="/features" className="hover:text-blue-600 transition-colors">Features</Link>
-            <Link href="/industries" className="hover:text-blue-600 transition-colors">Industries</Link>
-            <Link href="/pricing" className="hover:text-blue-600 transition-colors">Pricing</Link>
-            <Link href="/how-it-works" className="hover:text-blue-600 transition-colors">How It Works</Link>
-            <Link href="/resources" className="hover:text-blue-600 transition-colors">Resources</Link>
-            <Link href="/about" className="hover:text-blue-600 transition-colors">About</Link>
-            <Link href="/contact" className="hover:text-blue-600 transition-colors">Contact</Link>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Link href="/login">
-              <Button variant="ghost" size="sm" className="text-xs font-semibold">
-                Sign In
-              </Button>
-            </Link>
-            <Link href="/register">
-              <Button size="sm" className="text-xs font-semibold shadow-sm">
-                <span>Get Started</span>
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </header>
+      <MarketingHeader activePath="/" />
 
       {/* Hero Section with Image Background */}
       <section className="relative overflow-hidden pt-20 pb-24 md:pt-28 md:pb-32 text-white">
