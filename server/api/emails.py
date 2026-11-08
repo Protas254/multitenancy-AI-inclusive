@@ -548,3 +548,63 @@ def send_supplier_po_email(purchase_order):
     """
     text = f"Purchase Order {purchase_order.po_number} from {tenant.name}: Total KES {float(purchase_order.total_amount):,.2f}."
     return _send_html_email(subject, supplier.email, text, _get_base_template(subject, f"PO #{purchase_order.po_number}", body))
+
+
+def send_registration_submitted_email(user, tenant):
+    """Notification sent to user confirming their business registration is submitted for approval."""
+    recipient = (user.email if hasattr(user, 'email') else None) or tenant.email
+    if not recipient:
+        return False
+
+    subject = f"⏳ Registration Received: {tenant.name} is Pending Approval"
+    body = f"""
+      <span class="badge badge-warning">Pending Activation</span>
+      <h2 style="margin-top: 4px; color: #0f172a;">Your Business Registration Has Been Received</h2>
+      <p>Dear {getattr(user, 'name', None) or 'Store Owner'},</p>
+      <p>Thank you for registering <strong>{tenant.name}</strong> on StoreGrid Cloud!</p>
+      
+      <div class="stat-card">
+        <p style="margin: 0 0 6px 0;"><strong>Business Name:</strong> {tenant.name}</p>
+        <p style="margin: 0 0 6px 0;"><strong>Category:</strong> {tenant.business_type}</p>
+        <p style="margin: 0 0 6px 0;"><strong>Plan:</strong> {tenant.plan.capitalize()}</p>
+        <p style="margin: 0;"><strong>Registered Email:</strong> {recipient}</p>
+      </div>
+
+      <p>Your account is currently undergoing administrator review and verification. Once our team reviews and marks your store as active, you will receive an approval confirmation and will be able to log in to your dashboard.</p>
+
+      <p style="color: #64748b; font-size: 13px;">If you have any urgent onboarding questions, please contact our support team at <strong>+254 743 849 304</strong> or reply to this email.</p>
+    """
+    text = f"Registration received for {tenant.name}. Your account is pending administrator approval."
+    return _send_html_email(subject, recipient, text, _get_base_template(subject, "Pending Administrator Activation", body))
+
+
+def send_account_approved_email(tenant):
+    """Notification sent when an administrator approves and activates a business tenant."""
+    from .models import Membership
+    membership = Membership.objects.filter(tenant=tenant, role__in=["owner", "admin"]).select_related("user").first()
+    owner_email = (membership.user.email if membership and membership.user else None) or tenant.email
+    owner_name = (membership.user.name if membership and membership.user else None) or "Store Owner"
+
+    if not owner_email:
+        return False
+
+    subject = f"🎉 Welcome! Your Business '{tenant.name}' Has Been Approved"
+    body = f"""
+      <span class="badge badge-success">Account Approved &amp; Active</span>
+      <h2 style="margin-top: 4px; color: #0f172a;">Your StoreGrid Account is Ready!</h2>
+      <p>Dear {owner_name},</p>
+      <p>Great news! The administrator has reviewed and <strong>approved</strong> your business account for <strong>{tenant.name}</strong>. Your store is now active and ready for business.</p>
+
+      <div class="stat-card">
+        <p style="margin: 0 0 6px 0;"><strong>Business Name:</strong> {tenant.name}</p>
+        <p style="margin: 0 0 6px 0;"><strong>Status:</strong> Active</p>
+        <p style="margin: 0 0 6px 0;"><strong>Trial Period:</strong> 14 Days Full Access</p>
+        <p style="margin: 0;"><strong>Login Identifier:</strong> {owner_email}</p>
+      </div>
+
+      <p>You can now sign in to your dashboard to manage sales, POS terminals, inventory, and customer accounts.</p>
+
+      <a href="https://storegrid.co.ke/login" class="btn">Log In to Your Store Dashboard &rarr;</a>
+    """
+    text = f"Your StoreGrid business {tenant.name} has been approved and activated. You can now log in at https://storegrid.co.ke/login."
+    return _send_html_email(subject, owner_email, text, _get_base_template(subject, f"Store Approved: {tenant.name}", body))

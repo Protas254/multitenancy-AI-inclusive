@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from django.urls import reverse
+from django.urls import path, reverse
+from django.shortcuts import redirect
 from django.db.models import Sum
 from .models import (
     Tenant, User, Membership, Category, Supplier, Product, Customer,
@@ -84,13 +85,13 @@ class TenantAdmin(admin.ModelAdmin):
         "name",
         "business_type",
         "plan",
-        "status",
+        "status_badge",
+        "approval_action",
+        "is_active",
         "city_display",
         "phone",
         "customers_count",
-        "is_active",
         "created_at",
-        "contact_messages_display",
     )
     list_display_links = ("name",)
     list_editable = ("is_active",)  # Simple checkbox editable directly in table rows!
@@ -100,11 +101,98 @@ class TenantAdmin(admin.ModelAdmin):
     inlines = [MembershipInline, CategoryInline, StaffMemberInline, ProductInline]
     actions = ["activate_businesses", "deactivate_businesses"]
 
+    def status_badge(self, obj):
+        if obj.is_active and obj.status == "active":
+            return format_html(
+                '<span style="background:#dcfce7; color:#15803d; padding:3px 8px; border-radius:12px; font-weight:700; font-size:11px; display:inline-flex; align-items:center; gap:4px;">'
+                '● Active</span>'
+            )
+        elif obj.status == "pending" or not obj.is_active:
+            return format_html(
+                '<span style="background:#fef3c7; color:#b45309; padding:3px 8px; border-radius:12px; font-weight:700; font-size:11px; display:inline-flex; align-items:center; gap:4px;">'
+                '⏳ Pending Approval</span>'
+            )
+        elif obj.status == "trial":
+            return format_html(
+                '<span style="background:#eff6ff; color:#1d4ed8; padding:3px 8px; border-radius:12px; font-weight:700; font-size:11px; display:inline-flex; align-items:center; gap:4px;">'
+                '★ Trial</span>'
+            )
+        else:
+            return format_html(
+                '<span style="background:#f1f5f9; color:#475569; padding:3px 8px; border-radius:12px; font-weight:700; font-size:11px;">'
+                '{}</span>',
+                obj.status.capitalize() if obj.status else "—"
+            )
+    status_badge.short_description = "Status"
+
+    def approval_action(self, obj):
+        if not obj.is_active or obj.status == "pending":
+            url = reverse("admin:api_tenant_approve", args=[obj.id])
+            return format_html(
+                '<a class="button" href="{}" style="background:#16a34a; color:#ffffff !important; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:700; text-decoration:none; display:inline-block; white-space:nowrap;">'
+                '✔ Approve &amp; Activate</a>',
+                url
+            )
+        else:
+            url = reverse("admin:api_tenant_deactivate", args=[obj.id])
+            return format_html(
+                '<a class="button" href="{}" style="background:#64748b; color:#ffffff !important; padding:4px 8px; border-radius:6px; font-size:10px; font-weight:600; text-decoration:none; display:inline-block; white-space:nowrap;">'
+                '✘ Deactivate</a>',
+                url
+            )
+    approval_action.short_description = "Approval Action"
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('<str:tenant_id>/approve/', self.admin_site.admin_view(self.approve_tenant_view), name='api_tenant_approve'),
+            path('<str:tenant_id>/deactivate/', self.admin_site.admin_view(self.deactivate_tenant_view), name='api_tenant_deactivate'),
+        ]
+        return custom_urls + urls
+
+    def approve_tenant_view(self, request, tenant_id):
+        tenant = Tenant.objects.filter(pk=tenant_id).first()
+        if tenant:
+            tenant.status = "active"
+            tenant.is_active = True
+            tenant.save()
+            try:
+                from .emails import send_account_approved_email
+                send_account_approved_email(tenant)
+            except Exception:
+                pass
+            self.message_user(request, f"Tenant '{tenant.name}' has been approved and marked as active. An approval confirmation email has been dispatched.")
+        return redirect(reverse("admin:api_tenant_changelist"))
+
+    def deactivate_tenant_view(self, request, tenant_id):
+        tenant = Tenant.objects.filter(pk=tenant_id).first()
+        if tenant:
+            tenant.status = "pending"
+            tenant.is_active = False
+            tenant.save()
+            self.message_user(request, f"Tenant '{tenant.name}' has been deactivated (status set to pending).")
+        return redirect(reverse("admin:api_tenant_changelist"))
+
     def save_model(self, request, obj, form, change):
-        # Keep status and is_active in sync on single edit
+        was_inactive = False
+        if change:
+            orig = Tenant.objects.filter(pk=obj.pk).first()
+            if orig and (not orig.is_active or orig.status == "pending"):
+                was_inactive = True
+
         if "is_active" in form.changed_data:
             obj.status = "active" if obj.is_active else "pending"
+        elif "status" in form.changed_data:
+            obj.is_active = True if obj.status == "active" else False
+
         super().save_model(request, obj, form, change)
+
+        if was_inactive and obj.is_active and obj.status == "active":
+            try:
+                from .emails import send_account_approved_email
+                send_account_approved_email(obj)
+            except Exception:
+                pass
 
     def save_related(self, request, form, formsets, change):
         super().save_related(request, form, formsets, change)
@@ -132,7 +220,6 @@ class TenantAdmin(admin.ModelAdmin):
 
     # ── Custom column: city extracted from address ─────────────────────────
     def city_display(self, obj):
-        # Try to derive city: first word of address, or address itself
         addr = (obj.address or "").strip()
         city = addr.split(",")[0].strip() if "," in addr else addr
         return city or "—"
@@ -150,19 +237,21 @@ class TenantAdmin(admin.ModelAdmin):
         )
     customers_count.short_description = "Customers"
 
-    # ── Custom column: contact messages count ─────────────────────────────
-    def contact_messages_display(self, obj):
-        # Placeholder — extend when you have a ContactMessage model
-        return "—"
-    contact_messages_display.short_description = "Contact Messages"
-
     # ── Bulk actions ───────────────────────────────────────────────────────
-    @admin.action(description="✔ Activate selected businesses")
+    @admin.action(description="✔ Approve & Activate selected tenants")
     def activate_businesses(self, request, queryset):
-        updated = queryset.update(status="active", is_active=True)
-        self.message_user(request, f"{updated} business(es) marked as active.")
+        for tenant in queryset:
+            tenant.status = "active"
+            tenant.is_active = True
+            tenant.save()
+            try:
+                from .emails import send_account_approved_email
+                send_account_approved_email(tenant)
+            except Exception:
+                pass
+        self.message_user(request, f"{queryset.count()} business(es) approved and activated. Approval emails dispatched.")
 
-    @admin.action(description="✘ Deactivate selected businesses")
+    @admin.action(description="✘ Deactivate selected tenants (set to pending)")
     def deactivate_businesses(self, request, queryset):
         updated = queryset.update(status="pending", is_active=False)
         self.message_user(request, f"{updated} business(es) deactivated (set to pending).")

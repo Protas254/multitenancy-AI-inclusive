@@ -208,8 +208,9 @@ export const BulkProductUploadModal: React.FC<BulkProductUploadModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleModalClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-2xl flex flex-col max-h-[92dvh] p-0 overflow-hidden gap-0">
+        {/* ── Sticky Header ── */}
+        <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-4 border-b border-slate-100">
           <div className="flex items-center gap-3">
             <div className="p-2.5 bg-blue-50 text-blue-700 rounded-xl">
               <FileSpreadsheet className="h-6 w-6" />
@@ -225,7 +226,8 @@ export const BulkProductUploadModal: React.FC<BulkProductUploadModalProps> = ({
           </div>
         </DialogHeader>
 
-        <div className="space-y-5 py-2">
+        {/* ── Scrollable Body ── */}
+        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
           {/* Download Template Banner */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
             <div className="flex items-start gap-2.5">
@@ -464,7 +466,8 @@ export const BulkProductUploadModal: React.FC<BulkProductUploadModalProps> = ({
           )}
         </div>
 
-        <DialogFooter className="flex sm:justify-between items-center gap-2 pt-2 border-t border-slate-100">
+        {/* ── Sticky Footer ── */}
+        <DialogFooter className="flex-shrink-0 flex sm:justify-between items-center gap-2 px-6 py-4 border-t border-slate-100 bg-white">
           {result ? (
             <>
               <Button

@@ -80,10 +80,17 @@ export const productsApi = {
     formData.append("update_existing", String(options.updateExisting ?? true));
     formData.append("create_categories", String(options.createCategories ?? true));
     formData.append("create_suppliers", String(options.createSuppliers ?? true));
+    // Also embed tenant_id in body — headers may be stripped by some reverse proxies
+    if (options.tenantId) {
+      formData.append("tenant_id", options.tenantId);
+    }
 
-    const reqHeaders = options.tenantId ? { "X-Tenant-ID": options.tenantId } : undefined;
+    const reqHeaders: Record<string, string> = {};
+    if (options.tenantId) {
+      reqHeaders["X-Tenant-ID"] = options.tenantId;
+    }
     return await apiClient.postFormData<BulkUploadResult>("/products/bulk-upload/", formData, {
-      headers: reqHeaders,
+      headers: Object.keys(reqHeaders).length > 0 ? reqHeaders : undefined,
     });
   },
 

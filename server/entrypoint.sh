@@ -6,6 +6,19 @@
 
 set -e
 
+# Initialize persistent volume database if mounted
+if [ -d "/app/db_data" ]; then
+  if [ ! -f "/app/db_data/db.sqlite3" ]; then
+    if [ -f "/app/db.sqlite3" ]; then
+      echo "📦 Seeding persistent database in /app/db_data/db.sqlite3 from image..."
+      cp /app/db.sqlite3 /app/db_data/db.sqlite3
+    else
+      echo "📦 Initializing new database file in /app/db_data/db.sqlite3..."
+      touch /app/db_data/db.sqlite3
+    fi
+  fi
+fi
+
 echo "⏳ Running Django migrations..."
 python manage.py migrate --noinput
 

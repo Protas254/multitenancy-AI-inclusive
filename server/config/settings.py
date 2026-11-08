@@ -1,8 +1,11 @@
 import os
+import sys
 from pathlib import Path
 from corsheaders.defaults import default_headers
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+if str(BASE_DIR) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR))
 
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-multitenancy-sme-saas-secret-key-protas')
 
@@ -79,10 +82,19 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
+# Database configuration with support for persistent Docker volumes and environment variables
+DB_PATH_ENV = os.environ.get('DJANGO_DB_PATH') or os.environ.get('SQLITE_PATH')
+if DB_PATH_ENV:
+    DB_FILE = Path(DB_PATH_ENV)
+elif Path('/app/db_data').is_dir():
+    DB_FILE = Path('/app/db_data') / 'db.sqlite3'
+else:
+    DB_FILE = BASE_DIR / 'db.sqlite3'
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': DB_FILE,
     }
 }
 
@@ -122,10 +134,11 @@ CORS_ALLOWED_ORIGINS = [
     origin.strip()
     for origin in os.environ.get(
         'CORS_ALLOWED_ORIGINS',
-        'https://storegrid.co.ke,https://www.storegrid.co.ke,https://api.storegrid.co.ke,http://localhost:3000,http://127.0.0.1:3000'
+        'https://storegrid.co.ke,https://www.storegrid.co.ke,https://api.storegrid.co.ke,https://admin.storegrid.co.ke,http://localhost:3000,http://127.0.0.1:3000'
     ).split(',')
     if origin.strip()
 ]
+CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = list(default_headers) + [
     'x-tenant-id',
 ]

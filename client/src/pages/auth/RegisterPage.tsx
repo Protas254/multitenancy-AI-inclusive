@@ -108,15 +108,20 @@ export default function RegisterPage() {
         phone: formData.phone,
         password: formData.password,
         businessName: formData.businessName,
-        businessCategory: formData.businessCategory,
+        businessCategory: formData.businessCategory === "Other" && formData.businessCategoryOther ? formData.businessCategoryOther : formData.businessCategory,
+        location: formData.location,
+        address: formData.address,
+        businessPhone: formData.businessPhone || formData.phone,
+        businessEmail: formData.businessEmail || formData.email,
+        currency: formData.currency,
+        taxRate: formData.taxRate,
+        monthlyTarget: formData.monthlyTarget,
         plan: formData.plan,
         products: formData.products.filter((p) => p.name.trim().length > 0),
+        staff: formData.staff.filter((s) => s.name.trim().length > 0),
       });
-      // New trial flow: API auto-issues a token, go straight to dashboard
-      if (res?.token) {
-        router.push("/dashboard");
-      } else if (res?.pendingActivation) {
-        setRegistered({ businessName: res.businessName || formData.businessName, email: res.email || formData.email });
+      if (res?.pendingActivation || !res?.token) {
+        setRegistered({ businessName: res?.businessName || formData.businessName, email: res?.email || formData.email });
       } else {
         router.push("/dashboard");
       }
@@ -440,14 +445,14 @@ export default function RegisterPage() {
           <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-900 flex items-start gap-2">
             <Sparkles className="h-4 w-4 shrink-0 mt-0.5 text-emerald-600" />
             <span>
-              All new businesses start with an <strong>instant 14-Day Free Trial</strong> with unrestricted access to all modules (POS, Inventory, Customer Credit, Loyalty, Payroll, Multi-Branch). No credit card required upfront.
+              All new businesses start with a <strong>14-Day Free Trial</strong> upon administrator activation, granting full access to all modules (POS, Inventory, Customer Credit, Loyalty, Payroll, Multi-Branch). No credit card required.
             </span>
           </div>
 
           <div className="pt-2 flex justify-between items-center">
             <Button variant="outline" size="sm" onClick={prev} className="text-xs">Back</Button>
             <Button onClick={handleFinishSetup} isLoading={isLoading} className="text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white">
-              Start 14-Day Free Trial
+              Submit Request for Approval
             </Button>
           </div>
         </div>

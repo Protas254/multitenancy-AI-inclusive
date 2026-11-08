@@ -38,13 +38,22 @@ class TenantScopedViewSet(viewsets.ModelViewSet):
 
     def get_tenant_id(self):
         user = self.request.user
+        # 1. Explicit header (standard path for JSON requests)
         tenant_id = self.request.headers.get("X-Tenant-ID") or getattr(self.request, "tenant_id", None)
 
+        # 2. For multipart/FormData uploads, also check the POST body field
+        if not tenant_id and hasattr(self.request, "data"):
+            tenant_id = self.request.data.get("tenant_id") or self.request.data.get("tenantId")
+        if not tenant_id:
+            tenant_id = self.request.POST.get("tenant_id") or self.request.POST.get("tenantId")
+
+        # 3. Fall back to user's first membership
         if not tenant_id and user.is_authenticated:
             first_membership = user.memberships.select_related("tenant").first()
             if first_membership:
                 tenant_id = first_membership.tenant_id
 
+        # 4. Last resort: first tenant in DB
         if not tenant_id:
             first_tenant = Tenant.objects.first()
             tenant_id = first_tenant.id if first_tenant else None
@@ -1187,14 +1196,20 @@ def login_view(request):
         Q(phone=phone_clean)
     ).first()
     if user and user.check_password(password):
-        # Super admins can always log in
-        if not user.is_superuser:
+        # Super admins and staff can always log in
+        if not (user.is_superuser or user.is_staff):
             memberships = user.memberships.select_related("tenant").all()
-            # Block only accounts stuck in "pending" (not yet verified by admin)
-            # Trial, active, expired tenants can all log in
-            if memberships.exists() and all(m.tenant.status == "pending" for m in memberships):
+            # If user has no active approved tenants, block login
+            has_active_tenant = any(
+                m.tenant.is_active and m.tenant.status in ("active", "trial")
+                for m in memberships
+            )
+            if not has_active_tenant:
                 return Response(
-                    {"detail": "Your business account is pending activation by the administrator. You will be notified once it is approved.", "pendingActivation": True},
+                    {
+                        "detail": "Your business account is pending activation by the administrator. You will be notified once it is approved.",
+                        "pendingActivation": True,
+                    },
                     status=status.HTTP_403_FORBIDDEN
                 )
 
@@ -1248,11 +1263,11 @@ def register_view(request):
         phone=data.get("businessPhone") or phone,
         email=data.get("businessEmail") or email,
         address=data.get("address") or data.get("location") or "Nairobi, Kenya",
-        vat_rate=data.get("taxRate", 16.0),
-        plan="trial",
+        vat_rate=float(data.get("taxRate", 16.0)),
+        plan=data.get("plan") or "trial",
         currency=data.get("currency", "KES"),
-        status="trial",
-        is_active=True,
+        status="pending",
+        is_active=False,
         trial_ends_at=timezone.now() + datetime.timedelta(days=14),
     )
 
@@ -1280,28 +1295,51 @@ def register_view(request):
                     current_stock=item.get("stock", 10),
                 )
 
+    # Seed initial staff members if provided
+    initial_staff = data.get("staff", [])
+    if isinstance(initial_staff, list):
+        for s in initial_staff:
+            if isinstance(s, dict) and s.get("name", "").strip():
+                StaffMember.objects.create(
+                    id=f"staff-{uuid.uuid4().hex[:8]}",
+                    tenant=tenant,
+                    name=s.get("name").strip(),
+                    phone=s.get("phone", ""),
+                    role=s.get("role", "Staff"),
+                    monthly_salary=s.get("salary", 25000),
+                    status="active"
+                )
+
+    # Seed monthly sales target if provided
+    monthly_target = data.get("monthlyTarget")
+    if monthly_target:
+        try:
+            Target.objects.create(
+                id=f"target-{uuid.uuid4().hex[:8]}",
+                tenant=tenant,
+                title="Monthly Sales Milestone",
+                type="sales",
+                target_amount=float(monthly_target),
+                current_amount=0,
+                period="monthly",
+                status="in_progress"
+            )
+        except Exception:
+            pass
+
     # Create Owner Membership
     Membership.objects.create(user=user, tenant=tenant, role="owner", designation="Business Owner")
 
-    # Send Welcome & Store Setup Email to new merchant
+    # Send Registration Received & Pending Approval email to new registrant
     try:
-        from .emails import send_welcome_store_setup_email
-        send_welcome_store_setup_email(user, tenant, temp_password=password)
+        from .emails import send_registration_submitted_email
+        send_registration_submitted_email(user, tenant)
     except Exception:
         pass
 
-    refresh = RefreshToken.for_user(user)
-    user_data = UserSerializer(user).data
-    memberships_data = MembershipSerializer(user.memberships.select_related("tenant").all(), many=True).data
-
     return Response({
-        "message": "Welcome to StockGrid! Your 14-day full access free trial has started.",
-        "pendingActivation": False,
-        "token": str(refresh.access_token),
-        "refreshToken": str(refresh),
-        "user": user_data,
-        "memberships": memberships_data,
-        "activeTenantId": tenant.id,
+        "message": "Your registration request has been submitted successfully and is awaiting administrator approval. You will be notified once it is approved.",
+        "pendingActivation": True,
         "businessName": business_name,
         "email": email,
     }, status=status.HTTP_201_CREATED)

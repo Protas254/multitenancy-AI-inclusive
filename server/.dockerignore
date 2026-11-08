@@ -15,8 +15,7 @@ env/
 .venv/
 
 # Django
-db.sqlite3
-*.sqlite3
+# Keep db.sqlite3 for initial database seeding into persistent volume
 staticfiles/
 media/
 

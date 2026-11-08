@@ -72,8 +72,16 @@ class ApiClient {
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
+        let errMsg = errorData.detail || errorData.message;
+        if (!errMsg && typeof errorData === "object" && errorData !== null) {
+          const firstKey = Object.keys(errorData)[0];
+          if (firstKey) {
+            const val = errorData[firstKey];
+            errMsg = Array.isArray(val) ? `${firstKey}: ${val.join(", ")}` : `${firstKey}: ${val}`;
+          }
+        }
         throw new Error(
-          errorData.detail || errorData.message || `Request failed with status ${res.status}`
+          errMsg || `Request failed with status ${res.status}`
         );
       }
 

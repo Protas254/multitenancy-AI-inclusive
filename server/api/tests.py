@@ -161,3 +161,71 @@ class BulkUploadProductTestCase(TestCase):
         self.assertEqual(data["failed"], 1)
         self.assertEqual(len(data["errors"]), 1)
         self.assertEqual(data["errors"][0]["row"], 1)
+
+
+class TenantApprovalFlowTestCase(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+
+    def test_registration_creates_pending_tenant_requiring_approval(self):
+        payload = {
+            "fullName": "Jane Merchant",
+            "email": "jane@merchant.co.ke",
+            "phone": "+254712345678",
+            "password": "SecurePassword123!",
+            "businessName": "Jane Fresh Store",
+            "businessCategory": "Retail Supermarket and Grocery",
+            "location": "Nairobi, Kilimani",
+            "address": "Argwings Kodhek Rd",
+            "currency": "KES",
+            "plan": "growth",
+            "products": [
+                {"name": "Apples 1kg", "buyingPrice": 100, "sellingPrice": 150, "stock": 25}
+            ]
+        }
+        res = self.client.post("/api/v1/auth/register/", payload, format="json")
+        self.assertEqual(res.status_code, 201)
+        data = res.json()
+        self.assertTrue(data.get("pendingActivation"))
+        self.assertNotIn("token", data)
+
+        tenant = Tenant.objects.get(name="Jane Fresh Store")
+        self.assertEqual(tenant.status, "pending")
+        self.assertFalse(tenant.is_active)
+        self.assertEqual(Product.objects.filter(tenant=tenant).count(), 1)
+
+    def test_pending_tenant_cannot_login_until_admin_approves(self):
+        user = User.objects.create_user(
+            username="pending_owner@store.co.ke",
+            email="pending_owner@store.co.ke",
+            password="OwnerPassword123!",
+            name="Pending Owner"
+        )
+        tenant = Tenant.objects.create(
+            name="Awaiting Store Ltd",
+            slug="awaiting-store",
+            status="pending",
+            is_active=False
+        )
+        Membership.objects.create(user=user, tenant=tenant, role="owner")
+
+        # Attempt to login while pending
+        login_res = self.client.post("/api/v1/auth/login/", {
+            "email": "pending_owner@store.co.ke",
+            "password": "OwnerPassword123!"
+        }, format="json")
+        self.assertEqual(login_res.status_code, 403)
+        self.assertTrue(login_res.json().get("pendingActivation"))
+
+        # Admin approves tenant
+        tenant.status = "active"
+        tenant.is_active = True
+        tenant.save()
+
+        # Login attempt after approval succeeds
+        approved_login_res = self.client.post("/api/v1/auth/login/", {
+            "email": "pending_owner@store.co.ke",
+            "password": "OwnerPassword123!"
+        }, format="json")
+        self.assertEqual(approved_login_res.status_code, 200)
+        self.assertIn("token", approved_login_res.json())
