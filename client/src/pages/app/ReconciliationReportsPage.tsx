@@ -88,7 +88,7 @@ export default function ReconciliationReportsPage() {
 
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900 font-serif">
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900">
           Closing Reports
         </h1>
         <p className="text-xs text-slate-500 mt-1">
@@ -157,7 +157,7 @@ export default function ReconciliationReportsPage() {
         <div className="p-5 border-b border-slate-100">
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-slate-500" />
-            <h3 className="text-sm font-bold text-slate-900 font-serif">
+            <h3 className="text-sm font-bold text-slate-900">
               {activeTab === "current"
                 ? `Daily Verification Logs for ${selectedMonth} ${selectedYear}`
                 : "All Businesses — Latest Reconciliation Overview"}

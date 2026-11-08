@@ -52,9 +52,10 @@ class ApiClient {
   ): Promise<T> {
     const token = this.getAuthToken();
     const tenantId = this.getTenantId();
+    const isFormData = typeof FormData !== "undefined" && options.body instanceof FormData;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      ...(isFormData ? {} : { "Content-Type": "application/json" }),
       Accept: "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(tenantId ? { "X-Tenant-ID": tenantId } : {}),
@@ -84,6 +85,38 @@ class ApiClient {
       console.warn(`[API Client] Network call to ${endpoint} failed:`, err.message);
       throw err;
     }
+  }
+
+  public async getBlob(endpoint: string, options: RequestInit = {}): Promise<Blob> {
+    const token = this.getAuthToken();
+    const tenantId = this.getTenantId();
+
+    const headers: Record<string, string> = {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(tenantId ? { "X-Tenant-ID": tenantId } : {}),
+      ...(options.headers as Record<string, string>),
+    };
+
+    const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+    const res = await fetch(`${API_BASE_URL}${cleanEndpoint}`, {
+      ...options,
+      method: "GET",
+      headers,
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to download: status ${res.status}`);
+    }
+
+    return await res.blob();
+  }
+
+  public postFormData<T>(endpoint: string, formData: FormData, options: RequestInit = {}): Promise<T> {
+    return this.request<T>(endpoint, {
+      ...options,
+      method: "POST",
+      body: formData,
+    });
   }
 
   public get<T>(endpoint: string, options: RequestInit = {}): Promise<T> {

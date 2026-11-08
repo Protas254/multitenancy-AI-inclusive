@@ -130,6 +130,75 @@ export default function SalesPage() {
     { label: "Credit Sales", value: "credit", filterFn: (s: Sale) => s.paymentMethod === "credit" || Boolean(s.isCreditSale) },
   ];
 
+  const renderSaleMobileCard = (sale: Sale) => (
+    <div className="space-y-3">
+      {/* Top: Sale Number, Status and Date */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <span className="font-bold text-slate-900 font-mono text-sm">{sale.saleNumber}</span>
+          <StatusBadge status={sale.status} />
+        </div>
+        <span className="text-[11px] text-slate-400 font-medium">{formatDateTime(sale.date)}</span>
+      </div>
+
+      {/* Middle: Customer, Items, Amount and Payment */}
+      <div className="flex items-start justify-between gap-3 pt-1 border-t border-slate-100">
+        <div className="space-y-0.5 flex-1 min-w-0">
+          <p className="font-semibold text-xs text-slate-900 truncate">
+            {sale.customerName || "Walk-in Customer"}
+          </p>
+          {sale.customerPhone && (
+            <p className="text-[11px] text-slate-400 font-mono">{sale.customerPhone}</p>
+          )}
+          <p className="text-[11px] text-slate-500">
+            {sale.items.length} item{sale.items.length > 1 ? "s" : ""}
+          </p>
+        </div>
+
+        <div className="text-right shrink-0">
+          <span className="font-bold text-sm text-blue-600 font-mono block">
+            {formatKES(sale.totalAmount)}
+          </span>
+          <div className="flex items-center justify-end gap-1 mt-0.5">
+            <span className="text-[10px] uppercase font-bold text-slate-600 tracking-wider bg-slate-100 px-1.5 py-0.5 rounded">
+              {sale.paymentMethod}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom: Cashier and Touch Action Buttons */}
+      <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
+        <span className="text-[11px] text-slate-400">
+          Cashier: <strong className="text-slate-700 font-medium">{sale.staffName || "Admin"}</strong>
+        </span>
+
+        <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 px-2.5 text-xs font-semibold gap-1 text-slate-700 bg-slate-50 hover:bg-slate-100"
+            onClick={() => setSelectedReceiptSale(sale)}
+          >
+            <Receipt className="h-3.5 w-3.5 text-slate-600" />
+            <span>Receipt</span>
+          </Button>
+
+          <Link href={`/sales/${sale.id}`}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 px-2.5 text-xs font-semibold gap-1 text-blue-700 bg-blue-50/50 hover:bg-blue-100/50 border-blue-200"
+            >
+              <Eye className="h-3.5 w-3.5" />
+              <span>Details</span>
+            </Button>
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -164,6 +233,7 @@ export default function SalesPage() {
         emptyActionLabel="Open POS Terminal"
         onEmptyAction={() => router.push("/pos")}
         onRowClick={(sale) => router.push(`/sales/${sale.id}`)}
+        mobileCardRender={renderSaleMobileCard}
       />
 
       {/* Receipt Modal */}

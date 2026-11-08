@@ -1,55 +1,248 @@
-@import url('https://fonts.googleapis.com/css2?family=Google+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Google+Sans+Display:wght@400;500;700&family=Google+Sans+Mono:wght@400;500&display=swap');
+/* ============================================================
+   TYPOGRAPHY — Geist Sans, Geist Mono (Vercel) & Inter
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&family=Geist+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================
+   CSS CUSTOM PROPERTIES — Light Mode (default)
+   ============================================================ */
 @layer base {
   :root {
-    --background: 210 40% 98%;
-    --foreground: 222 47% 11%;
+    /* Backgrounds */
+    --background: 30 25% 97%;          /* Warm Cream / Silk */
+    --foreground: 25 30% 12%;          /* Deep warm espresso brown */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    /* Cards & Surfaces */
+    --card: 30 20% 99%;                /* Delicate ivory */
+    --card-foreground: 25 30% 12%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    /* Popovers */
+    --popover: 30 20% 99%;
+    --popover-foreground: 25 30% 12%;
 
-    --primary: 221 83% 53%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary — Rich Chocolate */
+    --primary: 25 45% 25%;             /* #5C3A24 */
+    --primary-foreground: 35 40% 95%; /* Cream text on primary */
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222 47% 11.2%;
+    /* Secondary — Warm Cream surface */
+    --secondary: 35 40% 95%;
+    --secondary-foreground: 25 45% 25%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Muted */
+    --muted: 30 20% 93%;
+    --muted-foreground: 25 20% 45%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222 47% 11.2%;
+    /* Accent — Warm Amber / Caramel */
+    --accent: 35 80% 55%;              /* hsl(35,80%,55%) */
+    --accent-foreground: 25 60% 10%;   /* Dark espresso on amber */
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Destructive — Crimson */
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 30 25% 97%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221 83% 53%;
+    /* Borders & Inputs */
+    --border: 30 20% 88%;              /* Warm tan borders */
+    --input: 30 20% 88%;
+    --ring: 25 45% 25%;                /* Primary chocolate ring */
 
+    /* Border radius */
     --radius: 0.75rem;
+
+    /* Semantic tokens */
+    --success: 145 50% 40%;            /* Herbal sage green */
+    --warning: 40 90% 50%;             /* Warm honey amber */
+  }
+
+  /* ============================================================
+     CSS CUSTOM PROPERTIES — Dark Mode
+     ============================================================ */
+  .dark {
+    /* Backgrounds */
+    --background: 25 50% 8%;           /* Deep roasted espresso-black */
+    --foreground: 30 25% 95%;          /* Creamy ivory */
+
+    /* Cards */
+    --card: 25 45% 12%;                /* Dark cocoa card surface */
+    --card-foreground: 30 25% 95%;
+
+    /* Popovers */
+    --popover: 25 45% 12%;
+    --popover-foreground: 30 25% 95%;
+
+    /* Primary — Warm Golden Caramel (dark mode shift) */
+    --primary: 35 80% 55%;
+    --primary-foreground: 25 60% 10%;
+
+    /* Secondary */
+    --secondary: 25 45% 18%;           /* Dark cocoa surface */
+    --secondary-foreground: 30 25% 95%;
+
+    /* Muted */
+    --muted: 25 40% 15%;
+    --muted-foreground: 30 20% 60%;
+
+    /* Accent — Caramel (same warmth, slightly adjusted) */
+    --accent: 35 80% 55%;
+    --accent-foreground: 25 60% 10%;
+
+    /* Destructive */
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 30 25% 97%;
+
+    /* Borders & Inputs */
+    --border: 25 40% 20%;
+    --input: 25 40% 20%;
+    --ring: 35 80% 55%;                /* Caramel ring in dark mode */
+
+    /* Semantic tokens */
+    --success: 145 50% 40%;
+    --warning: 40 90% 50%;
   }
 }
 
+/* ============================================================
+   BASE STYLES
+   ============================================================ */
 @layer base {
   * {
     @apply border-border;
   }
+
   body {
-    @apply bg-background text-foreground antialiased font-sans;
-    font-family: 'Google Sans', Roboto, Arial, sans-serif;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Geist', 'Geist Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-feature-settings: "rlig" 1, "calt" 1, "cv02" 1, "cv03" 1, "cv04" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* ── Typography hierarchy (Geist Sans) ─────────────────────── */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Geist', 'Geist Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    letter-spacing: -0.02em;
+    color: inherit;
+  }
+
+  h1 {
+    font-size: 2.5rem;
+    line-height: 1.15;
+    font-weight: 700;
+  }
+
+  h2 {
+    font-size: 1.875rem;
+    line-height: 1.2;
+    font-weight: 700;
+  }
+
+  h3 {
+    font-size: 1.5rem;
+    line-height: 1.25;
+    font-weight: 600;
+  }
+
+  h4 {
+    font-size: 1.25rem;
+    line-height: 1.3;
+    font-weight: 600;
+  }
+
+  h5 {
+    font-size: 1.125rem;
+    line-height: 1.35;
+    font-weight: 600;
+  }
+
+  h6 {
+    font-size: 1rem;
+    line-height: 1.4;
+    font-weight: 600;
+  }
+
+  /* Mobile h1 scale-down */
+  @media (max-width: 640px) {
+    h1 {
+      font-size: 2rem;
+    }
   }
 }
 
-/* Custom sleek scrollbars */
+/* ============================================================
+   UTILITY CLASSES — Chocolate / Caramel theme helpers
+   ============================================================ */
+@layer utilities {
+  /* ── Gradients ─────────────────────────────────────────── */
+  .gradient-chocolate {
+    background: linear-gradient(135deg, hsl(25, 60%, 10%) 0%, hsl(25, 45%, 25%) 100%);
+  }
+
+  .gradient-caramel {
+    background: linear-gradient(135deg, hsl(35, 80%, 55%) 0%, hsl(40, 90%, 50%) 100%);
+  }
+
+  .gradient-warm {
+    background: linear-gradient(135deg, hsl(30, 25%, 97%) 0%, hsl(35, 40%, 95%) 100%);
+  }
+
+  .gradient-espresso {
+    background: linear-gradient(180deg, hsl(25, 60%, 10%) 0%, hsl(25, 50%, 18%) 100%);
+  }
+
+  /* ── Shadows ───────────────────────────────────────────── */
+  .shadow-chocolate {
+    box-shadow:
+      0 4px 6px -1px hsla(25, 45%, 25%, 0.25),
+      0 2px 4px -2px hsla(25, 45%, 25%, 0.15);
+  }
+
+  .shadow-chocolate-lg {
+    box-shadow:
+      0 10px 15px -3px hsla(25, 45%, 25%, 0.25),
+      0 4px 6px -4px hsla(25, 45%, 25%, 0.15);
+  }
+
+  .shadow-caramel {
+    box-shadow:
+      0 4px 6px -1px hsla(35, 80%, 55%, 0.30),
+      0 2px 4px -2px hsla(35, 80%, 55%, 0.20);
+  }
+
+  .shadow-caramel-lg {
+    box-shadow:
+      0 10px 15px -3px hsla(35, 80%, 55%, 0.30),
+      0 4px 6px -4px hsla(35, 80%, 55%, 0.20);
+  }
+
+  /* ── Font family helpers ───────────────────────────────── */
+  .font-serif-hero {
+    font-family: 'Geist', 'Geist Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  .font-serif-display {
+    font-family: 'Geist', 'Geist Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  /* ── Text size semantic aliases ────────────────────────── */
+  /* xs  → 0.75rem  (12px) — badges, captions, footers    */
+  /* sm  → 0.875rem (14px) — tables, labels, metadata      */
+  /* base→ 1rem     (16px) — body copy, inputs, nav        */
+  /* lg  → 1.125rem (18px) — lead paragraphs, CTA labels   */
+  /* xl  → 1.25rem  (20px) — card titles, KPI metrics      */
+  /* 2xl → 1.5rem   (24px) — large metrics, card headings  */
+  /* 3xl → 1.875rem (30px) — section / page titles         */
+  /* 4xl → 2.25rem  (36px) — major headings                */
+  /* 5xl → 3rem     (48px) — mobile hero                   */
+  /* 7xl → 4.5rem   (72px) — desktop hero                  */
+}
+
+/* ============================================================
+   SCROLLBARS — warm-tinted
+   ============================================================ */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -58,14 +251,50 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: hsl(30, 20%, 78%);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: hsl(25, 30%, 55%);
 }
 
-/* Print utilities for receipts and invoices */
+/* ============================================================
+   TRIAL ALARM ANIMATIONS (preserved)
+   ============================================================ */
+@keyframes alarm-ring {
+  0%   { transform: rotate(0deg); }
+  5%   { transform: rotate(18deg) scale(1.15); }
+  10%  { transform: rotate(-18deg) scale(1.15); }
+  15%  { transform: rotate(16deg) scale(1.1); }
+  20%  { transform: rotate(-16deg) scale(1.1); }
+  25%  { transform: rotate(10deg); }
+  30%  { transform: rotate(-10deg); }
+  35%  { transform: rotate(0deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@keyframes alarm-beacon {
+  0%, 100% {
+    box-shadow: 0 0 0 0 hsla(0, 70%, 50%, 0.7), 0 0 15px hsla(40, 90%, 50%, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 6px hsla(0, 70%, 50%, 0), 0 0 25px hsla(40, 90%, 50%, 0.6);
+  }
+}
+
+.animate-alarm-ring {
+  animation: alarm-ring 2s ease-in-out infinite;
+  transform-origin: top center;
+  display: inline-block;
+}
+
+.animate-alarm-beacon {
+  animation: alarm-beacon 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ============================================================
+   PRINT UTILITIES (preserved)
+   ============================================================ */
 @media print {
   body * {
     visibility: hidden;

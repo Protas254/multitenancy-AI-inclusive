@@ -119,7 +119,7 @@ export const DailyReconciliationCard: React.FC = () => {
                 </span>
               )}
             </div>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs text-slate-600 font-medium mt-0.5">
               Input today's counted cash and M-Pesa statement &mdash; the system calculates the totals and differences automatically.
             </p>
           </div>
@@ -245,11 +245,11 @@ export const DailyReconciliationCard: React.FC = () => {
                 <Layers className="h-6 w-6" />
               </div>
               <div>
-                <span className="text-[11px] uppercase font-bold tracking-wider text-slate-400 block">
+                <span className="text-[11px] uppercase font-bold tracking-wider text-slate-600 block">
                   TOTAL PHYSICAL COLLECTION
                 </span>
                 <div className="flex items-baseline gap-1 mt-0.5">
-                  <span className="text-xs font-bold text-slate-400">KES</span>
+                  <span className="text-xs font-bold text-slate-500">KES</span>
                   <span className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
                     {totalPhysicalCollection.toLocaleString("en-KE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
@@ -263,11 +263,11 @@ export const DailyReconciliationCard: React.FC = () => {
                 <Layers className="h-6 w-6" />
               </div>
               <div>
-                <span className="text-[11px] uppercase font-bold tracking-wider text-slate-400 block">
+                <span className="text-[11px] uppercase font-bold tracking-wider text-slate-600 block">
                   TOTAL SYSTEM RECORDS
                 </span>
                 <div className="flex items-baseline gap-1 mt-0.5">
-                  <span className="text-xs font-bold text-slate-400">KES</span>
+                  <span className="text-xs font-bold text-slate-500">KES</span>
                   <span className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
                     {totalSystemRecords.toLocaleString("en-KE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>

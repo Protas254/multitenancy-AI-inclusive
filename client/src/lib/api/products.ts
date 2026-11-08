@@ -65,4 +65,65 @@ export const productsApi = {
       return false;
     }
   },
+
+  async bulkUpload(
+    file: File,
+    options: {
+      updateExisting?: boolean;
+      createCategories?: boolean;
+      createSuppliers?: boolean;
+      tenantId?: string;
+    } = {}
+  ): Promise<BulkUploadResult> {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("update_existing", String(options.updateExisting ?? true));
+    formData.append("create_categories", String(options.createCategories ?? true));
+    formData.append("create_suppliers", String(options.createSuppliers ?? true));
+
+    const reqHeaders = options.tenantId ? { "X-Tenant-ID": options.tenantId } : undefined;
+    return await apiClient.postFormData<BulkUploadResult>("/products/bulk-upload/", formData, {
+      headers: reqHeaders,
+    });
+  },
+
+  async bulkUploadJson(
+    products: any[],
+    options: {
+      updateExisting?: boolean;
+      createCategories?: boolean;
+      createSuppliers?: boolean;
+      tenantId?: string;
+    } = {}
+  ): Promise<BulkUploadResult> {
+    const payload = {
+      products,
+      update_existing: options.updateExisting ?? true,
+      create_categories: options.createCategories ?? true,
+      create_suppliers: options.createSuppliers ?? true,
+    };
+    const reqHeaders = options.tenantId ? { headers: { "X-Tenant-ID": options.tenantId } } : undefined;
+    return await apiClient.post<BulkUploadResult>("/products/bulk-upload/", payload);
+  },
+
+  async downloadTemplate(tenantId?: string): Promise<Blob> {
+    const reqHeaders = tenantId ? { headers: { "X-Tenant-ID": tenantId } } : undefined;
+    return await apiClient.getBlob("/products/template/", reqHeaders);
+  },
 };
+
+export interface BulkUploadError {
+  row: number;
+  name?: string;
+  error: string;
+}
+
+export interface BulkUploadResult {
+  success: boolean;
+  total: number;
+  created: number;
+  updated: number;
+  failed: number;
+  errors: BulkUploadError[];
+  products?: Product[];
+}

@@ -8,10 +8,11 @@ import { formatKES, formatDateTime } from "@/lib/utils";
 import { StatCard } from "@/components/business/StatCard";
 import { DataTable, Column } from "@/components/business/DataTable";
 import { StockAdjustmentModal } from "@/components/business/StockAdjustmentModal";
+import { BulkProductUploadModal } from "@/components/business/BulkProductUploadModal";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Boxes, SlidersHorizontal, AlertTriangle, ArrowRightLeft, TrendingUp, DollarSign } from "lucide-react";
+import { Boxes, SlidersHorizontal, AlertTriangle, ArrowRightLeft, TrendingUp, DollarSign, Upload } from "lucide-react";
 
 export default function InventoryPage() {
   const { currentTenant } = useTenant();
@@ -20,6 +21,7 @@ export default function InventoryPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isAdjustOpen, setIsAdjustOpen] = useState(false);
+  const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
 
   const loadData = async () => {
     setIsLoading(true);
@@ -180,11 +182,22 @@ export default function InventoryPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-black tracking-tight text-slate-900">Inventory and Stock Control</h1>
-        <p className="text-xs text-slate-500 mt-0.5">
-          Real-time stock valuation, physical count audits, and movement logs.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-black tracking-tight text-slate-900">Inventory and Stock Control</h1>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Real-time stock valuation, physical count audits, and movement logs.
+          </p>
+        </div>
+        <Button
+          onClick={() => setIsBulkUploadOpen(true)}
+          variant="outline"
+          size="sm"
+          className="gap-1.5 text-xs font-bold border-blue-200 text-blue-700 bg-blue-50/50 hover:bg-blue-100 self-start sm:self-auto"
+        >
+          <Upload className="h-4 w-4 text-blue-600" />
+          <span>Bulk Upload Products</span>
+        </Button>
       </div>
 
       {/* Valuation Metrics */}
@@ -302,6 +315,14 @@ export default function InventoryPage() {
         }}
         product={selectedProduct}
         onAdjust={handleAdjustStock}
+      />
+
+      {/* Bulk Product Upload Modal */}
+      <BulkProductUploadModal
+        isOpen={isBulkUploadOpen}
+        onClose={() => setIsBulkUploadOpen(false)}
+        tenantId={currentTenant.id}
+        onSuccess={loadData}
       />
     </div>
   );

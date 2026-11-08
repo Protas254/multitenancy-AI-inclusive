@@ -16,7 +16,7 @@ export const StaffPerformanceCard: React.FC<StaffPerformanceCardProps> = ({ staf
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-sm font-bold text-slate-900">Staff Sales Leaderboard</h3>
-          <p className="text-xs text-slate-400">Current Month Performance</p>
+          <p className="text-xs text-slate-600 font-medium">Current Month Performance</p>
         </div>
         <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
           <Award className="h-4 w-4" />
@@ -36,7 +36,7 @@ export const StaffPerformanceCard: React.FC<StaffPerformanceCardProps> = ({ staf
                     {index + 1}
                   </span>
                   <span className="font-semibold text-slate-900">{member.name}</span>
-                  <span className="text-[10px] text-slate-400 capitalize">({member.role})</span>
+                  <span className="text-[10px] text-slate-600 font-medium capitalize">({member.role})</span>
                 </div>
                 <span className="font-bold text-slate-900">{formatKES(member.salesThisMonth)}</span>
               </div>
@@ -45,7 +45,7 @@ export const StaffPerformanceCard: React.FC<StaffPerformanceCardProps> = ({ staf
                 max={100}
                 indicatorClassName={index === 0 ? "bg-amber-500" : "bg-blue-600"}
               />
-              <div className="flex justify-between text-[10px] text-slate-400">
+              <div className="flex justify-between text-[10px] text-slate-600 font-medium">
                 <span>{percent}% of monthly quota</span>
                 {member.commissionRate > 0 && (
                   <span className="text-emerald-600 font-medium">

@@ -28,6 +28,10 @@ import {
   Lock,
   KeyRound,
   ShieldAlert,
+  Package,
+  ShoppingCart,
+  ArrowRight,
+  ArrowLeft,
 } from "lucide-react";
 import { ManagerPasscodeModal } from "@/components/business/ManagerPasscodeModal";
 import { BlindCloseoutModal } from "@/components/business/BlindCloseoutModal";
@@ -92,9 +96,12 @@ export default function PosPage() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [mobileTab, setMobileTab] = useState<"catalog" | "cart">("catalog");
   const [completedSale, setCompletedSale] = useState<Sale | null>(null);
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  const totalCartQuantity = useMemo(() => cart.reduce((sum, item) => sum + item.quantity, 0), [cart]);
 
   // Manager Authorization State
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
@@ -227,193 +234,366 @@ export default function PosPage() {
   };
 
   return (
-    <div className="h-[calc(100vh-6.5rem)] flex flex-col lg:flex-row gap-4">
-      {/* LEFT PANEL: Products Catalog and Search */}
-      <div className="flex-1 flex flex-col bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-        {/* Search and Category Header */}
-        <div className="p-4 border-b border-slate-100 space-y-3">
-          <div className="flex items-center gap-2">
-            <Input
-              icon={<Search className="h-4 w-4" />}
-              placeholder="Search by name, SKU, or scan barcode (e.g. 61640001001)..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-10 text-xs"
-              autoFocus
-            />
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-10 px-3 shrink-0 gap-1.5 text-xs text-slate-700"
-              title="Barcode Scanner Ready"
-            >
-              <ScanLine className="h-4 w-4 text-blue-600" />
-              <span className="hidden sm:inline">Scanner Active</span>
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsBlindCloseoutOpen(true)}
-              className="h-10 px-3 shrink-0 gap-1.5 text-xs text-amber-800 bg-amber-50/60 border-amber-200 hover:bg-amber-100"
-              title="Perform Shift Closeout"
-            >
-              <Banknote className="h-4 w-4 text-amber-600" />
-              <span className="hidden sm:inline">Till Closeout</span>
-            </Button>
-          </div>
+    <>
+      <div className="h-[calc(100vh-6.5rem)] flex flex-col gap-3">
+      {/* Mobile Top View Switcher */}
+      <div className="lg:hidden flex items-center bg-slate-200/80 p-1 rounded-xl shrink-0">
+        <button
+          type="button"
+          onClick={() => setMobileTab("catalog")}
+          className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-bold transition-all ${
+            mobileTab === "catalog"
+              ? "bg-white text-blue-700 shadow-xs"
+              : "text-slate-600 hover:text-slate-900"
+          }`}
+        >
+          <Package className="h-4 w-4" />
+          <span>Products ({filteredProducts.length})</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setMobileTab("cart")}
+          className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-bold transition-all relative ${
+            mobileTab === "cart"
+              ? "bg-white text-blue-700 shadow-xs"
+              : "text-slate-600 hover:text-slate-900"
+          }`}
+        >
+          <ShoppingCart className="h-4 w-4" />
+          <span>Sale Slip</span>
+          {totalCartQuantity > 0 && (
+            <span className="bg-blue-600 text-white text-[10px] font-extrabold px-1.5 py-0.2 rounded-full">
+              {totalCartQuantity}
+            </span>
+          )}
+        </button>
+      </div>
 
-          {/* Category Tabs */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
-            <button
-              onClick={() => setSelectedCategory("all")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
-                selectedCategory === "all"
-                  ? "bg-slate-900 text-white"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-              }`}
-            >
-              All Items ({products.length})
-            </button>
-            {categories.map((cat) => (
+      <div className="flex-1 flex flex-col lg:flex-row gap-4 min-h-0 overflow-hidden">
+        {/* LEFT PANEL: Products Catalog and Search */}
+        <div
+          className={`flex-1 flex flex-col bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden min-h-0 ${
+            mobileTab === "cart" ? "hidden lg:flex" : "flex"
+          }`}
+        >
+          {/* Search and Category Header */}
+          <div className="p-4 border-b border-slate-100 space-y-3 shrink-0">
+            <div className="flex items-center gap-2">
+              <Input
+                icon={<Search className="h-4 w-4" />}
+                placeholder="Search by name, SKU, or scan barcode (e.g. 61640001001)..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-10 text-xs"
+                autoFocus
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-10 px-3 shrink-0 gap-1.5 text-xs text-slate-700"
+                title="Barcode Scanner Ready"
+              >
+                <ScanLine className="h-4 w-4 text-blue-600" />
+                <span className="hidden sm:inline">Scanner Active</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsBlindCloseoutOpen(true)}
+                className="h-10 px-3 shrink-0 gap-1.5 text-xs text-amber-800 bg-amber-50/60 border-amber-200 hover:bg-amber-100"
+                title="Perform Shift Closeout"
+              >
+                <Banknote className="h-4 w-4 text-amber-600" />
+                <span className="hidden sm:inline">Till Closeout</span>
+              </Button>
+            </div>
+
+            {/* Category Tabs */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
               <button
-                key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
+                onClick={() => setSelectedCategory("all")}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
-                  selectedCategory === cat.id
+                  selectedCategory === "all"
                     ? "bg-slate-900 text-white"
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                 }`}
               >
-                {cat.name}
+                All Items ({products.length})
               </button>
-            ))}
+              {categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+                    selectedCategory === cat.id
+                      ? "bg-slate-900 text-white"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  }`}
+                >
+                  {cat.name}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Products Table (Rows and Columns) */}
-        <div className="flex-1 overflow-y-auto overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
-            <thead className="bg-slate-50 text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-200 sticky top-0 z-10 select-none">
-              <tr>
-                <th className="py-3 px-4">Product &amp; SKU</th>
-                <th className="py-3 px-3">Category</th>
-                <th className="py-3 px-3 text-right">Selling Price</th>
-                <th className="py-3 px-3 text-center">Stock Level</th>
-                <th className="py-3 px-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 text-slate-800">
-              {isLoading ? (
-                <tr>
-                  <td colSpan={5} className="py-16 text-center text-slate-400 text-xs">
-                    <div className="flex flex-col items-center justify-center gap-2">
-                      <div className="h-5 w-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                      <span>Loading products for POS terminal...</span>
-                    </div>
-                  </td>
-                </tr>
-              ) : filteredProducts.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="py-16 text-center text-slate-400 text-xs">
-                    {searchQuery ? (
-                      <span>No products found matching &ldquo;{searchQuery}&rdquo;</span>
-                    ) : (
-                      <span>No products available in this category.</span>
-                    )}
-                  </td>
-                </tr>
-              ) : (
-                filteredProducts.map((product) => {
-                  const isOutOfStock = product.currentStock <= 0;
-                  const isLowStock = product.currentStock <= product.minStockLevel;
-                  const cartItem = cart.find((item) => item.product.id === product.id);
+          {/* Mobile Product Cards View (< sm) */}
+          <div className="sm:hidden flex-1 overflow-y-auto divide-y divide-slate-100 min-h-0">
+            {isLoading ? (
+              <div className="py-16 text-center text-slate-400 text-xs">
+                <div className="flex flex-col items-center justify-center gap-2">
+                  <div className="h-5 w-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                  <span>Loading products for POS terminal...</span>
+                </div>
+              </div>
+            ) : filteredProducts.length === 0 ? (
+              <div className="py-16 text-center text-slate-400 text-xs px-4">
+                {searchQuery ? (
+                  <span>No products found matching &ldquo;{searchQuery}&rdquo;</span>
+                ) : (
+                  <span>No products available in this category.</span>
+                )}
+              </div>
+            ) : (
+              filteredProducts.map((product) => {
+                const isOutOfStock = product.currentStock <= 0;
+                const isLowStock = product.currentStock <= product.minStockLevel;
+                const cartItem = cart.find((item) => item.product.id === product.id);
 
-                  return (
-                    <tr
-                      key={product.id}
-                      onClick={() => !isOutOfStock && addToCart(product)}
-                      className={`group transition-colors ${
-                        isOutOfStock
-                          ? "opacity-50 bg-slate-50/70 cursor-not-allowed"
-                          : "hover:bg-blue-50/50 cursor-pointer"
-                      } ${cartItem ? "bg-blue-50/20" : ""}`}
-                    >
-                      {/* Product and SKU */}
-                      <td className="py-3 px-4">
-                        <div>
-                          <p className="font-bold text-slate-900 leading-tight group-hover:text-blue-600 transition-colors">
-                            {product.name}
-                          </p>
-                          <div className="flex items-center gap-2 mt-0.5">
-                            <span className="font-mono text-[11px] text-slate-400">{product.sku}</span>
-                            {product.barcode && (
-                              <span className="font-mono text-[10px] bg-slate-100 px-1 py-0.2 rounded text-slate-500">
-                                {product.barcode}
-                              </span>
-                            )}
-                          </div>
+                return (
+                  <div
+                    key={product.id}
+                    onClick={() => !isOutOfStock && addToCart(product)}
+                    className={`p-3 transition-colors ${
+                      isOutOfStock
+                        ? "opacity-50 bg-slate-50/70 cursor-not-allowed"
+                        : "hover:bg-blue-50/40 active:bg-blue-100/40 cursor-pointer"
+                    } ${cartItem ? "bg-blue-50/30" : ""}`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-xs text-slate-900 leading-tight">
+                          {product.name}
+                        </p>
+                        <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                          <span className="font-mono text-[10px] text-slate-400">{product.sku}</span>
+                          <span className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-medium">
+                            {product.categoryName || "General"}
+                          </span>
+                          <span
+                            className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                              isOutOfStock
+                                ? "bg-red-100 text-red-700"
+                                : isLowStock
+                                ? "bg-amber-100 text-amber-800"
+                                : "bg-emerald-50 text-emerald-700"
+                            }`}
+                          >
+                            {isOutOfStock ? "Out of stock" : `${product.currentStock} left`}
+                          </span>
                         </div>
-                      </td>
+                      </div>
 
-                      {/* Category */}
-                      <td className="py-3 px-3">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 text-slate-700 whitespace-nowrap">
-                          {product.categoryName || "General"}
-                        </span>
-                      </td>
-
-                      {/* Selling Price */}
-                      <td className="py-3 px-3 text-right">
-                        <span className="font-mono font-bold text-xs text-slate-950">
+                      <div className="text-right shrink-0">
+                        <span className="font-mono font-bold text-xs text-slate-950 block">
                           {formatKES(product.sellingPrice)}
                         </span>
-                      </td>
+                        {cartItem && (
+                          <span className="inline-block mt-0.5 text-[10px] font-bold text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded">
+                            {cartItem.quantity} in cart
+                          </span>
+                        )}
+                      </div>
+                    </div>
 
-                      {/* Stock Level */}
-                      <td className="py-3 px-3 text-center">
-                        <span
-                          className={`inline-flex items-center gap-1 font-mono text-[11px] font-bold px-2 py-0.5 rounded-full ${
-                            isOutOfStock
-                              ? "bg-red-100 text-red-700"
-                              : isLowStock
-                              ? "bg-amber-100 text-amber-800"
-                              : "bg-slate-100 text-slate-700"
-                          }`}
-                        >
-                          {isOutOfStock ? "Out of stock" : `${product.currentStock} left`}
-                        </span>
-                      </td>
+                    <div className="mt-2 flex items-center justify-end" onClick={(e) => e.stopPropagation()}>
+                      <Button
+                        size="sm"
+                        disabled={isOutOfStock}
+                        onClick={() => addToCart(product)}
+                        className="h-7 px-3 text-xs font-semibold gap-1 bg-blue-600 hover:bg-blue-700 text-white shadow-2xs w-full"
+                      >
+                        <Plus className="h-3.5 w-3.5" />
+                        <span>{cartItem ? `Add More (${cartItem.quantity} in cart)` : "Add to Cart"}</span>
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
 
-                      {/* Actions */}
-                      <td className="py-3 px-4 text-right" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center justify-end gap-2">
-                          {cartItem && (
-                            <span className="text-[11px] font-bold text-blue-600 bg-blue-100/80 px-2 py-0.5 rounded-md">
-                              {cartItem.quantity} in cart
-                            </span>
-                          )}
-                          <Button
-                            size="sm"
-                            disabled={isOutOfStock}
-                            onClick={() => addToCart(product)}
-                            className="h-8 px-3 text-xs font-semibold gap-1 bg-blue-600 hover:bg-blue-700 text-white shadow-2xs"
+          {/* Products Table (hidden on mobile phone screens, visible on tablet/desktop) */}
+          <div className="hidden sm:block flex-1 overflow-y-auto overflow-x-auto min-h-0">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead className="bg-slate-50 text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-200 sticky top-0 z-10 select-none">
+                <tr>
+                  <th className="py-3 px-4">Product &amp; SKU</th>
+                  <th className="py-3 px-3">Category</th>
+                  <th className="py-3 px-3 text-right">Selling Price</th>
+                  <th className="py-3 px-3 text-center">Stock Level</th>
+                  <th className="py-3 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-slate-800">
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={5} className="py-16 text-center text-slate-400 text-xs">
+                      <div className="flex flex-col items-center justify-center gap-2">
+                        <div className="h-5 w-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                        <span>Loading products for POS terminal...</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : filteredProducts.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-16 text-center text-slate-400 text-xs">
+                      {searchQuery ? (
+                        <span>No products found matching &ldquo;{searchQuery}&rdquo;</span>
+                      ) : (
+                        <span>No products available in this category.</span>
+                      )}
+                    </td>
+                  </tr>
+                ) : (
+                  filteredProducts.map((product) => {
+                    const isOutOfStock = product.currentStock <= 0;
+                    const isLowStock = product.currentStock <= product.minStockLevel;
+                    const cartItem = cart.find((item) => item.product.id === product.id);
+
+                    return (
+                      <tr
+                        key={product.id}
+                        onClick={() => !isOutOfStock && addToCart(product)}
+                        className={`group transition-colors ${
+                          isOutOfStock
+                            ? "opacity-50 bg-slate-50/70 cursor-not-allowed"
+                            : "hover:bg-blue-50/50 cursor-pointer"
+                        } ${cartItem ? "bg-blue-50/20" : ""}`}
+                      >
+                        {/* Product and SKU */}
+                        <td className="py-3 px-4">
+                          <div>
+                            <p className="font-bold text-slate-900 leading-tight group-hover:text-blue-600 transition-colors">
+                              {product.name}
+                            </p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="font-mono text-[11px] text-slate-400">{product.sku}</span>
+                              {product.barcode && (
+                                <span className="font-mono text-[10px] bg-slate-100 px-1 py-0.2 rounded text-slate-500">
+                                  {product.barcode}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Category */}
+                        <td className="py-3 px-3">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 text-slate-700 whitespace-nowrap">
+                            {product.categoryName || "General"}
+                          </span>
+                        </td>
+
+                        {/* Selling Price */}
+                        <td className="py-3 px-3 text-right">
+                          <span className="font-mono font-bold text-xs text-slate-950">
+                            {formatKES(product.sellingPrice)}
+                          </span>
+                        </td>
+
+                        {/* Stock Level */}
+                        <td className="py-3 px-3 text-center">
+                          <span
+                            className={`inline-flex items-center gap-1 font-mono text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                              isOutOfStock
+                                ? "bg-red-100 text-red-700"
+                                : isLowStock
+                                ? "bg-amber-100 text-amber-800"
+                                : "bg-slate-100 text-slate-700"
+                            }`}
                           >
-                            <Plus className="h-3.5 w-3.5" />
-                            <span>Add</span>
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                            {isOutOfStock ? "Out of stock" : `${product.currentStock} left`}
+                          </span>
+                        </td>
 
-      {/* RIGHT PANEL: Live Cart and Checkout Slip */}
-      <div className="w-full lg:w-96 flex flex-col bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+                        {/* Actions */}
+                        <td className="py-3 px-4 text-right" onClick={(e) => e.stopPropagation()}>
+                          <div className="flex items-center justify-end gap-2">
+                            {cartItem && (
+                              <span className="text-[11px] font-bold text-blue-600 bg-blue-100/80 px-2 py-0.5 rounded-md">
+                                {cartItem.quantity} in cart
+                              </span>
+                            )}
+                            <Button
+                              size="sm"
+                              disabled={isOutOfStock}
+                              onClick={() => addToCart(product)}
+                              className="h-8 px-3 text-xs font-semibold gap-1 bg-blue-600 hover:bg-blue-700 text-white shadow-2xs"
+                            >
+                              <Plus className="h-3.5 w-3.5" />
+                              <span>Add</span>
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile bottom checkout pill when cart has items */}
+          {cart.length > 0 && (
+            <div className="lg:hidden p-2.5 bg-slate-900 text-white flex items-center justify-between border-t border-slate-800 shrink-0">
+              <div className="flex items-center gap-2">
+                <div className="relative bg-blue-600 p-1.5 rounded-lg text-white">
+                  <ShoppingCart className="h-4 w-4" />
+                  <span className="absolute -top-1 -right-1 bg-amber-400 text-slate-950 text-[9px] font-black h-3.5 w-3.5 rounded-full flex items-center justify-center">
+                    {totalCartQuantity}
+                  </span>
+                </div>
+                <div className="leading-tight">
+                  <span className="text-[11px] text-slate-300 font-medium">
+                    {totalCartQuantity} item{totalCartQuantity > 1 ? "s" : ""}
+                  </span>
+                  <p className="text-xs font-black font-mono text-emerald-400">
+                    {formatKES(totalAmount)}
+                  </p>
+                </div>
+              </div>
+              <Button
+                size="sm"
+                onClick={() => setMobileTab("cart")}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs h-7 px-3 gap-1 shadow-2xs"
+              >
+                <span>View Slip &amp; Pay</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {/* RIGHT PANEL: Live Cart and Checkout Slip */}
+        <div
+          className={`w-full lg:w-96 flex flex-col bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden min-h-0 ${
+            mobileTab === "catalog" ? "hidden lg:flex" : "flex"
+          }`}
+        >
+          {/* Mobile Back Button */}
+          <div className="lg:hidden p-2.5 bg-blue-50/80 border-b border-blue-100 flex items-center justify-between shrink-0">
+            <button
+              type="button"
+              onClick={() => setMobileTab("catalog")}
+              className="text-xs font-bold text-blue-700 hover:text-blue-800 flex items-center gap-1.5"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              <span>← Back to Products</span>
+            </button>
+            <span className="text-[11px] font-semibold text-blue-800 bg-blue-100 px-2 py-0.5 rounded-full">
+              {totalCartQuantity} in cart
+            </span>
+          </div>
         {/* Customer Selector and Title */}
         <div className="p-3.5 border-b border-slate-100 bg-slate-50/50 space-y-2">
           <div className="flex items-center justify-between">
@@ -452,11 +632,21 @@ export default function PosPage() {
         </div>
 
         {/* Cart Items List */}
-        <div className="flex-1 overflow-y-auto p-3.5 space-y-2.5 divide-y divide-slate-100">
+        <div className="flex-1 overflow-y-auto p-3.5 space-y-2.5 divide-y divide-slate-100 min-h-0">
           {cart.length === 0 ? (
-            <div className="py-16 text-center text-slate-400 text-xs space-y-2">
-              <p>Cart is empty</p>
+            <div className="py-16 text-center text-slate-400 text-xs space-y-3">
+              <p className="font-semibold text-slate-600">Cart is empty</p>
               <p className="text-[11px]">Click products or scan barcodes to add items</p>
+              <div className="pt-1 lg:hidden">
+                <Button
+                  size="sm"
+                  onClick={() => setMobileTab("catalog")}
+                  className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold gap-1 shadow-2xs"
+                >
+                  <Package className="h-3.5 w-3.5" />
+                  <span>Browse Products for Sale</span>
+                </Button>
+              </div>
             </div>
           ) : (
             cart.map((item) => (
@@ -627,39 +817,41 @@ export default function PosPage() {
           </Button>
         </div>
       </div>
-
-      {/* Receipt Modal */}
-      <ReceiptModal
-        isOpen={isReceiptOpen}
-        onClose={() => setIsReceiptOpen(false)}
-        sale={completedSale}
-        tenant={currentTenant}
-      />
-
-      {/* Manager Passcode / PIN Authorization Modal */}
-      {pinConfig && (
-        <ManagerPasscodeModal
-          isOpen={isPinModalOpen}
-          onClose={() => {
-            setIsPinModalOpen(false);
-            setPinConfig(null);
-          }}
-          onSuccess={() => {
-            pinConfig.onApproved();
-            setPinConfig(null);
-          }}
-          title={pinConfig.title}
-          description={pinConfig.desc}
-          actionName="Approve &amp; Proceed"
-        />
-      )}
-
-      {/* Blind Closeout Till Modal */}
-      <BlindCloseoutModal
-        isOpen={isBlindCloseoutOpen}
-        onClose={() => setIsBlindCloseoutOpen(false)}
-        expectedAmount={subtotal || 24500}
-      />
     </div>
+  </div>
+
+    {/* Receipt Modal */}
+    <ReceiptModal
+      isOpen={isReceiptOpen}
+      onClose={() => setIsReceiptOpen(false)}
+      sale={completedSale}
+      tenant={currentTenant}
+    />
+
+    {/* Manager Passcode / PIN Authorization Modal */}
+    {pinConfig && (
+      <ManagerPasscodeModal
+        isOpen={isPinModalOpen}
+        onClose={() => {
+          setIsPinModalOpen(false);
+          setPinConfig(null);
+        }}
+        onSuccess={() => {
+          pinConfig.onApproved();
+          setPinConfig(null);
+        }}
+        title={pinConfig.title}
+        description={pinConfig.desc}
+        actionName="Approve &amp; Proceed"
+      />
+    )}
+
+    {/* Blind Closeout Till Modal */}
+    <BlindCloseoutModal
+      isOpen={isBlindCloseoutOpen}
+      onClose={() => setIsBlindCloseoutOpen(false)}
+      expectedAmount={subtotal || 24500}
+    />
+    </>
   );
 }

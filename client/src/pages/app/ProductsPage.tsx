@@ -13,8 +13,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
-import { Plus, Eye, Edit2, Package, Tag, AlertTriangle, Boxes, Settings2, Trash2, Check, X, Pencil, Lock, KeyRound } from "lucide-react";
+import { Plus, Eye, Edit2, Package, Tag, AlertTriangle, Boxes, Settings2, Trash2, Check, X, Pencil, Lock, KeyRound, Upload } from "lucide-react";
 import { ManagerPasscodeModal } from "@/components/business/ManagerPasscodeModal";
+import { BulkProductUploadModal } from "@/components/business/BulkProductUploadModal";
 
 export default function ProductsPage() {
   const router = useRouter();
@@ -23,6 +24,9 @@ export default function ProductsPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Bulk Upload Modal State
+  const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
 
   // Add Product Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -265,6 +269,15 @@ export default function ProductsPage() {
             <span>Manage Categories</span>
           </Button>
           <Button
+            onClick={() => setIsBulkUploadOpen(true)}
+            variant="outline"
+            size="sm"
+            className="gap-1.5 text-xs font-bold border-blue-200 text-blue-700 bg-blue-50/50 hover:bg-blue-100"
+          >
+            <Upload className="h-4 w-4 text-blue-600" />
+            <span>Bulk Upload</span>
+          </Button>
+          <Button
             onClick={() => setIsAddModalOpen(true)}
             size="sm"
             className="gap-1.5 text-xs font-bold bg-blue-600 hover:bg-blue-700"
@@ -454,6 +467,14 @@ export default function ProductsPage() {
         title="Unlock Wholesale Costs & Margins"
         description="Enter the store manager or owner 4-digit PIN to display Buying Prices and profit margins on the floor."
         actionName="Unlock Wholesale Prices"
+      />
+
+      {/* Bulk Upload Products Modal */}
+      <BulkProductUploadModal
+        isOpen={isBulkUploadOpen}
+        onClose={() => setIsBulkUploadOpen(false)}
+        tenantId={currentTenant.id}
+        onSuccess={loadData}
       />
     </div>
   );

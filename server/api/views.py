@@ -1,6 +1,11 @@
+import csv
+import io
+import re
 from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import api_view, permission_classes, action
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.response import Response
+from django.http import HttpResponse
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from django.shortcuts import get_object_or_404
@@ -128,6 +133,452 @@ class ProductViewSet(TenantScopedViewSet):
             category = Category.objects.filter(tenant=tenant).first()
             
         serializer.save(tenant=tenant, category=category)
+
+    @action(detail=False, methods=["GET"], url_path="template")
+    def download_template(self, request):
+        """
+        Download sample CSV template for bulk product upload.
+        """
+        response = HttpResponse(content_type="text/csv; charset=utf-8")
+        response["Content-Disposition"] = 'attachment; filename="storegrid_products_template.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow([
+            "Name",
+            "Category",
+            "SKU",
+            "Barcode",
+            "Buying Price",
+            "Selling Price",
+            "Current Stock",
+            "Min Stock Level",
+            "Supplier",
+            "Description"
+        ])
+        writer.writerow([
+            "Premium Basmati Rice 5kg",
+            "Grains & Cereals",
+            "SKU-RICE-01",
+            "616110123456",
+            "1200",
+            "1450",
+            "50",
+            "10",
+            "National Cereals Board",
+            "Grade 1 aromatic long grain basmati rice"
+        ])
+        writer.writerow([
+            "Pure Vegetable Cooking Oil 2L",
+            "Oils & Fats",
+            "SKU-OIL-02",
+            "616110987654",
+            "620",
+            "750",
+            "30",
+            "5",
+            "Bidco Africa",
+            "Fortified with Vitamin A and D"
+        ])
+        writer.writerow([
+            "Fresh Milk 500ml",
+            "Dairy & Eggs",
+            "SKU-MILK-03",
+            "616110112233",
+            "55",
+            "70",
+            "100",
+            "20",
+            "Brookside Dairy",
+            "Pasteurized whole fresh cow milk"
+        ])
+        return response
+
+    @action(
+        detail=False,
+        methods=["POST"],
+        url_path="bulk-upload",
+        parser_classes=[MultiPartParser, FormParser, JSONParser]
+    )
+    def bulk_upload(self, request):
+        """
+        Bulk import products from CSV file, CSV text, or JSON product array.
+        Supports automatic category and supplier resolution/creation and stock logging.
+        """
+        tenant_id = self.get_tenant_id()
+        if not tenant_id:
+            raise exceptions.ValidationError({"detail": "Active tenant ID is required to import products."})
+        tenant = get_object_or_404(Tenant, id=tenant_id)
+
+        update_existing_param = request.data.get("update_existing") or request.data.get("updateExisting")
+        if isinstance(update_existing_param, str):
+            update_existing = update_existing_param.lower() in ("true", "1", "yes")
+        elif isinstance(update_existing_param, bool):
+            update_existing = update_existing_param
+        else:
+            update_existing = True
+
+        create_categories_param = request.data.get("create_categories") or request.data.get("createCategories")
+        if isinstance(create_categories_param, str):
+            create_categories = create_categories_param.lower() in ("true", "1", "yes")
+        elif isinstance(create_categories_param, bool):
+            create_categories = create_categories_param
+        else:
+            create_categories = True
+
+        create_suppliers_param = request.data.get("create_suppliers") or request.data.get("createSuppliers")
+        if isinstance(create_suppliers_param, str):
+            create_suppliers = create_suppliers_param.lower() in ("true", "1", "yes")
+        elif isinstance(create_suppliers_param, bool):
+            create_suppliers = create_suppliers_param
+        else:
+            create_suppliers = True
+
+        def _normalize_header(header):
+            if not header:
+                return ""
+            cleaned = re.sub(r"[^a-zA-Z0-9]", "", str(header).lower())
+            # Exact matches first
+            if cleaned in ("sku", "itemcode", "productcode"):
+                return "sku"
+            if cleaned in ("barcode", "bar", "upc", "ean"):
+                return "barcode"
+            if cleaned in ("buyingprice", "costprice", "cost", "buying", "bp", "purchaseprice"):
+                return "buying_price"
+            if cleaned in ("sellingprice", "price", "retailprice", "selling", "sp"):
+                return "selling_price"
+            if cleaned in ("currentstock", "stock", "quantity", "qty", "inventory", "units"):
+                return "current_stock"
+            if cleaned in ("minstocklevel", "minstock", "reorderlevel", "reorder", "alertlevel"):
+                return "min_stock_level"
+            if cleaned in ("category", "cat", "department"):
+                return "category"
+            if cleaned in ("supplier", "vendor"):
+                return "supplier"
+            if cleaned in ("description", "desc", "details", "notes"):
+                return "description"
+            if cleaned in ("name", "productname", "title", "itemname", "item"):
+                return "name"
+
+            # Substring matches in strict order
+            if "barcode" in cleaned or "upc" in cleaned or "ean" in cleaned:
+                return "barcode"
+            if "sku" in cleaned:
+                return "sku"
+            if "buy" in cleaned or "cost" in cleaned or "purchase" in cleaned:
+                return "buying_price"
+            if "sell" in cleaned or "retail" in cleaned or "price" in cleaned:
+                return "selling_price"
+            if "min" in cleaned or "reorder" in cleaned or "alert" in cleaned:
+                return "min_stock_level"
+            if "stock" in cleaned or "qty" in cleaned or "quant" in cleaned:
+                return "current_stock"
+            if "cat" in cleaned or "depart" in cleaned:
+                return "category"
+            if "supp" in cleaned or "vend" in cleaned:
+                return "supplier"
+            if "desc" in cleaned or "detail" in cleaned or "note" in cleaned:
+                return "description"
+            if "name" in cleaned or "title" in cleaned:
+                return "name"
+            if "code" in cleaned:
+                return "sku"
+            return cleaned
+
+        def _safe_float(val, default=0.0):
+            if val is None or val == "":
+                return default
+            try:
+                if isinstance(val, (int, float)):
+                    return float(val)
+                cleaned = re.sub(r"[^\d.-]", "", str(val).strip())
+                return float(cleaned) if cleaned else default
+            except (ValueError, TypeError):
+                return default
+
+        def _safe_int(val, default=0):
+            if val is None or val == "":
+                return default
+            try:
+                if isinstance(val, int):
+                    return val
+                if isinstance(val, float):
+                    return int(val)
+                cleaned = re.sub(r"[^\d.-]", "", str(val).strip())
+                return int(float(cleaned)) if cleaned else default
+            except (ValueError, TypeError):
+                return default
+
+        # Extract rows
+        rows = []
+        uploaded_file = (
+            request.FILES.get("file")
+            or request.FILES.get("csv_file")
+            or next(iter(request.FILES.values()), None)
+        )
+
+        if uploaded_file:
+            try:
+                raw_bytes = uploaded_file.read()
+                try:
+                    text_content = raw_bytes.decode("utf-8-sig")
+                except UnicodeDecodeError:
+                    text_content = raw_bytes.decode("latin-1")
+
+                f = io.StringIO(text_content.strip())
+                reader = csv.reader(f)
+                header_row = next(reader, None)
+                if not header_row:
+                    return Response({"detail": "Uploaded CSV file is empty."}, status=status.HTTP_400_BAD_REQUEST)
+
+                normalized_headers = [_normalize_header(h) for h in header_row]
+                for raw_row in reader:
+                    if not raw_row or not any(field.strip() for field in raw_row):
+                        continue
+                    row_dict = {}
+                    for idx, val in enumerate(raw_row):
+                        if idx < len(normalized_headers):
+                            field_name = normalized_headers[idx]
+                            row_dict[field_name] = val.strip()
+                    rows.append(row_dict)
+            except Exception as e:
+                return Response({"detail": f"Failed to parse CSV file: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+
+        elif "csv_text" in request.data:
+            try:
+                csv_text = request.data.get("csv_text", "").strip()
+                f = io.StringIO(csv_text)
+                reader = csv.reader(f)
+                header_row = next(reader, None)
+                if not header_row:
+                    return Response({"detail": "CSV content is empty."}, status=status.HTTP_400_BAD_REQUEST)
+
+                normalized_headers = [_normalize_header(h) for h in header_row]
+                for raw_row in reader:
+                    if not raw_row or not any(field.strip() for field in raw_row):
+                        continue
+                    row_dict = {}
+                    for idx, val in enumerate(raw_row):
+                        if idx < len(normalized_headers):
+                            field_name = normalized_headers[idx]
+                            row_dict[field_name] = val.strip()
+                    rows.append(row_dict)
+            except Exception as e:
+                return Response({"detail": f"Failed to parse CSV text: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+
+        elif "products" in request.data and isinstance(request.data.get("products"), list):
+            for item in request.data.get("products"):
+                if isinstance(item, dict):
+                    normalized_item = {}
+                    for k, v in item.items():
+                        normalized_item[_normalize_header(k)] = v
+                    rows.append(normalized_item)
+        elif isinstance(request.data, list):
+            for item in request.data:
+                if isinstance(item, dict):
+                    normalized_item = {}
+                    for k, v in item.items():
+                        normalized_item[_normalize_header(k)] = v
+                    rows.append(normalized_item)
+        else:
+            return Response(
+                {"detail": "No file or product items provided. Please attach a CSV file or provide products array."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not rows:
+            return Response({"detail": "No valid product rows found to import."}, status=status.HTTP_400_BAD_REQUEST)
+
+        created_count = 0
+        updated_count = 0
+        errors = []
+        processed_products = []
+
+        import uuid
+
+        existing_categories = {c.name.strip().lower(): c for c in Category.objects.filter(tenant=tenant)}
+        existing_suppliers = {s.name.strip().lower(): s for s in Supplier.objects.filter(tenant=tenant)}
+        default_category = Category.objects.filter(tenant=tenant).first()
+        if not default_category:
+            default_category = Category.objects.create(
+                id=f"cat-{uuid.uuid4().hex[:8]}",
+                tenant=tenant,
+                name="General Merchandise",
+                description="Default category"
+            )
+            existing_categories[default_category.name.lower()] = default_category
+
+        staff_name = (
+            request.user.name or request.user.username or "Store Manager"
+            if request.user.is_authenticated else "Store Manager"
+        )
+
+        for index, row in enumerate(rows, start=1):
+            prod_name = str(row.get("name") or "").strip()
+            if not prod_name:
+                errors.append({
+                    "row": index,
+                    "name": "",
+                    "error": "Product name is required and cannot be empty."
+                })
+                continue
+
+            sku = str(row.get("sku") or "").strip()
+            barcode = str(row.get("barcode") or "").strip() or None
+            description = str(row.get("description") or "").strip()
+            buying_price = _safe_float(row.get("buying_price"), 0.0)
+            selling_price = _safe_float(row.get("selling_price"), 0.0)
+            current_stock = _safe_int(row.get("current_stock"), 0)
+            min_stock_level = _safe_int(row.get("min_stock_level"), 5)
+
+            # Category resolution
+            category_str = str(row.get("category") or "").strip()
+            category = None
+            if category_str:
+                cat_lower = category_str.lower()
+                if cat_lower in existing_categories:
+                    category = existing_categories[cat_lower]
+                else:
+                    cat_by_id = Category.objects.filter(tenant=tenant, id=category_str).first()
+                    if cat_by_id:
+                        category = cat_by_id
+                    elif create_categories:
+                        try:
+                            category = Category.objects.create(
+                                id=f"cat-{uuid.uuid4().hex[:8]}",
+                                tenant=tenant,
+                                name=category_str,
+                                description=f"Imported category: {category_str}"
+                            )
+                            existing_categories[cat_lower] = category
+                        except Exception:
+                            category = default_category
+                    else:
+                        category = default_category
+            else:
+                category = default_category
+
+            # Supplier resolution
+            supplier_str = str(row.get("supplier") or "").strip()
+            supplier = None
+            if supplier_str:
+                sup_lower = supplier_str.lower()
+                if sup_lower in existing_suppliers:
+                    supplier = existing_suppliers[sup_lower]
+                else:
+                    sup_by_id = Supplier.objects.filter(tenant=tenant, id=supplier_str).first()
+                    if sup_by_id:
+                        supplier = sup_by_id
+                    elif create_suppliers:
+                        try:
+                            supplier = Supplier.objects.create(
+                                id=f"sup-{uuid.uuid4().hex[:8]}",
+                                tenant=tenant,
+                                name=supplier_str
+                            )
+                            existing_suppliers[sup_lower] = supplier
+                        except Exception:
+                            supplier = None
+
+            # Look up existing product
+            existing_prod = None
+            if sku:
+                existing_prod = Product.objects.filter(tenant=tenant, sku=sku).first()
+            if not existing_prod and barcode:
+                existing_prod = Product.objects.filter(tenant=tenant, barcode=barcode).first()
+            if not existing_prod and not sku:
+                existing_prod = Product.objects.filter(tenant=tenant, name__iexact=prod_name).first()
+
+            try:
+                if existing_prod:
+                    if update_existing:
+                        existing_prod.name = prod_name
+                        if category:
+                            existing_prod.category = category
+                        if supplier:
+                            existing_prod.supplier = supplier
+                        if barcode:
+                            existing_prod.barcode = barcode
+                        if description:
+                            existing_prod.description = description
+                        existing_prod.buying_price = buying_price
+                        existing_prod.selling_price = selling_price
+                        existing_prod.min_stock_level = min_stock_level
+
+                        old_stock = existing_prod.current_stock
+                        if current_stock != old_stock:
+                            existing_prod.current_stock = current_stock
+                            diff = current_stock - old_stock
+                            mov_type = "adjustment_increase" if diff > 0 else "adjustment_decrease"
+                            StockMovement.objects.create(
+                                tenant=tenant,
+                                product=existing_prod,
+                                product_name=existing_prod.name,
+                                type=mov_type,
+                                quantity=abs(diff),
+                                previous_stock=old_stock,
+                                new_stock=current_stock,
+                                reference_id="BULK-UPDATE",
+                                reason="Bulk inventory upload sync",
+                                staff_name=staff_name
+                            )
+                        existing_prod.save()
+                        updated_count += 1
+                        processed_products.append(existing_prod)
+                    else:
+                        errors.append({
+                            "row": index,
+                            "name": prod_name,
+                            "error": f"Product with SKU '{sku or existing_prod.sku}' already exists."
+                        })
+                else:
+                    if not sku:
+                        sku = f"SKU-{uuid.uuid4().hex[:8].upper()}"
+                    new_prod = Product.objects.create(
+                        id=f"prod-{uuid.uuid4().hex[:10]}",
+                        tenant=tenant,
+                        name=prod_name,
+                        sku=sku,
+                        barcode=barcode,
+                        category=category,
+                        supplier=supplier,
+                        buying_price=buying_price,
+                        selling_price=selling_price,
+                        current_stock=current_stock,
+                        min_stock_level=min_stock_level,
+                        description=description,
+                        is_active=True
+                    )
+                    if current_stock > 0:
+                        StockMovement.objects.create(
+                            tenant=tenant,
+                            product=new_prod,
+                            product_name=new_prod.name,
+                            type="purchase",
+                            quantity=current_stock,
+                            previous_stock=0,
+                            new_stock=current_stock,
+                            reference_id="BULK-CREATE",
+                            reason="Initial bulk inventory upload",
+                            staff_name=staff_name
+                        )
+                    created_count += 1
+                    processed_products.append(new_prod)
+            except Exception as e:
+                errors.append({
+                    "row": index,
+                    "name": prod_name,
+                    "error": str(e)
+                })
+
+        return Response({
+            "success": True,
+            "total": len(rows),
+            "created": created_count,
+            "updated": updated_count,
+            "failed": len(errors),
+            "errors": errors,
+            "products": ProductSerializer(processed_products[:50], many=True).data
+        }, status=status.HTTP_200_OK if (created_count + updated_count > 0 or not errors) else status.HTTP_400_BAD_REQUEST)
 
 class CustomerViewSet(TenantScopedViewSet):
     queryset = Customer.objects.all()

@@ -8,8 +8,6 @@ import { DailyReconciliationCard } from "@/components/business/DailyReconciliati
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
-  TrendingUp,
-  TrendingDown,
   ShoppingCart,
   Receipt,
   ArrowRight,
@@ -17,7 +15,6 @@ import {
   Lock,
   Eye,
   KeyRound,
-  ShieldCheck,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -105,8 +102,8 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-black tracking-tight text-slate-900">
             Good morning, {user?.name?.split(" ")[0] || "User"} 👋
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Here is how <strong className="text-slate-800">{currentTenant?.name || "Store"}</strong> is performing today.
+          <p className="text-xs text-slate-600 font-medium mt-0.5">
+            Here is how <strong className="text-slate-900 font-bold">{currentTenant?.name || "Store"}</strong> is performing today.
             {!canViewFinancials && (
               <span className="ml-2 inline-flex items-center gap-1 text-[11px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
                 <Lock className="h-3 w-3" /> Staff View (Profit &amp; Expenses Protected)
@@ -154,14 +151,12 @@ export default function DashboardPage() {
       ) : (
         <>
           {/* KPI Summary Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <StatCard
               title="Today's Sales"
               value={formatKES(todaySales)}
               change={0}
               periodText="Live total"
-              icon={<ShoppingCart className="h-5 w-5" />}
-              iconBg="bg-blue-50 text-blue-600"
             />
 
             {/* Expenses Card - Protected from Employees */}
@@ -171,14 +166,14 @@ export default function DashboardPage() {
                 canViewFinancials ? (
                   formatKES(todayExpenses)
                 ) : (
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold tracking-tight text-slate-900">KES</span>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="text-lg sm:text-2xl font-bold tracking-tight text-slate-900">KES</span>
                     <button
                       type="button"
                       onClick={() => setIsPinModalOpen(true)}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg cursor-pointer transition-all shadow-2xs"
+                      className="inline-flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 text-[11px] sm:text-xs font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg cursor-pointer transition-all shadow-2xs"
                     >
-                      <Eye className="h-3.5 w-3.5 text-amber-600" />
+                      <Eye className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-amber-600 shrink-0" />
                       <span>Unlock View</span>
                     </button>
                   </div>
@@ -186,8 +181,6 @@ export default function DashboardPage() {
               }
               change={0}
               periodText={canViewFinancials ? "Live total" : "Protected with PIN · tap to unlock"}
-              icon={canViewFinancials ? <TrendingDown className="h-5 w-5" /> : <Lock className="h-5 w-5" />}
-              iconBg={canViewFinancials ? "bg-rose-50 text-rose-600" : "bg-slate-100 text-slate-400"}
             />
 
             {/* Estimated Net Profit - Protected from Employees */}
@@ -202,14 +195,14 @@ export default function DashboardPage() {
                 canViewFinancials ? (
                   formatKES(todayProfit)
                 ) : (
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold tracking-tight text-slate-900">KES</span>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="text-lg sm:text-2xl font-bold tracking-tight text-slate-900">KES</span>
                     <button
                       type="button"
                       onClick={() => setIsPinModalOpen(true)}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg cursor-pointer transition-all shadow-2xs"
+                      className="inline-flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 text-[11px] sm:text-xs font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg cursor-pointer transition-all shadow-2xs"
                     >
-                      <Eye className="h-3.5 w-3.5 text-amber-600" />
+                      <Eye className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-amber-600 shrink-0" />
                       <span>Unlock View</span>
                     </button>
                   </div>
@@ -217,8 +210,6 @@ export default function DashboardPage() {
               }
               change={0}
               periodText={canViewFinancials ? `margin: ${profitMargin}%` : "Gross profit minus expenses"}
-              icon={canViewFinancials ? <TrendingUp className="h-5 w-5" /> : <Lock className="h-5 w-5" />}
-              iconBg={canViewFinancials ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-400"}
             />
 
             <StatCard
@@ -226,8 +217,6 @@ export default function DashboardPage() {
               value={String(todayOrders)}
               change={0}
               periodText={`avg: ${formatKES(avgOrderVal)} / order`}
-              icon={<Receipt className="h-5 w-5" />}
-              iconBg="bg-purple-50 text-purple-600"
             />
           </div>
 
@@ -235,23 +224,13 @@ export default function DashboardPage() {
           {canViewFinancials ? (
             <DailyReconciliationCard />
           ) : (
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold">
-                  <ShieldCheck className="h-5 w-5" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-slate-900">Cashier POS Active &bull; Shift Logged In</h4>
-                  <p className="text-[11px] text-slate-500">
-                    Your register is actively logging transactions. Store financial totals are protected by Store Policy.
-                  </p>
-                </div>
-              </div>
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 flex items-center justify-between gap-3">
+              <h4 className="text-sm font-bold text-slate-900">Daily Reconciliation</h4>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setIsPinModalOpen(true)}
-                className="text-xs font-bold gap-1.5 bg-white border-blue-200 text-blue-700"
+                className="text-xs font-bold gap-1.5 bg-white border-blue-200 text-blue-700 shrink-0"
               >
                 <KeyRound className="h-3.5 w-3.5" />
                 <span>Manager Reveal</span>
@@ -275,14 +254,14 @@ export default function DashboardPage() {
             <Card className="lg:col-span-2 shadow-xs">
               <CardHeader className="flex flex-row items-center justify-between pb-4">
                 <div>
-                  <CardTitle className="text-base font-bold">Revenue and Profit Performance</CardTitle>
-                  <p className="text-xs text-slate-400 mt-0.5">Track daily sales velocity and net profit</p>
+                  <CardTitle className="text-base font-bold text-slate-900">Revenue and Profit Performance</CardTitle>
+                  <p className="text-xs text-slate-600 font-medium mt-0.5">Track daily sales velocity and net profit</p>
                 </div>
                 <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg">
                   <button
                     onClick={() => setChartPeriod("7d")}
                     className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all ${
-                      chartPeriod === "7d" ? "bg-white text-slate-900 shadow-2xs" : "text-slate-500 hover:text-slate-900"
+                      chartPeriod === "7d" ? "bg-white text-slate-900 shadow-2xs font-bold" : "text-slate-600 hover:text-slate-900"
                     }`}
                   >
                     7 Days
@@ -290,7 +269,7 @@ export default function DashboardPage() {
                   <button
                     onClick={() => setChartPeriod("30d")}
                     className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all ${
-                      chartPeriod === "30d" ? "bg-white text-slate-900 shadow-2xs" : "text-slate-500 hover:text-slate-900"
+                      chartPeriod === "30d" ? "bg-white text-slate-900 shadow-2xs font-bold" : "text-slate-600 hover:text-slate-900"
                     }`}
                   >
                     This Month

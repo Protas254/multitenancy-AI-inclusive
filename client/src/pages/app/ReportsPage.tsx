@@ -339,7 +339,7 @@ export default function ReportsPage() {
         <Card className="rounded-2xl border border-slate-100 bg-white shadow-xs overflow-hidden">
           <div className="p-6 md:p-8">
             {/* Heading and Subtitle */}
-            <h2 className="text-2xl md:text-3xl font-serif text-[#1e293b] font-bold tracking-tight">
+            <h2 className="text-2xl md:text-3xl font-sans text-slate-900 font-bold tracking-tight">
               Monthly Reconciliation Summary
             </h2>
             <p className="text-xs md:text-sm text-slate-400 mt-1">
@@ -767,7 +767,7 @@ export default function ReportsPage() {
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="sm:max-w-lg rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="font-serif text-xl text-slate-900">
+            <DialogTitle className="font-sans font-bold text-xl text-slate-900">
               {selectedMonthRecon?.month} — Closing Verifications
             </DialogTitle>
           </DialogHeader>

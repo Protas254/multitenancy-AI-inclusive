@@ -27,8 +27,8 @@ export const TargetProgress: React.FC<TargetProgressProps> = ({
             <Target className="h-4 w-4" />
           </div>
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">{title}</h4>
-            <p className="text-xs text-slate-400">{periodLabel}</p>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">{title}</h4>
+            <p className="text-xs text-slate-600 font-medium">{periodLabel}</p>
           </div>
         </div>
         <span className="text-xl font-black text-blue-600 font-mono">{percentage}%</span>
@@ -38,11 +38,11 @@ export const TargetProgress: React.FC<TargetProgressProps> = ({
         <Progress value={percentage} max={100} indicatorClassName={percentage >= 100 ? "bg-emerald-600" : "bg-blue-600"} />
         <div className="flex justify-between text-xs font-medium">
           <span className="text-slate-900 font-semibold">{formatKES(achievedAmount)}</span>
-          <span className="text-slate-400">Target: {formatKES(targetAmount)}</span>
+          <span className="text-slate-600 font-semibold">Target: {formatKES(targetAmount)}</span>
         </div>
       </div>
 
-      <div className="pt-2 border-t border-slate-100 flex justify-between items-center text-xs text-slate-500">
+      <div className="pt-2 border-t border-slate-100 flex justify-between items-center text-xs text-slate-600 font-medium">
         <span>{remaining > 0 ? `${formatKES(remaining)} remaining` : "Target achieved! 🎉"}</span>
         <span className="text-[11px] font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md">
           {percentage >= 70 ? "On Track 🚀" : "Requires Push ⚠️"}
