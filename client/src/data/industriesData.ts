@@ -54,7 +54,7 @@ export const INDUSTRIES_DATA: Record<string, IndustryInfo> = {
     ],
     keyFeatures: [
       { title: "Point of Sale (POS)", description: "High-speed barcode scanner checkout with thermal receipt printing.", slug: "pos-system" },
-      { title: "M-PESA Integration", description: "Validate Safaricom transaction reference codes directly on screen.", slug: "mpesa" },
+      { title: "M-PESA Integration", description: "Validate Safaricom transaction reference codes directly on screen.", slug: "mpesa-pos-integration" },
       { title: "Customer Credit Ledger", description: "Track customer debt balances with aging brackets and limits.", slug: "credit-management" },
       { title: "Low-Stock Alerts", description: "Receive instant notifications when shelf inventory reaches minimum levels.", slug: "inventory-management" },
     ],
@@ -102,7 +102,7 @@ export const INDUSTRIES_DATA: Record<string, IndustryInfo> = {
     keyFeatures: [
       { title: "Multi-Counter POS", description: "Connect multiple cashier terminals simultaneously to one shared inventory.", slug: "pos-system" },
       { title: "Manager Authorization PINs", description: "Require manager approval for item voids, returns, and manual discounts.", slug: "staff-management" },
-      { title: "Supplier Procurement", description: "Manage purchase orders, bulk receiving, and accounts payable.", slug: "purchases" },
+      { title: "Supplier Procurement", description: "Manage purchase orders, bulk receiving, and accounts payable.", slug: "purchase-order-management" },
     ],
     typicalWorkflow: [
       { step: "01", title: "Receive Bulk Pallets", description: "Check in supplier goods and unpack bulk cases into retail unit quantities." },
@@ -215,7 +215,7 @@ export const INDUSTRIES_DATA: Record<string, IndustryInfo> = {
     ],
     keyFeatures: [
       { title: "Automated Barber Commissions", description: "Assign custom commission percentages (e.g. 50/50, 60/40) per barber.", slug: "payroll" },
-      { title: "Lipa Na M-PESA Checkout", description: "Route all client payments into the official shop Till with instant validation.", slug: "mpesa" },
+      { title: "Lipa Na M-PESA Checkout", description: "Route all client payments into the official shop Till with instant validation.", slug: "mpesa-pos-integration" },
       { title: "Retail Product Sales", description: "Sell and track styling products alongside grooming services.", slug: "inventory-management" },
     ],
     typicalWorkflow: [

@@ -145,7 +145,7 @@ export const MarketingFooter: React.FC = () => {
               <li><Link href="/features" className="hover:text-white transition-colors">All Features</Link></li>
               <li><Link href="/pricing" className="hover:text-white transition-colors">Pricing & Plans</Link></li>
               <li><Link href="/how-it-works" className="hover:text-white transition-colors">How It Works</Link></li>
-              <li><Link href="/integrations" className="hover:text-white transition-colors">M-PESA Integration</Link></li>
+              <li><Link href="/features/mpesa-pos-integration" className="hover:text-white transition-colors">M-PESA Integration</Link></li>
               <li><Link href="/book-demo" className="hover:text-white transition-colors">Book a Demo</Link></li>
             </ul>
           </div>

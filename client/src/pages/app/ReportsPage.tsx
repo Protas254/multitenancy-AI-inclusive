@@ -69,8 +69,8 @@ export default function ReportsPage() {
   const [activeTab, setActiveTab] = useState<ReportTab>("reconciliation");
 
   // Filter Dropdown States
-  const [selectedMonth, setSelectedMonth] = useState("September");
-  const [selectedYear, setSelectedYear] = useState("2026");
+  const [selectedMonth, setSelectedMonth] = useState(new Date().toLocaleString("en-US", { month: "long" }));
+  const [selectedYear, setSelectedYear] = useState(String(new Date().getFullYear()));
   const [selectedRange, setSelectedRange] = useState("Last 12 Months");
 
   // Reports Data
@@ -92,7 +92,8 @@ export default function ReportsPage() {
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
   ];
-  const years = ["2024", "2025", "2026", "2027"];
+  const currentYear = new Date().getFullYear();
+  const years = [String(currentYear - 2), String(currentYear - 1), String(currentYear), String(currentYear + 1)];
   const ranges = ["Last 12 Months", "Last 6 Months", "Last 3 Months", "This Year", "All Time"];
 
   const loadAllReports = async () => {
@@ -183,7 +184,7 @@ export default function ReportsPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-16">
+    <div className="space-y-6 w-full pb-16">
       {/* Top Header Controls Bar */}
       <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4 pt-2">
         {/* Navigation Tabs */}
@@ -346,56 +347,86 @@ export default function ReportsPage() {
               Comparison of reported physical counts vs system records
             </p>
 
+            {/* Loading skeleton */}
+            {isLoading && (
+              <div className="mt-8 space-y-3">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="animate-pulse flex items-center gap-4 py-3 border-b border-slate-100">
+                    <div className="h-4 bg-slate-100 rounded w-28" />
+                    <div className="flex-1 h-4 bg-slate-100 rounded" />
+                    <div className="flex-1 h-4 bg-slate-100 rounded" />
+                    <div className="flex-1 h-4 bg-slate-100 rounded" />
+                    <div className="w-20 h-5 bg-orange-50 rounded-full" />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Empty state */}
+            {!isLoading && reconSummary.length === 0 && (
+              <div className="mt-12 flex flex-col items-center justify-center gap-3 text-center py-8">
+                <div className="h-14 w-14 rounded-2xl bg-slate-100 flex items-center justify-center">
+                  <Calendar className="h-7 w-7 text-slate-400" />
+                </div>
+                <p className="text-sm font-semibold text-slate-700">No reconciliation records for {selectedYear}</p>
+                <p className="text-xs text-slate-400 max-w-xs">
+                  Daily closing records will appear here once your team completes reconciliations from the Dashboard.
+                </p>
+              </div>
+            )}
+
             {/* Reconciliation Table */}
-            <div className="mt-8 overflow-x-auto">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="border-b border-slate-100 text-xs font-bold text-slate-700">
-                    <th className="pb-4 pl-1 font-medium">Month</th>
-                    <th className="pb-4 text-center font-medium">Physical Total</th>
-                    <th className="pb-4 text-center font-medium">System Total</th>
-                    <th className="pb-4 text-center font-medium">Variance</th>
-                    <th className="pb-4 text-right pr-2 font-medium">Discrepancy Days</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100/80 text-sm">
-                  {reconSummary.map((item, idx) => (
-                    <tr
-                      key={idx}
-                      onClick={() => handleRowClick(item)}
-                      className="hover:bg-slate-50/80 transition-colors cursor-pointer group"
-                    >
-                      {/* Month */}
-                      <td className="py-4 pl-1 font-medium text-slate-900 text-xs sm:text-sm">
-                        {item.month}
-                      </td>
-
-                      {/* Physical Total */}
-                      <td className="py-4 text-center text-xs sm:text-sm font-medium text-slate-800">
-                        {formatKsh(item.physicalTotal)}
-                      </td>
-
-                      {/* System Total */}
-                      <td className="py-4 text-center text-xs sm:text-sm font-medium text-slate-800">
-                        {formatKsh(item.systemTotal)}
-                      </td>
-
-                      {/* Variance */}
-                      <td className="py-4 text-center text-xs sm:text-sm">
-                        {formatVariance(item.variance)}
-                      </td>
-
-                      {/* Discrepancy Days */}
-                      <td className="py-4 text-right pr-2">
-                        <span className="inline-flex items-center justify-center bg-[#ffedd5]/70 text-[#c2410c] text-xs font-semibold px-3 py-0.5 rounded-full">
-                          {item.discrepancyDays}
-                        </span>
-                      </td>
+            {!isLoading && reconSummary.length > 0 && (
+              <div className="mt-8 overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="border-b border-slate-100 text-xs font-bold text-slate-700">
+                      <th className="pb-4 pl-1 font-medium">Month</th>
+                      <th className="pb-4 text-center font-medium">Physical Total</th>
+                      <th className="pb-4 text-center font-medium">System Total</th>
+                      <th className="pb-4 text-center font-medium">Variance</th>
+                      <th className="pb-4 text-right pr-2 font-medium">Discrepancy Days</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100/80 text-sm">
+                    {reconSummary.map((item, idx) => (
+                      <tr
+                        key={idx}
+                        onClick={() => handleRowClick(item)}
+                        className="hover:bg-slate-50/80 transition-colors cursor-pointer group"
+                      >
+                        {/* Month */}
+                        <td className="py-4 pl-1 font-medium text-slate-900 text-xs sm:text-sm">
+                          {item.month}
+                        </td>
+
+                        {/* Physical Total */}
+                        <td className="py-4 text-center text-xs sm:text-sm font-medium text-slate-800">
+                          {formatKsh(item.physicalTotal)}
+                        </td>
+
+                        {/* System Total */}
+                        <td className="py-4 text-center text-xs sm:text-sm font-medium text-slate-800">
+                          {formatKsh(item.systemTotal)}
+                        </td>
+
+                        {/* Variance */}
+                        <td className="py-4 text-center text-xs sm:text-sm">
+                          {formatVariance(item.variance)}
+                        </td>
+
+                        {/* Discrepancy Days */}
+                        <td className="py-4 text-right pr-2">
+                          <span className="inline-flex items-center justify-center bg-[#ffedd5]/70 text-[#c2410c] text-xs font-semibold px-3 py-0.5 rounded-full">
+                            {item.discrepancyDays}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </Card>
       )}

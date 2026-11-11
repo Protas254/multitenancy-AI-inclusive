@@ -49,7 +49,7 @@ const featureSlugs = [
   "credit-management",
   "invoicing",
   "expense-management",
-  "purchases",
+  "purchase-order-management",
   "customer-management",
   "supplier-management",
   "staff-management",
@@ -58,7 +58,7 @@ const featureSlugs = [
   "loyalty-program",
   "business-reports",
   "multi-branch",
-  "mpesa",
+  "mpesa-pos-integration",
 ];
 
 const industrySlugs = [

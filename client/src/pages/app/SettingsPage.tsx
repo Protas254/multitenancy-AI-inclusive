@@ -239,7 +239,7 @@ export default function SettingsPage() {
   ];
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="space-y-6 w-full">
       <div>
         <h1 className="text-2xl font-black tracking-tight text-slate-900">Business and System Settings</h1>
         <p className="text-xs text-slate-500 mt-0.5">

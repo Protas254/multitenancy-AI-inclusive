@@ -103,7 +103,7 @@ export default function NewInvoicePage() {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-6 w-full">
       <div className="flex items-center gap-3">
         <Link href="/invoices">
           <Button variant="outline" size="sm" className="h-8 w-8 p-0">

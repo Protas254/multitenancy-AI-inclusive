@@ -88,7 +88,7 @@ export const FEATURES_DATA: Record<string, FeatureInfo> = {
     ],
     relatedFeatures: [
       { title: "Inventory Management", slug: "inventory-management" },
-      { title: "M-PESA Integration", slug: "mpesa" },
+      { title: "M-PESA Integration", slug: "mpesa-pos-integration" },
       { title: "Sales Management", slug: "sales-management" },
     ],
   },
@@ -151,7 +151,7 @@ export const FEATURES_DATA: Record<string, FeatureInfo> = {
     ],
     relatedFeatures: [
       { title: "POS Software", slug: "pos-system" },
-      { title: "Purchase Management", slug: "purchases" },
+      { title: "Purchase Management", slug: "purchase-order-management" },
       { title: "Multi-Branch Management", slug: "multi-branch" },
     ],
   },
@@ -325,8 +325,8 @@ export const FEATURES_DATA: Record<string, FeatureInfo> = {
       { title: "Sales Management", slug: "sales-management" },
     ],
   },
-  "purchases": {
-    slug: "purchases",
+  "purchase-order-management": {
+    slug: "purchase-order-management",
     title: "Supplier Purchase Order Management",
     seoTitle: "Supplier Purchase Orders & Procurement Software | StoreGrid",
     h1: "Manage Supplier Purchase Orders and Incoming Shipments",
@@ -418,7 +418,7 @@ export const FEATURES_DATA: Record<string, FeatureInfo> = {
       },
     ],
     relatedFeatures: [
-      { title: "Purchase Management", slug: "purchases" },
+      { title: "Purchase Management", slug: "purchase-order-management" },
       { title: "Inventory Management", slug: "inventory-management" },
     ],
   },
@@ -616,15 +616,15 @@ export const FEATURES_DATA: Record<string, FeatureInfo> = {
       { title: "Business Reports", slug: "business-reports" },
     ],
   },
-  "mpesa": {
-    slug: "mpesa",
-    title: "Lipa Na M-PESA Integration",
+  "mpesa-pos-integration": {
+    slug: "mpesa-pos-integration",
+    title: "Lipa Na M-PESA POS Integration",
     seoTitle: "Lipa Na M-PESA POS Integration for Small Businesses | StoreGrid",
     h1: "Automated Lipa Na M-PESA Payments & Reconciliations",
     metaDescription:
       "Reconcile M-PESA Till and Paybill payments instantly at POS checkout. Prevent fraudulent confirmation messages and speed up retail queues.",
     directAnswer:
-      "StoreGrid M-PESA Integration connects retail checkouts directly with Safaricom Lipa Na M-PESA Till and Paybill accounts, ensuring instant verification of customer transaction codes and accurate end-of-day payment reconciliation.",
+      "StoreGrid M-PESA POS Integration connects retail checkouts directly with Safaricom Lipa Na M-PESA Till and Paybill accounts, ensuring instant verification of customer transaction codes and accurate end-of-day payment reconciliation.",
     shortDesc: "Direct Till & Paybill validation, automated payment matching, and zero cashier reconciliation lag.",
     iconName: "Smartphone",
     sections: [

@@ -37,11 +37,11 @@ export default function AppLayout({ children }: { children?: React.ReactNode }) 
   return (
     <div className="flex h-screen w-full bg-slate-50 overflow-hidden text-slate-900">
       <SEO noindex={true} nofollow={true} />
-      {/* Persistent Left Sidebar */}
+      {/* Persistent Left Sidebar — flush, no margin */}
       <Sidebar />
 
-      {/* Main Content Area */}
-      <div className="flex flex-1 flex-col overflow-hidden">
+      {/* Main Content Area — takes all remaining width */}
+      <div className="flex flex-1 flex-col overflow-hidden min-w-0">
         <Topbar />
 
         {/* 14-Day Free Trial Alarm Banner - Only appears when 2 days or fewer are remaining */}
@@ -93,7 +93,7 @@ export default function AppLayout({ children }: { children?: React.ReactNode }) 
           </div>
         )}
 
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-5 lg:p-6 space-y-6">
           {children || <Outlet />}
         </main>
       </div>

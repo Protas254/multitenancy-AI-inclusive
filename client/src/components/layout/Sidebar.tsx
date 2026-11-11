@@ -112,8 +112,8 @@ export const Sidebar: React.FC = () => {
 
   return (
     <aside
-      className={`hidden lg:flex flex-col bg-[#0f172a] text-slate-300 border-r border-slate-800 transition-all duration-300 select-none z-30 ${
-        isCollapsed ? "w-20" : "w-64"
+      className={`hidden lg:flex flex-col bg-[#0f172a] text-slate-300 border-r border-slate-800/60 transition-all duration-300 select-none z-30 shrink-0 ${
+        isCollapsed ? "w-16" : "w-60"
       }`}
     >
       {/* Top Tenant Header */}

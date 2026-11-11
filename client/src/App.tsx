@@ -24,6 +24,9 @@ import LegalPage from "./pages/marketing/LegalPage";
 import BookDemoPage from "./pages/marketing/BookDemoPage";
 import ContactPage from "./pages/marketing/ContactPage";
 
+// Analytics Route Listener
+import { AnalyticsTracker } from "./components/common/AnalyticsTracker";
+
 // Auth Pages
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
@@ -67,6 +70,7 @@ import { ProtectedModuleRoute } from "./components/auth/ProtectedModuleRoute";
 export default function App() {
   return (
     <BrowserRouter>
+      <AnalyticsTracker />
       <Routes>
         {/* Public Landing, Marketing, Feature & Industry Pages */}
         <Route path="/" element={<LandingPage />} />
@@ -82,11 +86,15 @@ export default function App() {
         <Route path="/security" element={<SecurityPage />} />
         <Route path="/privacy-policy" element={<LegalPage type="privacy" />} />
         <Route path="/terms" element={<LegalPage type="terms" />} />
+        <Route path="/terms-of-service" element={<LegalPage type="terms" />} />
         <Route path="/book-demo" element={<BookDemoPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/free-trial" element={<Navigate to="/register" replace />} />
-        <Route path="/integrations" element={<Navigate to="/features/mpesa" replace />} />
-        <Route path="/integrations/mpesa" element={<Navigate to="/features/mpesa" replace />} />
+        <Route path="/integrations" element={<Navigate to="/features/mpesa-pos-integration" replace />} />
+        <Route path="/integrations/mpesa" element={<Navigate to="/features/mpesa-pos-integration" replace />} />
+        {/* Backward-compatible 301 redirects for legacy URLs */}
+        <Route path="/features/mpesa" element={<Navigate to="/features/mpesa-pos-integration" replace />} />
+        <Route path="/features/purchases" element={<Navigate to="/features/purchase-order-management" replace />} />
 
         {/* Admin Route - Redirect to Dashboard */}
         <Route path="/admin" element={<Navigate to="/dashboard" replace />} />

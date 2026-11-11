@@ -13,7 +13,7 @@ export const Topbar: React.FC = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-20 flex h-16 w-full items-center justify-between border-b border-slate-200/80 bg-white/95 px-4 sm:px-6 backdrop-blur-md">
+      <header className="sticky top-0 z-20 flex h-14 w-full items-center justify-between border-b border-slate-200/80 bg-white/95 px-4 sm:px-5 backdrop-blur-md">
         {/* Left Side: Mobile Toggle and Branch Selector */}
         <div className="flex items-center gap-3">
           <button
