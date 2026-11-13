@@ -22,7 +22,12 @@ export default function SalesPage() {
     setIsLoading(true);
     try {
       const data = await salesApi.getSales(currentTenant.id);
-      setSales(data);
+      const sorted = [...data].sort((a, b) => {
+        const dateA = new Date(a.date || (a as any).createdAt || 0).getTime();
+        const dateB = new Date(b.date || (b as any).createdAt || 0).getTime();
+        return dateB - dateA;
+      });
+      setSales(sorted);
     } finally {
       setIsLoading(false);
     }

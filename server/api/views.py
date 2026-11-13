@@ -109,6 +109,49 @@ class TenantViewSet(viewsets.ModelViewSet):
             defaults={"id": f"cat-{uuid.uuid4().hex[:8]}", "description": "Default Category"}
         )
 
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        data = request.data.copy() if hasattr(request.data, 'copy') else dict(request.data)
+
+        # Handle nested settings payload
+        settings_payload = data.get("settings")
+        if isinstance(settings_payload, dict):
+            if "receiptHeader" in settings_payload:
+                instance.receipt_header = str(settings_payload["receiptHeader"])
+            if "receiptFooter" in settings_payload:
+                instance.receipt_footer = str(settings_payload["receiptFooter"])
+            if "taxNumber" in settings_payload:
+                instance.tax_number = str(settings_payload["taxNumber"])
+            if "taxRate" in settings_payload:
+                try:
+                    instance.vat_rate = float(settings_payload["taxRate"])
+                except (ValueError, TypeError):
+                    pass
+            if "currency" in settings_payload:
+                instance.currency = str(settings_payload["currency"])
+            if not instance.raw_settings:
+                instance.raw_settings = {}
+            instance.raw_settings.update(settings_payload)
+
+        # Also support direct payload keys
+        if "receiptHeader" in data:
+            instance.receipt_header = str(data["receiptHeader"])
+        if "receiptFooter" in data:
+            instance.receipt_footer = str(data["receiptFooter"])
+        if "taxNumber" in data:
+            instance.tax_number = str(data["taxNumber"])
+        if "location" in data:
+            if not instance.raw_settings:
+                instance.raw_settings = {}
+            instance.raw_settings["location"] = str(data["location"])
+        instance.save()
+
+        serializer = self.get_serializer(instance, data=data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
+
     def perform_update(self, serializer):
         tenant = serializer.save()
         if tenant.plan in ("growth", "enterprise", "pro", "professional") and tenant.status in ("trial", "expired", "pending"):
@@ -594,7 +637,7 @@ class CustomerViewSet(TenantScopedViewSet):
     serializer_class = CustomerSerializer
 
 class SaleViewSet(TenantScopedViewSet):
-    queryset = Sale.objects.all()
+    queryset = Sale.objects.all().order_by("-created_at")
     serializer_class = SaleSerializer
 
     def create(self, request, *args, **kwargs):

@@ -58,6 +58,10 @@ class Tenant(models.Model):
     currency = models.CharField(max_length=10, default="KES")
     status = models.CharField(max_length=20, default="trial")
     is_active = models.BooleanField(default=True)
+    receipt_header = models.TextField(blank=True, default="")
+    receipt_footer = models.TextField(blank=True, default="")
+    tax_number = models.CharField(max_length=100, blank=True, default="")
+    raw_settings = models.JSONField(default=dict, blank=True)
     trial_ends_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -242,6 +246,9 @@ class Sale(models.Model):
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, default="mpesa")
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
 
     def __str__(self):
         return f"{self.invoice_number} - {self.total_amount}"

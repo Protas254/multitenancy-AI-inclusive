@@ -45,6 +45,9 @@ class TenantSerializer(serializers.ModelSerializer):
         return obj.is_trial_expired
 
     def get_location(self, obj):
+        raw = getattr(obj, "raw_settings", None)
+        if raw and isinstance(raw, dict) and raw.get("location"):
+            return raw["location"]
         return obj.address or "Main Location"
 
     def get_planStatus(self, obj):
@@ -55,14 +58,27 @@ class TenantSerializer(serializers.ModelSerializer):
         return obj.status or "active"
 
     def get_settings(self, obj):
-        return {
+        st = {
             "currency": obj.currency or "KES",
             "taxRate": float(obj.vat_rate) if obj.vat_rate is not None else 16.0,
             "taxEnabled": True,
+            "taxNumber": getattr(obj, "tax_number", "") or "",
             "financialYearStart": "01-01",
+            "receiptHeader": getattr(obj, "receipt_header", "") or "",
+            "receiptFooter": getattr(obj, "receipt_footer", "") or "",
             "loyaltyPointsPer100Kes": 1,
             "lowStockThresholdDefault": 5,
         }
+        raw = getattr(obj, "raw_settings", None)
+        if raw and isinstance(raw, dict):
+            st.update(raw)
+        if getattr(obj, "receipt_header", ""):
+            st["receiptHeader"] = obj.receipt_header
+        if getattr(obj, "receipt_footer", ""):
+            st["receiptFooter"] = obj.receipt_footer
+        if getattr(obj, "tax_number", ""):
+            st["taxNumber"] = obj.tax_number
+        return st
 
     def get_branches(self, obj):
         return [

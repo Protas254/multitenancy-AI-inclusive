@@ -3,6 +3,7 @@ import { useTenant } from "@/contexts/TenantContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSecurity } from "@/contexts/SecurityContext";
 import { adminApi } from "@/lib/api/admin";
+import { tenantsApi } from "@/lib/api/tenants";
 import { SaaSPlan } from "@/lib/types";
 import { formatKES } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { apiClient } from "@/lib/api/client";
 import { ManagerPasscodeModal } from "@/components/business/ManagerPasscodeModal";
+import { toast } from "sonner";
 import {
   Building2,
   MapPin,
@@ -118,21 +120,41 @@ export default function SettingsPage() {
 
   // Profile Form
   const [profile, setProfile] = useState({
-    name: currentTenant.name,
-    phone: currentTenant.phone,
-    email: currentTenant.email,
-    address: currentTenant.address,
-    location: currentTenant.location,
-    receiptHeader: currentTenant.settings.receiptHeader || "",
-    receiptFooter: currentTenant.settings.receiptFooter || "",
+    name: currentTenant.name || "",
+    phone: currentTenant.phone || "",
+    email: currentTenant.email || "",
+    address: currentTenant.address || "",
+    location: currentTenant.location || "",
+    receiptHeader: currentTenant.settings?.receiptHeader || "",
+    receiptFooter: currentTenant.settings?.receiptFooter || "",
   });
 
   // Tax Form
   const [tax, setTax] = useState({
-    taxRate: currentTenant.settings.taxRate,
-    taxNumber: currentTenant.settings.taxNumber || "",
-    currency: currentTenant.settings.currency,
+    taxRate: currentTenant.settings?.taxRate ?? 16,
+    taxNumber: currentTenant.settings?.taxNumber || "",
+    currency: currentTenant.settings?.currency || "KES",
   });
+
+  // Sync state whenever currentTenant changes or finishes loading
+  useEffect(() => {
+    if (currentTenant && currentTenant.id) {
+      setProfile({
+        name: currentTenant.name || "",
+        phone: currentTenant.phone || "",
+        email: currentTenant.email || "",
+        address: currentTenant.address || "",
+        location: currentTenant.location || "",
+        receiptHeader: currentTenant.settings?.receiptHeader || "",
+        receiptFooter: currentTenant.settings?.receiptFooter || "",
+      });
+      setTax({
+        taxRate: currentTenant.settings?.taxRate ?? 16,
+        taxNumber: currentTenant.settings?.taxNumber || "",
+        currency: currentTenant.settings?.currency || "KES",
+      });
+    }
+  }, [currentTenant]);
 
   // Security UI state
   const [showDisableModal, setShowDisableModal] = useState(false);
@@ -147,6 +169,7 @@ export default function SettingsPage() {
   const [saveMessage, setSaveMessage] = useState("Settings saved successfully!");
   const [plans, setPlans] = useState<SaaSPlan[]>(DEFAULT_PLANS);
   const [isSwitchingPlan, setIsSwitchingPlan] = useState(false);
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
 
   useEffect(() => {
     adminApi.getPlans().then((data) => {
@@ -158,13 +181,36 @@ export default function SettingsPage() {
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    await updateSettings({
-      receiptHeader: profile.receiptHeader,
-      receiptFooter: profile.receiptFooter,
-    });
-    setSaveMessage("Business profile updated successfully!");
-    setIsSaved(true);
-    setTimeout(() => setIsSaved(false), 2500);
+    setIsSavingProfile(true);
+    try {
+      // Save top-level tenant fields and settings
+      await apiClient.patch(`/tenants/${currentTenant.id}/`, {
+        name: profile.name,
+        phone: profile.phone,
+        email: profile.email,
+        address: profile.address,
+        location: profile.location,
+        receiptHeader: profile.receiptHeader,
+        receiptFooter: profile.receiptFooter,
+        settings: {
+          receiptHeader: profile.receiptHeader,
+          receiptFooter: profile.receiptFooter,
+        },
+      });
+      // Update tenant context settings
+      await updateSettings({
+        receiptHeader: profile.receiptHeader,
+        receiptFooter: profile.receiptFooter,
+      });
+      setSaveMessage("Business profile updated successfully!");
+      setIsSaved(true);
+      setTimeout(() => setIsSaved(false), 2500);
+      toast.success("Business profile saved successfully!");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to save profile. Please try again.");
+    } finally {
+      setIsSavingProfile(false);
+    }
   };
 
   const handleChangePin = () => {
@@ -211,13 +257,19 @@ export default function SettingsPage() {
 
   const handleSaveTax = async (e: React.FormEvent) => {
     e.preventDefault();
-    await updateSettings({
-      taxRate: Number(tax.taxRate),
-      taxNumber: tax.taxNumber,
-      currency: tax.currency,
-    });
-    setIsSaved(true);
-    setTimeout(() => setIsSaved(false), 2000);
+    try {
+      await updateSettings({
+        taxRate: Number(tax.taxRate),
+        taxNumber: tax.taxNumber,
+        currency: tax.currency,
+      });
+      setSaveMessage("Tax settings updated successfully!");
+      setIsSaved(true);
+      setTimeout(() => setIsSaved(false), 2000);
+      toast.success("Tax & currency settings saved successfully!");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update tax settings.");
+    }
   };
 
   const permissionMatrix = [
@@ -318,7 +370,9 @@ export default function SettingsPage() {
               </div>
 
               <div className="flex justify-end pt-2">
-                <Button type="submit" className="font-bold text-xs">Save Profile Changes</Button>
+                <Button type="submit" disabled={isSavingProfile} className="font-bold text-xs min-w-[160px]">
+                  {isSavingProfile ? "Saving Changes..." : "Save Profile Changes"}
+                </Button>
               </div>
             </form>
           </Card>

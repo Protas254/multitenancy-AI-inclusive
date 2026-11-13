@@ -143,7 +143,7 @@ export const Sidebar: React.FC = () => {
                     <span>{section.title}</span>
                     <ChevronDown
                       className={`h-3 w-3 transition-transform duration-200 ${
-                        isSectionCollapsed ? "-rotate-90" : "rotate-0"
+                        isSectionCollapsed ? "rotate-180" : "rotate-0"
                       }`}
                     />
                   </button>

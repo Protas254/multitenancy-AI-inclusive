@@ -117,8 +117,35 @@ export const TenantProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const updateSettings = async (settings: Partial<TenantSettings>) => {
-    const updated = await tenantsApi.updateTenantSettings(currentTenant.id, settings);
-    setTenants((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+    try {
+      const updated = await tenantsApi.updateTenantSettings(currentTenant.id, settings);
+      setTenants((prev) =>
+        prev.map((t) => {
+          if (t.id === currentTenant.id || t.id === updated?.id) {
+            return {
+              ...t,
+              ...(updated || {}),
+              settings: {
+                ...t.settings,
+                ...(updated?.settings || {}),
+                ...settings,
+              },
+            };
+          }
+          return t;
+        })
+      );
+    } catch (err) {
+      // Still update local context optimistically if offline/fallback
+      setTenants((prev) =>
+        prev.map((t) =>
+          t.id === currentTenant.id
+            ? { ...t, settings: { ...t.settings, ...settings } }
+            : t
+        )
+      );
+      throw err;
+    }
   };
 
   const createTenant = async (data: any) => {

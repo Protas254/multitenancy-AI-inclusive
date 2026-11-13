@@ -47,7 +47,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[420px] p-0 overflow-hidden bg-slate-50">
+      <DialogContent className="sm:max-w-[420px] p-0 overflow-hidden bg-slate-50 flex flex-col max-h-[92dvh]">
         <DialogHeader className="p-4 bg-white border-b border-slate-100 flex flex-row items-center justify-between">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="h-5 w-5 text-emerald-600" />
@@ -64,7 +64,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
         </DialogHeader>
 
         {/* Printable Receipt Canvas */}
-        <div className="p-6 flex justify-center">
+        <div className="p-6 flex justify-center overflow-y-auto max-h-[calc(90dvh-130px)]">
           <div
             id="printable-receipt"
             className="w-full max-w-[340px] bg-white p-6 rounded-xl border border-slate-200/90 shadow-sm font-mono text-xs text-slate-800 space-y-3"
@@ -169,6 +169,18 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
               <p className="pt-2 font-mono text-[9px] text-slate-400">Powered by StoreGrid Retail Cloud</p>
             </div>
           </div>
+        </div>
+
+        {/* Footer — Done button always visible */}
+        <div className="flex-shrink-0 px-6 py-3 border-t border-slate-100 bg-white flex items-center justify-between gap-3">
+          <p className="text-[10px] text-slate-400 font-mono">Powered by StoreGrid Retail Cloud</p>
+          <Button
+            size="sm"
+            onClick={onClose}
+            className="font-bold bg-blue-600 hover:bg-blue-700 text-white px-5"
+          >
+            Done
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

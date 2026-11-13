@@ -18,48 +18,64 @@ export function initGoogleAnalytics(measurementId?: string) {
     (import.meta as any).env?.VITE_GA_MEASUREMENT_ID ||
     (import.meta as any).env?.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
-  if (!gaId || typeof window === "undefined" || isInitialized) {
+  if (typeof window === "undefined" || isInitialized) {
     return;
   }
-
-  // Load gtag script dynamically
-  const script = document.createElement("script");
-  script.async = true;
-  script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
-  document.head.appendChild(script);
 
   window.dataLayer = window.dataLayer || [];
   window.gtag = function () {
     window.dataLayer.push(arguments);
   };
   window.gtag("js", new Date());
-  window.gtag("config", gaId, {
-    send_page_view: false, // Page views handled via React Router listener
-  });
+
+  if (gaId) {
+    // If a GA4 G- ID is also provided alongside GTM, configure it
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
+    document.head.appendChild(script);
+
+    window.gtag("config", gaId, {
+      send_page_view: false,
+    });
+    console.log(`[Analytics] Initialized GA4 with ID: ${gaId}`);
+  }
 
   isInitialized = true;
-  console.log(`[Analytics] Initialized GA4 with ID: ${gaId}`);
 }
 
 /**
  * Log page view on SPA route navigation.
+ * Pushes to dataLayer for GTM triggers and invokes gtag if configured.
  */
 export function trackPageView(url: string, title?: string) {
-  if (typeof window === "undefined" || !window.gtag) {
+  if (typeof window === "undefined") {
     return;
+  }
+
+  const pageTitle = title || document.title;
+
+  // Push to GTM dataLayer for Single Page Application pageview trigger
+  if (window.dataLayer) {
+    window.dataLayer.push({
+      event: "page_view",
+      page_path: url,
+      page_title: pageTitle,
+      page_location: window.location.href,
+    });
   }
 
   const gaId =
     (import.meta as any).env?.VITE_GA_MEASUREMENT_ID ||
     (import.meta as any).env?.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
-  if (!gaId) return;
-
-  window.gtag("event", "page_view", {
-    page_path: url,
-    page_title: title || document.title,
-    send_to: gaId,
-  });
+  if (gaId && window.gtag) {
+    window.gtag("event", "page_view", {
+      page_path: url,
+      page_title: pageTitle,
+      send_to: gaId,
+    });
+  }
 }
 
 /**
